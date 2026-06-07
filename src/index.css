@@ -1,0 +1,1291 @@
+/* ==========================================================================
+   SHADY AWAD | NATIVE SYSTEM DESIGN CUSTOM PROPERTIES
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root {
+    /* Dynamics Proportion Scaling Variables */
+    --base-scale: 1;
+    --space-scale: 1;
+    --font-scale: 1;
+
+    /* Theme-agnostic constants */
+    --duration-snappy: 0.15s;
+    --duration-smooth: 0.35s;
+    --ease-elastic: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    
+    /* DARK THEME (Default) */
+    --bg-dark: #020308;
+    --text-dark: #f6f9ff;
+    --muted-dark: #a6b7d2;
+    --card-bg-dark: rgba(13, 17, 34, 0.75);
+    --card-bg-hover-dark: rgba(20, 26, 51, 0.85);
+    --accent-dark: #00d4ff;
+    --accent-dark-glow: rgba(0, 212, 255, 0.35);
+    --border-dark: rgba(125, 187, 255, 0.2);
+    --input-bg-dark: #090e20;
+    --input-text-dark: #f6f9ff;
+    --badge-bg-dark: #00d4ff;
+    --badge-text-dark: #020308;
+    --tag-color-dark: #78bcff;
+    --terminal-bg-dark: #050814;
+    --table-header-dark: rgba(0, 212, 255, 0.1);
+    
+    /* ACTIVE THEMING STATE MAP (Defaults to Dark) */
+    --bg: var(--bg-dark);
+    --text: var(--text-dark);
+    --muted: var(--muted-dark);
+    --card-bg: var(--card-bg-dark);
+    --card-bg-hover: var(--card-bg-hover-dark);
+    --accent: var(--accent-dark);
+    --accent-glow: var(--accent-dark-glow);
+    --border: var(--border-dark);
+    --input-bg: var(--input-bg-dark);
+    --input-text: var(--input-text-dark);
+    --badge-bg: var(--badge-bg-dark);
+    --badge-text: var(--badge-text-dark);
+    --tag-color: var(--tag-color-dark);
+    --terminal-bg: var(--terminal-bg-dark);
+    --table-header: var(--table-header-dark);
+    --code-comment: #5275a1;
+    --code-keyword: #ff5e97;
+    --code-literal: #34d399;
+}
+
+/* ==========================================================================
+   LIGHT THEME OVERRIDES (CRISP SLATE & ROYAL SAPPHIRE)
+   ========================================================================== */
+[data-theme="light"] {
+    --bg: #eef3f8;
+    --text: #0b132b;
+    --muted: #384961;
+    --card-bg: rgba(255, 255, 255, 0.88);
+    --card-bg-hover: rgba(255, 255, 255, 0.96);
+    --accent: #0055ff;
+    --accent-glow: rgba(0, 85, 255, 0.2);
+    --border: rgba(11, 19, 43, 0.15);
+    --input-bg: #f9fbfd;
+    --input-text: #0b132b;
+    --badge-bg: #0055ff;
+    --badge-text: #ffffff;
+    --tag-color: #0044cc;
+    --terminal-bg: #f5f8fc;
+    --table-header: rgba(0, 85, 255, 0.08);
+    --code-comment: #6272a4;
+    --code-keyword: #bc00a3;
+    --code-literal: #008f5d;
+}
+
+/* ==========================================================================
+   DYNAMIC PROPORTIONAL RESPONSIVE SCALING VIA INTERPOLATED CSS VARIABLES
+   ========================================================================== */
+@media (max-width: 1400px) {
+    :root {
+        --base-scale: 0.95;
+        --space-scale: 0.92;
+        --font-scale: 0.96;
+    }
+}
+
+@media (max-width: 1200px) {
+    :root {
+        --base-scale: 0.9;
+        --space-scale: 0.85;
+        --font-scale: 0.92;
+    }
+}
+
+@media (max-width: 900px) {
+    :root {
+        --base-scale: 0.84;
+        --space-scale: 0.76;
+        --font-scale: 0.88;
+    }
+}
+
+@media (max-width: 600px) {
+    :root {
+        --base-scale: 0.76;
+        --space-scale: 0.65;
+        --font-scale: 0.84;
+    }
+}
+
+/* ==========================================================================
+   RESET & FOUNDATIONS
+   ========================================================================== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    width: 100%;
+    min-height: 100%;
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+    transition: background-color var(--duration-smooth) ease, color var(--duration-smooth) ease;
+    line-height: 1.5;
+}
+
+/* Native CSS3 Space Background behind modules */
+#starfield {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: radial-gradient(circle at 50% 15%, #050a1b 0%, #020205 70%, #000 100%);
+    pointer-events: none;
+    transition: background var(--duration-smooth) ease;
+}
+
+[data-theme="light"] #starfield {
+    background: radial-gradient(circle at 50% 15%, #dce4f1 0%, #edf2f8 80%, #fff 100%);
+}
+
+/* Accessible focus styling */
+:focus-visible {
+    outline: 2.5px solid var(--accent);
+    outline-offset: 3px;
+}
+
+/* Click feedback scaling */
+button:active {
+    transform: scale(0.95);
+    transition: transform 0.05s ease;
+}
+
+/* Scrollbar behaviors */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+}
+
+/* ==========================================================================
+   BENTO MATRIX CONTAINER & GRID ARCHITECTURE
+   ========================================================================== */
+.bento-container {
+    display: grid;
+    /* Clean layout utilizes dynamic scaling variables */
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: calc(20px * var(--space-scale));
+    max-width: 1320px;
+    margin: calc(70px * var(--space-scale)) auto;
+    padding: 0 calc(18px * var(--space-scale));
+    direction: ltr; /* Handled gracefully on body translation */
+}
+
+/* Unified design specs for Bento Cards */
+.bento-item {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    padding: calc(28px * var(--space-scale));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 10px 30px rgba(2, 3, 8, 0.12);
+    transition: transform var(--duration-smooth) cubic-bezier(0.16, 1, 0.3, 1),
+                border-color var(--duration-snappy) ease,
+                box-shadow var(--duration-snappy) ease,
+                background-color var(--duration-smooth) ease;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.bento-item:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent);
+    box-shadow: 0 20px 40px var(--accent-glow);
+    background-color: var(--card-bg-hover);
+}
+
+/* Logical Grid Placements (Totaling 12 scale parameters) */
+.profile {
+    grid-column: span 7;
+}
+
+.calculator {
+    grid-column: span 5;
+}
+
+.systems-topology {
+    grid-column: span 12;
+}
+
+.project-showcase {
+    grid-column: span 12;
+}
+
+.db-visualizer {
+    grid-column: span 12;
+}
+
+.ship-box {
+    grid-column: span 12;
+    min-height: 480px;
+}
+
+/* ==========================================================================
+   TYPOGRAPHY FOUNDATION
+   ========================================================================== */
+h1 {
+    font-size: calc(2.4rem * var(--font-scale));
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    line-height: 1.1;
+    margin-bottom: 6px;
+    color: var(--text);
+}
+
+h3.subheading {
+    color: var(--accent);
+    font-size: calc(0.95rem * var(--font-scale));
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 20px;
+    transition: color var(--duration-smooth) ease;
+}
+
+p.lead-bio {
+    color: var(--muted);
+    font-size: calc(0.95rem * var(--font-scale));
+    line-height: 1.62;
+    margin-bottom: 20px;
+    text-align: justify;
+}
+
+.badge {
+    background: var(--badge-bg);
+    color: var(--badge-text);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: calc(0.72rem * var(--font-scale));
+    font-weight: 800;
+    width: fit-content;
+    margin-bottom: 18px;
+    letter-spacing: 0.08em;
+    box-shadow: 0 4px 12px var(--accent-glow);
+    transition: background var(--duration-smooth) ease, color var(--duration-smooth) ease;
+}
+
+.tech-tag {
+    font-size: calc(0.75rem * var(--font-scale));
+    font-weight: 700;
+    color: var(--tag-color);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.tech-description {
+    font-size: calc(0.88rem * var(--font-scale));
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+
+/* ==========================================================================
+   BIDIRECTIONAL SWITCH HOOK DIRECTIONS (EN/AR)
+   Uses modern CSS directional mappings dynamically
+   ========================================================================== */
+html[dir="rtl"] {
+    text-align: right;
+}
+html[dir="rtl"] h1, 
+html[dir="rtl"] p, 
+html[dir="rtl"] th, 
+html[dir="rtl"] td,
+html[dir="rtl"] blockquote {
+    text-align: right;
+}
+
+/* Logical profile alignment toggles */
+.profile-actions {
+    position: absolute;
+    top: 14px;
+    inset-inline-end: 20px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    z-index: 10;
+}
+
+.profile-actions button {
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text);
+    border-radius: 12px;
+    width: 44px;
+    height: 44px;
+    cursor: pointer;
+    transition: background var(--duration-snappy) ease, border-color var(--duration-snappy) ease;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-actions button:hover {
+    background: var(--card-bg-hover);
+    border-color: var(--accent);
+}
+
+.theme-icon {
+    display: none;
+    line-height: 0;
+}
+[data-theme="dark"] #theme-toggle .theme-icon-sun {
+    display: inline-flex;
+}
+[data-theme="light"] #theme-toggle .theme-icon-moon {
+    display: inline-flex;
+}
+.theme-icon-sun svg {
+    color: #ffde59;
+}
+.theme-icon-moon svg {
+    color: #3b5f8a;
+}
+
+/* Dynamic Separation Rule and Spec Tables (Demographics Card) */
+hr.separator {
+    border: none;
+    border-top: 1px dashed var(--border);
+    margin: calc(22px * var(--space-scale)) 0;
+}
+
+.specs-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: calc(14px * var(--space-scale));
+    font-size: calc(0.85rem * var(--font-scale));
+    text-align: start;
+}
+
+.specs-table th {
+    background: var(--table-header);
+    color: var(--accent);
+    text-transform: uppercase;
+    font-size: calc(0.72rem * var(--font-scale));
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 10px 14px;
+    border-radius: 6px;
+    text-align: start;
+}
+
+.specs-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+}
+
+.specs-table tr:last-child td {
+    border-bottom: none;
+}
+
+.specs-table strong {
+    color: var(--text);
+}
+
+/* ==========================================================================
+   HIGH-END BILLING / PROVISIONING CALCULATOR PANEL
+   ========================================================================== */
+.calc-ui select {
+    width: 100%;
+    background: var(--input-bg);
+    color: var(--input-text);
+    border: 1px solid var(--border);
+    padding: 14px;
+    border-radius: 14px;
+    outline: none;
+    margin-top: 8px;
+    transition: border-color var(--duration-snappy) ease, box-shadow var(--duration-snappy) ease, background var(--duration-smooth) ease;
+    cursor: pointer;
+    font-size: calc(0.9rem * var(--font-scale));
+    font-family: inherit;
+}
+
+.calc-ui select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.calc-ui label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: calc(0.72rem * var(--font-scale));
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+}
+
+/* Custom sliders */
+.range-wrapper {
+    margin-top: 10px;
+}
+.slider-control {
+    width: 100%;
+    accent-color: var(--accent);
+    cursor: grab;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--border);
+}
+.range-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: calc(0.7rem * var(--font-scale));
+    color: var(--muted);
+    margin-top: 6px;
+    font-family: 'JetBrains Mono', monospace;
+}
+#active-cores-val {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 14px 0 calc(24px * var(--space-scale));
+}
+
+.checkbox-group label {
+    font-size: calc(0.82rem * var(--font-scale));
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    text-transform: none;
+    letter-spacing: 0;
+    line-height: 1.4;
+    font-family: inherit;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.15);
+    transition: background var(--duration-snappy) ease, border-color var(--duration-snappy) ease;
+}
+.checkbox-group label:hover {
+    background: var(--card-bg-hover);
+    border-color: var(--accent);
+}
+
+.checkbox-group input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
+.checkbox-group label span {
+    color: var(--text);
+    font-weight: 500;
+}
+
+.price-box {
+    border-top: 1px dashed var(--border);
+    padding-top: calc(20px * var(--space-scale));
+    margin-top: calc(14px * var(--space-scale));
+}
+
+.price-box span {
+    font-size: calc(0.85rem * var(--font-scale));
+    color: var(--muted);
+}
+
+.price-row {
+    font-size: calc(2.4rem * var(--font-scale));
+    color: var(--accent);
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    margin-top: 4px;
+}
+
+.price-row small {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: calc(0.95rem * var(--font-scale));
+    font-weight: 600;
+    color: var(--text);
+}
+
+/* Baseline SLA presets links */
+.tier-links {
+    margin-top: calc(20px * var(--space-scale));
+    border-top: 1px dashed var(--border);
+    padding-top: calc(16px * var(--space-scale));
+}
+
+.tier-links h4 {
+    font-size: calc(0.72rem * var(--font-scale));
+    color: var(--muted);
+    font-weight: 700;
+    margin-bottom: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.tier-links ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.tier-links li a {
+    font-size: calc(0.82rem * var(--font-scale));
+    color: var(--text);
+    text-decoration: none;
+    border: 1px solid var(--border);
+    padding: 10px 14px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background var(--duration-snappy) ease, border-color var(--duration-snappy) ease;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.tier-links li a:hover {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+}
+
+/* ==========================================================================
+   SYSTEMS TOPOLOGY AND INTERACTIVE MAP COMPONENT
+   ========================================================================== */
+.topology-desc {
+    margin-bottom: calc(24px * var(--space-scale));
+    font-size: calc(0.92rem * var(--font-scale));
+}
+
+.topology-dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: calc(20px * var(--space-scale));
+    margin-top: 10px;
+}
+
+/* Left interactive SVG cluster map box */
+.topology-map-container {
+    grid-column: span 7;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    overflow: hidden;
+    background: #040713;
+    padding: 15px;
+    box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.6);
+    position: relative;
+    max-height: 440px;
+    display: flex;
+    flex-direction: column;
+}
+
+#topology-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.topology-legend {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: calc(0.68rem * var(--font-scale));
+    color: var(--muted);
+    text-align: center;
+    margin-top: 10px;
+}
+
+/* SVG Node and connectors stylings */
+.topology-connector {
+    stroke-width: 1.5;
+    transition: stroke var(--duration-smooth) ease, stroke-width var(--duration-snappy) ease;
+}
+.topology-connector.active {
+    stroke: var(--accent);
+    stroke-width: 2.5;
+    filter: drop-shadow(0 0 4px var(--accent));
+}
+
+.topology-node {
+    cursor: pointer;
+    transition: transform var(--duration-smooth) cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.entity-rect {
+    fill: #0c1023;
+    stroke: var(--border);
+    stroke-width: 1;
+    transition: fill var(--duration-snappy) ease, stroke var(--duration-snappy) ease, stroke-width var(--duration-snappy) ease;
+}
+
+.entity-header {
+    fill: #141a35;
+    stroke: var(--border);
+    stroke-width: 1;
+    transition: fill var(--duration-snappy) ease, stroke var(--duration-snappy) ease;
+}
+
+.transaction-header {
+    fill: rgba(236, 72, 153, 0.15);
+    stroke: rgba(236, 72, 153, 0.3);
+}
+
+.entity-title {
+    fill: #ffffff;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    text-anchor: middle;
+}
+
+.entity-column {
+    fill: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+}
+
+.PK {
+    fill: #f59e0b;
+}
+
+.FK {
+    fill: #38bdf8;
+}
+
+.rls-indicator {
+    fill: #ec4899;
+    font-weight: 700;
+}
+
+.node-bus-port {
+    fill: var(--accent);
+    stroke: #ffffff;
+    stroke-width: 1;
+}
+
+/* Hover behaviors for diagram tables */
+.topology-node:hover .entity-rect {
+    stroke: var(--accent);
+    stroke-width: 1.5;
+    fill: #141c3e;
+}
+.topology-node:hover .entity-header {
+    stroke: var(--accent);
+    fill: #1c2756;
+}
+
+.topology-node.active-node .entity-rect {
+    stroke: var(--accent);
+    stroke-width: 2;
+    fill: #111a3d;
+    filter: drop-shadow(0 0 10px var(--accent-glow));
+}
+.topology-node.active-node .entity-header {
+    fill: #1a275b;
+    stroke: var(--accent);
+}
+
+/* Right Interactive Code Snippet Panel */
+.topology-code-side {
+    grid-column: span 5;
+    display: flex;
+    flex-direction: column;
+}
+
+.code-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.code-tab-btn {
+    flex-grow: 1;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: calc(0.72rem * var(--font-scale));
+    font-weight: 700;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: rgba(0, 0, 0, 0.15);
+    color: var(--muted);
+    cursor: pointer;
+    transition: background var(--duration-snappy) ease, color var(--duration-snappy) ease, border-color var(--duration-snappy) ease;
+}
+
+.code-tab-btn:hover {
+    color: var(--text);
+    border-color: var(--accent);
+}
+
+.code-tab-btn.active {
+    background: var(--accent);
+    color: var(--badge-text);
+    border-color: var(--accent);
+}
+
+.code-container {
+    height: 388px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: #030612;
+    overflow: auto;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+    position: relative;
+    padding: 16px;
+}
+
+/* Syntax Highlight Parameters directly parsed from code-viewer */
+.code-block {
+    display: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: calc(0.74rem * var(--font-scale));
+    line-height: 1.5;
+    white-space: pre;
+    color: #cbd5e1;
+    tab-size: 4;
+}
+
+.code-block.active {
+    display: block;
+}
+
+.sql-comment {
+    color: var(--code-comment);
+    font-style: italic;
+}
+
+.sql-keyword {
+    color: var(--code-keyword);
+    font-weight: 700;
+}
+
+.sql-literal {
+    color: var(--code-literal);
+}
+
+/* ==========================================================================
+   FLAGSHIP ARCHITECTURAL SHOWCASE (THE CRUSHER SECTION)
+   ========================================================================== */
+.flagship-dashboard-layout {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: calc(20px * var(--space-scale));
+    margin-top: calc(14px * var(--space-scale));
+}
+
+.flagship-project-selectors {
+    grid-column: span 4;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.flagship-selector {
+    cursor: pointer;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 18px;
+    background: rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: background var(--duration-smooth) ease, border-color var(--duration-snappy) ease, transform var(--duration-smooth) cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.flagship-selector:hover {
+    background: var(--card-bg-hover);
+    border-color: var(--accent);
+    transform: translateX(4px);
+}
+
+.flagship-selector.active {
+    background: var(--accent-glow);
+    border-color: var(--accent);
+}
+
+.selector-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: calc(1.3rem * var(--font-scale));
+    font-weight: 800;
+    color: var(--accent);
+}
+
+.selector-meta h4 {
+    font-size: calc(0.92rem * var(--font-scale));
+    font-weight: 700;
+    color: var(--text);
+}
+
+.selector-meta span {
+    font-size: calc(0.72rem * var(--font-scale));
+    color: var(--muted);
+}
+
+/* Documentation sheets viewports */
+.flagship-documentation-viewport {
+    grid-column: span 8;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: calc(26px * var(--space-scale));
+    position: relative;
+    overflow: hidden;
+    min-height: 400px;
+}
+
+.flagship-pane {
+    display: none;
+    opacity: 0;
+    transform: translateY(15px);
+    transition: opacity var(--duration-smooth) ease, transform var(--duration-smooth) ease;
+}
+
+.flagship-pane.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.pane-badge {
+    background: #ec4899;
+    color: #ffffff;
+    font-size: calc(0.66rem * var(--font-scale));
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 4px 10px;
+    border-radius: 4px;
+    width: fit-content;
+    margin-bottom: 10px;
+    display: block;
+    letter-spacing: 0.05em;
+}
+
+#pane-p2 .pane-badge {
+    background: #00d4ff;
+    color: #020308;
+}
+
+.pane-header h2 {
+    font-size: calc(1.5rem * var(--font-scale));
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    margin-bottom: 10px;
+}
+
+.pane-desc {
+    font-size: calc(0.9rem * var(--font-scale));
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.pane-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 20px 0;
+}
+
+.pane-subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: calc(0.74rem * var(--font-scale));
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    margin-bottom: 12px;
+}
+
+/* Compact matrix benchmarking tables inside projects showcase */
+.matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: calc(0.85rem * var(--font-scale));
+    margin-bottom: 20px;
+    text-align: start;
+}
+
+.matrix-table th {
+    font-weight: 700;
+    color: var(--text);
+    border-bottom: 2px solid var(--border);
+    padding: 10px 8px;
+    text-align: start;
+    font-size: calc(0.76rem * var(--font-scale));
+}
+
+.matrix-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+}
+
+.matrix-table tr:last-child td {
+    border-bottom: none;
+}
+
+.matrix-table strong {
+    color: var(--accent);
+}
+
+.pane-blockquote {
+    border-inline-start: 4px solid var(--accent);
+    padding-inline-start: 14px;
+    margin: 20px 0;
+    color: var(--muted);
+    font-size: calc(0.84rem * var(--font-scale));
+    font-style: italic;
+    line-height: 1.5;
+    background: rgba(125, 187, 255, 0.04);
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-radius: 0 8px 8px 0;
+}
+html[dir="rtl"] .pane-blockquote {
+    border-radius: 8px 0 0 8px;
+}
+
+.pane-meta {
+    font-size: calc(0.8rem * var(--font-scale));
+    color: var(--muted);
+    border-top: 1px dashed var(--border);
+    padding-top: 14px;
+}
+
+.pane-meta strong {
+    color: var(--text);
+}
+
+/* Explore trigger */
+.view-all {
+    margin-top: calc(24px * var(--space-scale));
+    color: var(--accent);
+    font-weight: 800;
+    font-size: calc(0.88rem * var(--font-scale));
+    cursor: pointer;
+    letter-spacing: 0.06em;
+    align-self: flex-start;
+    transition: filter 0.1s ease, transform var(--duration-snappy) ease;
+}
+
+.view-all:hover {
+    filter: brightness(1.2);
+    transform: translate-inline-start(3px);
+}
+
+/* ==========================================================================
+   ACTIVE SYSTEM TRAVERSAL TERMINAL & SCHEMATIC VISUALIZER
+   ========================================================================== */
+.visualizer-viewport {
+    grid-column: span 7;
+    position: relative;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    overflow: hidden;
+    background: #02040c;
+    min-height: 350px;
+    max-height: 380px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.7);
+}
+
+#visualizer-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.visualizer-controls {
+    grid-column: span 5;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.control-section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: calc(0.72rem * var(--font-scale));
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 4px;
+}
+
+.search-keys-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.visualizer-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: calc(0.75rem * var(--font-scale));
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text);
+    cursor: pointer;
+    transition: background var(--duration-snappy) ease, border-color var(--duration-snappy) ease, color var(--duration-snappy) ease;
+}
+
+.visualizer-btn:hover {
+    background: var(--card-bg-hover);
+    border-color: var(--accent);
+}
+
+.search-key-btn {
+    flex-grow: 1;
+    min-width: 50px;
+}
+
+.visualizer-btn.active-key {
+    background: var(--accent);
+    color: var(--badge-text);
+    border-color: var(--accent);
+    font-weight: 800;
+}
+
+.action-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--accent);
+    color: var(--badge-text);
+    border-color: var(--accent);
+    font-weight: 800;
+    margin-top: 4px;
+    border-radius: 12px;
+}
+
+.action-btn:hover {
+    background: #ffffff;
+    color: #020308;
+    border-color: #ffffff;
+}
+
+[data-theme="light"] .action-btn {
+    color: #ffffff;
+}
+[data-theme="light"] .action-btn:hover {
+    background: #0044cc;
+    color: #ffffff;
+    border-color: #0044cc;
+}
+
+.terminal-console {
+    background: var(--terminal-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    max-height: 180px;
+    min-height: 130px;
+    overflow-y: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: calc(0.72rem * var(--font-scale));
+    box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.4);
+    transition: background-color var(--duration-smooth) ease;
+}
+
+#terminal-logs {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.terminal-log-line {
+    color: var(--muted);
+    word-break: break-all;
+    line-height: 1.4;
+}
+
+.system-line {
+    color: #10b981;
+}
+
+.traversal-line {
+    color: #f59e0b;
+}
+
+/* ==========================================================================
+   MODEL VIEWER CONTAINER
+   ========================================================================== */
+.canvas-wrapper {
+    flex-grow: 1;
+    width: 100%;
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-top: 10px;
+    border: 1px solid var(--border);
+    height: 350px;
+    background: #03040b;
+}
+
+#ship-viewer {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.ship-hint {
+    font-size: calc(0.76rem * var(--font-scale));
+    color: var(--muted);
+    text-align: center;
+    margin-top: 10px;
+}
+
+/* ==========================================================================
+   PAGE FOOTER
+   ========================================================================== */
+.page-footer {
+    margin-top: calc(50px * var(--space-scale));
+    padding: calc(24px * var(--space-scale)) 0;
+    background: var(--card-bg);
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.footer-inner {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0 calc(18px * var(--space-scale));
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.footer-inner strong {
+    font-size: calc(0.96rem * var(--font-scale));
+    color: var(--text);
+}
+
+.footer-inner p {
+    margin: 3px 0 0;
+    font-size: calc(0.8rem * var(--font-scale));
+    color: var(--muted);
+}
+
+.footer-links {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.footer-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: calc(0.84rem * var(--font-scale));
+    border-bottom: 1px dashed var(--border);
+    transition: color var(--duration-snappy) ease;
+}
+
+.footer-links a:hover {
+    color: var(--text);
+    border-bottom-color: var(--accent);
+}
+
+.footer-inner small {
+    display: block;
+    width: 100%;
+    font-size: calc(0.74rem * var(--font-scale));
+    color: var(--muted);
+    margin-top: 12px;
+}
+
+/* ==========================================================================
+   ROBUST RESPONSIVE MEDIA BREAKPOINTS & GENERAL OVERRIDES
+   ========================================================================== */
+@media (max-width: 1000px) {
+    .profile {
+        grid-column: span 12;
+    }
+    .calculator {
+        grid-column: span 12;
+    }
+    .topology-map-container {
+        grid-column: span 12;
+        max-height: 380px;
+    }
+    .topology-code-side {
+        grid-column: span 12;
+    }
+    .flagship-project-selectors {
+        grid-column: span 12;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    .flagship-project-selectors li {
+        flex-grow: 1;
+    }
+    .flagship-documentation-viewport {
+        grid-column: span 12;
+    }
+    .visualizer-viewport {
+        grid-column: span 12;
+    }
+    .visualizer-controls {
+        grid-column: span 12;
+    }
+}
+
+@media (max-width: 600px) {
+    .bento-container {
+        gap: 14px;
+        padding: 0 10px;
+        margin: 30px auto;
+    }
+    .bento-item {
+        border-radius: 20px;
+        padding: 16px;
+    }
+    .flagship-project-selectors {
+        flex-direction: column;
+    }
+    .flagship-documentation-viewport {
+        padding: 16px;
+    }
+    .profile-actions {
+        position: relative;
+        top: 0;
+        inset-inline-end: 0;
+        justify-content: flex-start;
+        margin-bottom: 15px;
+    }
+}

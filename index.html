@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shady Awad | Lead Software Engineer & Systems Architect Portfolio</title>
+    <!-- GSAP for smooth entrance staggers and synchronized sliding animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <!-- Model Viewer for low-latency WebGL 3D simulation elements -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
+</head>
+<body>
+
+    <!-- 60FPS Space Starfield Background with DPR Scaling -->
+    <canvas id="starfield"></canvas>
+
+    <main class="bento-container" id="portfolio-grid">
+        
+        <!-- PROFILE CARD: Demographic details & Core Systems Competencies -->
+        <div class="bento-item profile" id="profile-card">
+            <div class="profile-actions" role="toolbar" aria-label="Theme and language settings">
+                <button id="theme-toggle" type="button" aria-label="Toggle dark and light mode">
+                    <span class="theme-icon theme-icon-sun" aria-hidden="true" title="Switch to light mode">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M17.36 17.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M17.36 6.64l1.42-1.42"/></svg>
+                    </span>
+                    <span class="theme-icon theme-icon-moon" aria-hidden="true" title="Switch to dark mode">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 0010.1 9.79z"/></svg>
+                    </span>
+                </button>
+                <button id="lang-toggle" type="button" aria-label="Toggle between English and Arabic">EN/AR</button>
+            </div>
+            
+            <div class="badge" data-i18n="badgeOnline">SYSTEM ACTIVE</div>
+            <h1 data-i18n="name">Shady Awad</h1>
+            <h3 data-i18n="title" class="subheading">Lead Software Engineer & Systems Architect</h3>
+            
+            <p data-i18n="description" class="lead-bio">
+                I am a 29-year-old Lead Software Engineer & Systems Architect focused on building high-performance, enterprise-grade progressive web applications (PWAs). I specialize in writing optimization-focused raw SQL over heavy, slow ORMs, leveraging Vanilla JavaScript for zero abstraction overhead, and enforcing rigid security policies such as Row-Level Security (RLS) deep in the database layer. My engineering philosophy prioritizes bare-metal performance, extreme rendering optimization, and bulletproof security systems.
+            </p>
+
+            <div class="demographic-specs">
+                <hr class="separator" />
+                <table class="specs-table">
+                    <thead>
+                        <tr>
+                            <th>Specification</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Age Constraint</strong></td>
+                            <td>29 Years Old</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Location Coordinates</strong></td>
+                            <td>Cairo, Egypt (GMT+2)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Query Engine Preference</strong></td>
+                            <td>PostgreSQL (No-ORM, Optimized Raw SQL)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Security Framework</strong></td>
+                            <td>Row-Level Security (RLS) & WebCrypto E2EE</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Execution Strategy</strong></td>
+                            <td>Vanilla JS, Zero-Dependency Components</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- HIGH-END ENTERPRISE SAAS PROVISIONING ESTIMATOR -->
+        <div class="bento-item calculator" id="estimator-card">
+            <h3 data-i18n="projectEstimator">Enterprise Provisioning & Estimator</h3>
+            <div class="calc-ui">
+                <label id="solutionTierLabel" for="tier" data-i18n="solutionTier">Arch Type & SLA Level</label>
+                <select id="tier">
+                    <option value="12000" data-i18n="tier1">Tier 1: High-Performance Standalone</option>
+                    <option value="36000" data-i18n="tier2">Tier 2: Multi-Tenant Enterprise Cluster</option>
+                    <option value="85000" data-i18n="tier3">Tier 3: Distributed High-Availability Grid</option>
+                </select>
+                
+                <label id="pipelineScaleLabel" for="threads" style="margin-top: 15px; display: block;" class="control-label">Thread Pipeline Limits</label>
+                <div class="range-wrapper">
+                    <input type="range" id="threads" min="1" max="8" value="4" class="slider-control" />
+                    <div class="range-labels">
+                        <span>1 Cores</span>
+                        <span id="active-cores-val">4 Cores (Optimal)</span>
+                        <span>8 Cores</span>
+                    </div>
+                </div>
+
+                <label id="addonsLabel" style="margin-top: 20px; display: block;" data-i18n="addons">Custom System Integration Addons</label>
+                <div class="checkbox-group">
+                    <label><input type="checkbox" class="addon" id="opt-canvas" value="8000"> <span data-i18n="checkbox3D">Custom WebGL / Canvas Components</span></label>
+                    <label><input type="checkbox" class="addon" id="opt-logging" value="15000"> <span data-i18n="checkboxAI">Embedded Security Audit Logging Modules</span></label>
+                </div>
+
+                <div class="price-box">
+                    <span data-i18n="estInvestment">Est. Monthly SLA Commitment:</span>
+                    <div class="price-row"><strong id="price-display">12,000</strong> <small>EGP</small></div>
+                </div>
+
+                <div class="tier-links">
+                    <h4 data-i18n="tierEstimates">Provisioning Baseline Cost (EGP)</h4>
+                    <ul>
+                        <li><a href="#" class="baseline-link" data-tier-val="12000" data-i18n="tier1">Tier 1: High-Performance Standalone</a></li>
+                        <li><a href="#" class="baseline-link" data-tier-val="36000" data-i18n="tier2">Tier 2: Multi-Tenant Enterprise Cluster</a></li>
+                        <li><a href="#" class="baseline-link" data-tier-val="85000" data-i18n="tier3">Tier 3: Distributed High-Availability Grid</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW SYSTEMS ARCHITECTURE & TOPOLOGY SHOWCASE (REPLACING OLD VIDEO BOX) -->
+        <div class="bento-item systems-topology" id="systems-architecture-card">
+            <div class="tech-tag" data-i18n="systemTopology">Systems Architecture & Topology</div>
+            <p class="topology-desc" data-i18n="topologyDesc">Interactive Database Schema & System Topology Map. Toggle between optimized Raw SQL execution paths and database Row-Level Security (RLS) policies. Rendering active query flows at 60 FPS.</p>
+            
+            <div class="topology-dashboard-grid">
+                <!-- Sprawling Database Schema Topology Diagram using Raw SVG -->
+                <div class="topology-map-container" id="svg-container">
+                    <svg id="topology-svg" viewBox="0 0 800 420" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <!-- Grid pattern background inside map -->
+                            <pattern id="grid-pattern-svg" width="20" height="20" patternUnits="userSpaceOnUse">
+                                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(125, 187, 255, 0.05)" stroke-width="1"/>
+                            </pattern>
+                            <!-- Markers for relations pointers -->
+                            <marker id="arrowhead" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="var(--accent)" opacity="0.85"/>
+                            </marker>
+                            <!-- Active tracking pulse shadow filter -->
+                            <filter id="glow-effect" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur stdDeviation="3" result="blur" />
+                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                        </defs>
+                        
+                        <!-- Grid Surface -->
+                        <rect width="100%" height="100%" fill="url(#grid-pattern-svg)" />
+                        
+                        <!-- Connections path links -->
+                        <g id="topology-paths">
+                            <!-- orgs -> tenants -->
+                            <path class="topology-connector" id="link-orgs-tenants" d="M 190,110 L 320,110" stroke="var(--border)" fill="none" marker-end="url(#arrowhead)" />
+                            <!-- tenants -> users -->
+                            <path class="topology-connector" id="link-tenants-users" d="M 400,165 C 400,240 230,240 230,285" stroke="var(--border)" fill="none" marker-end="url(#arrowhead)" />
+                            <!-- tenants -> transactions -->
+                            <path class="topology-connector" id="link-tenants-transactions" d="M 480,110 L 610,110" stroke="var(--border)" fill="none" marker-end="url(#arrowhead)" />
+                            <!-- users -> transactions -->
+                            <path class="topology-connector" id="link-users-transactions" d="M 280,310 L 610,165" stroke="var(--border)" stroke-dasharray="2,2" fill="none" marker-end="url(#arrowhead)" />
+                        </g>
+                        
+                        <!-- Interactive Postgres Node Tables -->
+                        <g id="topology-entities">
+                            <!-- Table: orgs -->
+                            <g class="topology-node" id="node-orgs-elem" transform="translate(40, 50)" role="button" aria-label="Organizations schema card">
+                                <rect width="150" height="110" rx="12" class="entity-rect" />
+                                <rect width="150" height="30" rx="12" class="entity-header" />
+                                <text x="75" y="20" class="entity-title">tbl_organizations</text>
+                                <text x="15" y="52" class="entity-column PK">🔑 org_uuid : UUID</text>
+                                <text x="15" y="74" class="entity-column">✦ org_name : VARCHAR</text>
+                                <text x="15" y="96" class="entity-column">✦ plan_tier : VARCHAR</text>
+                                <circle cx="150" cy="65" r="4" class="node-bus-port" />
+                            </g>
+                            
+                            <!-- Table: tenant_registry -->
+                            <g class="topology-node active" id="node-tenants-elem" transform="translate(320, 50)" role="button" aria-label="Tenant registry schema card">
+                                <rect width="160" height="115" rx="12" class="entity-rect" />
+                                <rect width="160" height="30" rx="12" class="entity-header" />
+                                <text x="80" y="20" class="entity-title">tbl_tenant_registry</text>
+                                <text x="15" y="52" class="entity-column PK">🔑 tenant_uuid : UUID</text>
+                                <text x="15" y="74" class="entity-column FK">🔗 org_uuid : UUID</text>
+                                <text x="15" y="96" class="entity-column">✦ isolation_key : CHAR(64)</text>
+                                <circle cx="0" cy="70" r="4" class="node-bus-port" />
+                                <circle cx="80" cy="115" r="4" class="node-bus-port" />
+                                <circle cx="160" cy="70" r="4" class="node-bus-port" />
+                            </g>
+                            
+                            <!-- Table: user_credentials -->
+                            <g class="topology-node" id="node-users-elem" transform="translate(130, 260)" role="button" aria-label="User credentials schema card">
+                                <rect width="150" height="110" rx="12" class="entity-rect" />
+                                <rect width="150" height="30" rx="12" class="entity-header" />
+                                <text x="75" y="20" class="entity-title">tbl_user_credentials</text>
+                                <text x="15" y="52" class="entity-column PK">🔑 user_uuid : UUID</text>
+                                <text x="15" y="74" class="entity-column FK">🔗 tenant_uuid : UUID</text>
+                                <text x="15" y="96" class="entity-column">✦ password_hash : CHAR(60)</text>
+                                <circle cx="100" cy="0" r="4" class="node-bus-port" />
+                                <circle cx="150" cy="80" r="4" class="node-bus-port" />
+                            </g>
+                            
+                            <!-- Table: client_transactions -->
+                            <g class="topology-node active" id="node-transactions-elem" transform="translate(610, 50)" role="button" aria-label="Client transactions schema card">
+                                <rect width="160" height="120" rx="12" class="entity-rect" />
+                                <rect width="160" height="30" rx="12" class="entity-header transaction-header" />
+                                <text x="80" y="20" class="entity-title">client_transactions</text>
+                                <text x="15" y="52" class="entity-column PK">🔑 transaction_uuid : UUID</text>
+                                <text x="15" y="74" class="entity-column FK">🔗 tenant_uuid : UUID</text>
+                                <text x="15" y="96" class="entity-column">✦ transaction_val : NUMERIC</text>
+                                <text x="15" y="112" class="entity-column rls-indicator">🔒 RLS GUARDIAN ACTIVE</text>
+                                <circle cx="0" cy="65" r="4" class="node-bus-port" />
+                            </g>
+                        </g>
+
+                        <!-- Dynamic tracer pulse (runs on connection) -->
+                        <circle id="pulsing-tracer" cx="0" cy="0" r="6" fill="#fb48c4" style="display: none; filter: url(#glow-effect);" />
+                    </svg>
+                    <div class="topology-legend">PostgreSQL Interactive Relational Topology • Click Table Entities to Probe Database Pipeline</div>
+                </div>
+                
+                <!-- Interactive Code Viewer Component -->
+                <div class="topology-code-side" id="code-viewer-panel">
+                    <div class="code-tabs" role="tablist" aria-label="Systems Architecture Configurations">
+                        <button class="code-tab-btn active" id="tab-btn-sql" role="tab" aria-selected="true" data-i18n="viewSqlBtn">View Recursive Query CTE</button>
+                        <button class="code-tab-btn" id="tab-btn-rls" role="tab" aria-selected="false" data-i18n="viewRlsBtn">View RLS Security Rules</button>
+                    </div>
+                    
+                    <div class="code-container">
+                        <!-- Code Block 1: Raw SQL CTE -->
+                        <pre id="code-block-sql" class="code-block active"><code><span class="sql-comment">-- High-Performance Recursive Common Table Expression (CTE)</span>
+<span class="sql-comment">-- Traverses hierarchy organizational parent-child tenant nodes,</span>
+<span class="sql-comment">-- calculating execution depth, run paths, and active budgets.</span>
+<span class="sql-keyword">WITH RECURSIVE</span> org_hierarchy <span class="sql-keyword">AS</span> (
+    <span class="sql-comment">-- Anchor member</span>
+    <span class="sql-keyword">SELECT</span> 
+        org_id, 
+        parent_org_id, 
+        org_name,
+        1 <span class="sql-keyword">AS</span> depth, 
+        org_name::text <span class="sql-keyword">AS</span> node_path,
+        budget_allocated
+    <span class="sql-keyword">FROM</span> organizations
+    <span class="sql-keyword">WHERE</span> parent_org_id <span class="sql-keyword">IS NULL</span> <span class="sql-keyword">AND</span> is_active = <span class="sql-literal">true</span>
+
+    <span class="sql-keyword">UNION</span> ALL
+
+    <span class="sql-comment">-- Recursive member joins back to anchor</span>
+    <span class="sql-keyword">SELECT</span> 
+        child.org_id, 
+        child.parent_org_id, 
+        child.org_name,
+        parent.depth + 1 <span class="sql-keyword">AS</span> depth,
+        (parent.node_path || <span class="sql-literal">' -> '</span> || child.org_name)::text,
+        child.budget_allocated
+    <span class="sql-keyword">FROM</span> organizations child
+    <span class="sql-keyword">INNER JOIN</span> org_hierarchy parent <span class="sql-keyword">ON</span> child.parent_org_id = parent.org_id
+    <span class="sql-keyword">WHERE</span> child.is_active = <span class="sql-literal">true</span>
+)
+<span class="sql-keyword">SELECT</span> 
+    org_id,
+    parent_org_id,
+    org_name,
+    depth,
+    node_path,
+    budget_allocated,
+    <span class="sql-comment">-- Apply window partition metrics</span>
+    <span class="sql-keyword">SUM</span>(budget_allocated) <span class="sql-keyword">OVER</span> (<span class="sql-keyword">PARTITION BY</span> parent_org_id) <span class="sql-keyword">AS</span> sibling_allocated,
+    <span class="sql-keyword">DENSE_RANK</span>() <span class="sql-keyword">OVER</span> (<span class="sql-keyword">PARTITION BY</span> parent_org_id <span class="sql-keyword">ORDER BY</span> budget_allocated <span class="sql-keyword">DESC</span>) <span class="sql-keyword">AS</span> local_rank
+<span class="sql-keyword">FROM</span> org_hierarchy
+<span class="sql-keyword">ORDER BY</span> node_path;</code></pre>
+                        
+                        <!-- Code Block 2: RLS Security Policy -->
+                        <pre id="code-block-rls" class="code-block"><code><span class="sql-comment">-- Rigid Multi-Tenant Row-Level Security (RLS) Policy Configurations</span>
+<span class="sql-comment">-- Enforced directly at the bare PostgreSQL kernel boundary</span>
+<span class="sql-keyword">ALTER TABLE</span> client_transactions <span class="sql-keyword">ENABLE ROW LEVEL SECURITY</span>;
+
+<span class="sql-comment">-- Block cross-tenant access explicitly for authenticated connections</span>
+<span class="sql-keyword">CREATE POLICY</span> tenant_isolation_assertion <span class="sql-keyword">ON</span> client_transactions
+<span class="sql-keyword">AS RESTRICTIVE</span>
+<span class="sql-keyword">TO</span> app_replica_instance, authenticated_role
+<span class="sql-keyword">USING</span> (
+    tenant_uuid = <span class="sql-keyword">current_setting</span>(<span class="sql-literal">'app.current_tenant_id'</span>, <span class="sql-literal">true</span>)
+)
+<span class="sql-keyword">WITH CHECK</span> (
+    tenant_uuid = <span class="sql-keyword">current_setting</span>(<span class="sql-literal">'app.current_tenant_id'</span>, <span class="sql-literal">true</span>)
+);
+
+<span class="sql-comment">-- Compound indexing to accelerate isolated filters under high concurrency</span>
+<span class="sql-keyword">CREATE INDEX CONCURRENTLY IF NOT EXISTS</span> idx_transactions_tenant_composite
+<span class="sql-keyword">ON</span> client_transactions (tenant_uuid, transaction_status, entity_hash_id);
+
+<span class="sql-comment">-- Enforce transaction write safety lock check on isolated clusters</span>
+<span class="sql-keyword">CREATE POLICY</span> tenant_isolation_safe_insert <span class="sql-keyword">ON</span> client_transactions
+<span class="sql-keyword">FOR INSERT</span>
+<span class="sql-keyword">TO</span> app_replica_instance
+<span class="sql-keyword">WITH CHECK</span> (
+    tenant_uuid = <span class="sql-keyword">current_setting</span>(<span class="sql-literal">'app.current_tenant_id'</span>, <span class="sql-literal">true</span>)
+    <span class="sql-keyword">AND EXISTS</span> (
+        <span class="sql-keyword">SELECT</span> 1 <span class="sql-keyword">FROM</span> tenant_registry
+        <span class="sql-keyword">WHERE</span> tenant_registry.id = tenant_uuid <span class="sql-keyword">AND</span> tenant_registry.is_active = <span class="sql-literal">true</span>
+    )
+);</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW FLAGSHIP MICRO-ARCHITECTURAL SHOWCASE (THE CRUSHER SECTION) -->
+        <div class="bento-item project-showcase" id="architectural-showcase-card">
+            <h3 data-i18n="featuredProjects">Micro-Architectural Showcase (Flagship Systems)</h3>
+            
+            <div class="flagship-dashboard-layout">
+                <!-- Project Selector List -->
+                <ul class="flagship-project-selectors">
+                    <li class="flagship-selector active" data-project="p1" id="project-p1-selector">
+                        <div class="selector-number">01</div>
+                        <div class="selector-meta">
+                            <h4>Horizon HR Engine</h4>
+                            <span>Enterprise PWA Multi-Tenant Cluster</span>
+                        </div>
+                    </li>
+                    <li class="flagship-selector" data-project="p2" id="project-p2-selector">
+                        <div class="selector-number">02</div>
+                        <div class="selector-meta">
+                            <h4>E2EE Matchmaker IP</h4>
+                            <span>Cryptographic Private Relational Sync</span>
+                        </div>
+                    </li>
+                </ul>
+
+                <!-- Deep Documentation Sheet / Notes (Interactive GSAP Container) -->
+                <div class="flagship-documentation-viewport">
+                    <!-- Project 1 Documentation Pane -->
+                    <div class="flagship-pane active" id="pane-p1">
+                        <div class="pane-header">
+                            <span class="pane-badge">CLUSTER ARCHITECTURE</span>
+                            <h2>Project 01: Horizon HR (Enterprise PWA)</h2>
+                        </div>
+                        <p class="pane-desc">
+                            A highly available multi-tenant business engine integrating a native offline-first sync architecture. Designed with hand-crafted PostgreSQL execution plans that completely bypass slow ORMs. Database isolation is established directly at the backend driver layer utilizing PostgreSQL security kernels.
+                        </p>
+                        
+                        <hr class="pane-divider" />
+                        
+                        <h5 class="pane-subtitle">TECHNICAL STATS & PERFORMANCE MATRIX</h5>
+                        <table class="matrix-table">
+                            <thead>
+                                <tr>
+                                    <th>Vector / Operational Indicator</th>
+                                    <th>Baseline (Heavy ORM Stack)</th>
+                                    <th>Optimization Delta</th>
+                                    <th>Attained Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Multi-Tenant Isolated Leakage</strong></td>
+                                    <td>Variable Hazard</td>
+                                    <td><strong>Strict Row-Level Policy Enforce</strong></td>
+                                    <td>0.00% Leakage</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Local DB Buffer Sync Overhead</strong></td>
+                                    <td>1,200ms REST Poll</td>
+                                    <td><strong>Diff Write-Ahead Log Traversal</strong></td>
+                                    <td>&lt; 12ms (Native Sync)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Index Read Concurrency Latency</strong></td>
+                                    <td>450ms (ORM Table Scans)</td>
+                                    <td><strong>Segmented Composite B+ Trees</strong></td>
+                                    <td>1.8ms (Raw Latency)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <blockquote class="pane-blockquote">
+                            <strong>Architectural Core Integration Architecture:</strong> This enterprise PWA cluster utilizes a local indexed DB page cache communicating directly with PostgreSQL schema indexes via an asynchronous Node.js transaction log pipeline, maximizing client rendering efficiency.
+                        </blockquote>
+                        
+                        <div class="pane-meta">
+                            <strong>Core Stack:</strong> PostgreSQL (No-ORM Raw SQL), Node.js (Express Clusters), Vanilla JavaScript, WebSockets.
+                        </div>
+                    </div>
+
+                    <!-- Project 2 Documentation Pane -->
+                    <div class="flagship-pane" id="pane-p2">
+                        <div class="pane-header">
+                            <span class="pane-badge">CRYPTOGRAPHIC SECURITY</span>
+                            <h2>Project 02: Cryptographic Matchmaking PWA</h2>
+                        </div>
+                        <p class="pane-desc">
+                            A hyper-secure relational matchmaking platform enforcing rigorous sanitization and zero-leakage security constraints. Employs advanced hardware-adjacent cryptographic matching routines calculating correlation indices over authenticated users, with full user metadata anonymization on storage planes.
+                        </p>
+                        
+                        <hr class="pane-divider" />
+                        
+                        <h5 class="pane-subtitle">SECURITY ATTESTATION MATRIX</h5>
+                        <table class="matrix-table">
+                            <thead>
+                                <tr>
+                                    <th>Security Pipeline Vector</th>
+                                    <th>Implementation Protocol</th>
+                                    <th>Transaction Isolation Constraint</th>
+                                    <th>Attestation Hash Output</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Metadata Payload Encryption</strong></td>
+                                    <td>AES-256-GCM / Argon2id</td>
+                                    <td>Direct WebCrypto Client Sandbox</td>
+                                    <td>Validated Salt Bindings</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Concurrency Control</strong></td>
+                                    <td>Serializable Transaction Engine</td>
+                                    <td>Bypasses Repeatable Read Latency</td>
+                                    <td>Null Booking Collision</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Parametric Attack Sandbox</strong></td>
+                                    <td>Optimized Prepared Bindings</td>
+                                    <td>Type-Restricted Argument Sanitizer</td>
+                                    <td>100% SQLi Shield Protection</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <blockquote class="pane-blockquote">
+                            <strong>Architectural Core Integration Architecture:</strong> Cryptographic matching scoring is calculated in-memory inside child node threads. Client payloads are decrypted locally on sandbox frames, maintaining complete isolation of keys from host servers.
+                        </blockquote>
+
+                        <div class="pane-meta">
+                            <strong>Core Stack:</strong> PostgreSQL (Raw SQL), WebCrypto API, Node.js (Express), Vanilla JS.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="view-all" data-i18n="explore" id="explore-repositories-trigger">Explore System Repositories →</div>
+        </div>
+
+        <!-- ACTIVE SYSTEM TRAVERSAL TERMINAL & VISUALIZATION PANELS -->
+        <div class="bento-item db-visualizer" id="traversal-visualizer-card">
+            <h3 data-i18n="dbVisualizer">Active Index Traversal & Memory Allocator</h3>
+            <p class="visualizer-desc" data-i18n="visualizerDesc">Traverse a B+ Tree indexing pathway or compact memory block fragments. Watch low-abstraction systems logic execute at 60fps.</p>
+            <div class="visualizer-dashboard-grid">
+                <!-- Left Hand Traversal & Simulation Canvas -->
+                <div class="visualizer-viewport">
+                    <canvas id="visualizer-canvas"></canvas>
+                </div>
+                <!-- Right Hand Controls and System Stack Traces -->
+                <div class="visualizer-controls">
+                    <span class="control-section-title" data-i18n="searchKeyLabel">Search Index DB Key:</span>
+                    <div class="search-keys-group">
+                        <button class="visualizer-btn search-key-btn" data-key="15">15</button>
+                        <button class="visualizer-btn search-key-btn" data-key="32">32</button>
+                        <button class="visualizer-btn search-key-btn" data-key="45">45</button>
+                        <button class="visualizer-btn search-key-btn" data-key="82">82</button>
+                    </div>
+                    <button class="visualizer-btn action-btn" id="compact-heap-btn" data-i18n="compactHeapLabel">Execute Garbage Collection (GC)</button>
+                    
+                    <span class="control-section-title" data-i18n="terminalLogsLabel" style="margin-top: 12px;">Systems Log Stream & Stack Frame Output</span>
+                    <div class="terminal-console">
+                        <ul id="terminal-logs">
+                            <li class="terminal-log-line system-line">[SYSTEM OK] Memory pools mapped. Heap buffers registered safely.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- INTERSTELLAR 3D PLANETARY SIMULATION (BLENDER ASSETS) -->
+        <div class="bento-item ship-box" id="interstellar-asset-card">
+            <div class="tech-tag" data-i18n="interstellar">Low-Latency Simulation Asset</div>
+            <p class="tech-description" data-i18n="shipDesc">This interactive asset was modeled and textured in Blender, utilizing a custom Fresnel shader to simulate atmospheric scattering. It was exported as a compressed glTF/GLB asset and integrated using a responsive web component to ensure 60fps performance without external cloud dependencies.</p>
+            
+            <div class="canvas-wrapper">
+                <model-viewer
+                    id="ship-viewer"
+                    src="assets/Planet.glb" alt="3D planet"
+                    auto-rotate
+                    rotation-per-sec="15deg"
+                    camera-controls
+                    touch-action="pan-y"
+                    ar
+                    exposure="1.2"
+                    style="width: 100%; height: 100%;"
+                ></model-viewer>
+            </div>
+            <p class="ship-hint" data-i18n="shipHint">Interact directly with the local 3D rendering cache using swipe/pinch gestures.</p>
+        </div>
+    </main>
+
+    <!-- CRUNCHY FOOTER -->
+    <footer class="page-footer" id="portfolio-footer">
+        <div class="footer-inner">
+            <div>
+                <strong data-i18n="name">Shady Awad</strong>
+                <p data-i18n="title">Lead Software Engineer & Systems Architect</p>
+            </div>
+            <div class="footer-links">
+                <a href="#profile-card" data-i18n="about">About</a>
+                <a href="#architectural-showcase-card" data-i18n="projects">Projects</a>
+                <a href="#estimator-card" data-i18n="contact">Contact</a>
+            </div>
+            <small data-i18n="copyright">© 2026 Shady Awad. Handcrafted in pure Vanilla JavaScript & CSS. No bloat, no overhead.</small>
+        </div>
+    </footer>
+
+    <!-- Compiles styles, scripts assets natively via Vite pipeline -->
+    <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>
