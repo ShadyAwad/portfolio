@@ -468,28 +468,26 @@
         </div>
 
         <!-- INTERSTELLAR 3D PLANETARY SIMULATION (BLENDER ASSETS) -->
-        <div class="bento-item ship-box" id="interstellar-asset-card">
-            <div class="tech-tag" data-i18n="interstellar">Low-Latency Simulation Asset</div>
-            <p class="tech-description" data-i18n="shipDesc">This interactive asset was modeled and textured in Blender, utilizing a custom Fresnel shader to simulate atmospheric scattering. It was exported as a compressed glTF/GLB asset and integrated using a responsive web component to ensure 60fps performance without external cloud dependencies.</p>
-            
+<div class="bento-item ship-box" id="interstellar-asset-card">
+            <div class="tech-tag" data-i18n="interstellar">Interstellar Interface</div>
             <div class="canvas-wrapper">
                 <model-viewer
                     id="ship-viewer"
-                    src="assets/Planet.glb" alt="3D planet"
+                    src="assets/Planet.glb" 
+                    alt="3D planet"
                     auto-rotate
                     rotation-per-sec="15deg"
                     camera-controls
                     touch-action="pan-y"
                     ar
                     exposure="1.2"
-                    style="width: 100%; height: 100%;"
-                ></model-viewer>
+                    style="width: 100%; height: 100%;">
+                </model-viewer>
             </div>
             <p class="ship-hint" data-i18n="shipHint">Interact directly with the local 3D rendering cache using swipe/pinch gestures.</p>
         </div>
     </main>
 
-    <!-- CRUNCHY FOOTER -->
     <footer class="page-footer" id="portfolio-footer">
         <div class="footer-inner">
             <div>
@@ -498,12 +496,14 @@
             </div>
             <div class="footer-links">
                 <a href="#profile-card" data-i18n="about">About</a>
-                <a href="#architectural-showcase-card" data-i18n="projects">Projects</a>
+                <a href="#systems-architecture-card" data-i18n="projects">Projects</a>
                 <a href="#estimator-card" data-i18n="contact">Contact</a>
             </div>
             <small data-i18n="copyright">© 2026 Shady Awad. Handcrafted in pure Vanilla JavaScript & CSS. No bloat, no overhead.</small>
         </div>
     </footer>
+</body>
+</html>
 
     <!-- Compiles styles, scripts assets natively via Vite pipeline -->
     <script type="module" src="/src/main.tsx"></script>
