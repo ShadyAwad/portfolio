@@ -150,7 +150,7 @@ function animateStarfield(currentTime = performance.now()) {
 // ==========================================================================
 async function l10nFetch() {
     try {
-        const res = await fetch('/translations.json');
+        const res = await fetch('./translations.json');
         if (!res.ok) throw new Error("Faulty transaction headers");
         activeTranslations = await res.json();
     } catch {
