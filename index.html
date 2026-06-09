@@ -15,6 +15,43 @@
 
     <canvas id="starfield"></canvas>
 
+    <svg id="constellation-scroll-svg" viewBox="0 0 1000 3000" preserveAspectRatio="none" aria-hidden="true">
+    <defs>
+        <linearGradient id="nebula-trail-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.1"/>
+            <stop offset="30%" stop-color="#eb4899" stop-opacity="0.7"/>
+            <stop offset="70%" stop-color="#00d4ff" stop-opacity="0.8"/>
+            <stop offset="100%" stop-color="#fb48c4" stop-opacity="1"/>
+        </linearGradient>
+
+        <filter id="stardust-glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="6" result="blur" />
+            <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+            </feMerge>
+        </filter>
+    </defs>
+    
+    <path id="space-orbit-track" 
+          d="M 150,0 C 350,450 50,850 850,1300 S 150,2100 900,3000" 
+          fill="none" 
+          stroke="rgba(125, 187, 255, 0.04)" 
+          stroke-width="2" 
+          stroke-dasharray="6 8"/>
+
+    <path id="active-nebula-path" 
+          d="M 150,0 C 350,450 50,850 850,1300 S 150,2100 900,3000" 
+          fill="none" 
+          stroke="url(#nebula-trail-grad)" 
+          stroke-width="3"/>
+          
+    <g id="tracer-star-group">
+        <circle id="scroll-tracer-core" r="5" fill="#ffffff" filter="url(#stardust-glow)"/>
+        <circle id="scroll-tracer-aura" r="14" fill="#fb48c4" opacity="0.3" filter="url(#stardust-glow)"/>
+    </g>
+</svg>
+
     <main class="bento-container" id="portfolio-grid">
         
         <div class="bento-item profile" id="profile-card">
