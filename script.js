@@ -844,3 +844,79 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+
+// ==========================================================================
+// 8. HIGH-PERFORMANCE SPACE-CONSTELLATION SCROLL PATHING MODULE
+// ==========================================================================
+
+function initConstellationScrollPathing() {
+    const svgOverlay = document.getElementById('constellation-scroll-svg');
+    const targetPath = document.getElementById('active-nebula-path');
+    const starGroup = document.getElementById('tracer-star-group');
+    
+    if (!svgOverlay || !targetPath || !starGroup) return;
+    
+    // Check system preference restrictions (respecting your prefersReducedMotion state)
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        svgOverlay.style.display = 'none';
+        return;
+    }
+
+    // Capture explicit pixel trace parameters of the path
+    let totalPathLength = targetPath.getTotalLength();
+    
+    // Initialize stroke mapping array structures to match total distance 1:1
+    targetPath.style.strokeDasharray = totalPathLength;
+    targetPath.style.strokeDashoffset = totalPathLength;
+
+    // Linear Interpolation Frame State Variables
+    let currentScrollPercentage = 0;
+    let targetScrollPercentage = 0;
+    const dragMomentumCoeff = 0.075; // Kinetic drag factor (Lower is smoother, higher is punchier)
+
+    // Handle viewport changes without throwing tracking alignment out of alignment
+    function recalculateVectorBounds() {
+        totalPathLength = targetPath.getTotalLength();
+        targetPath.style.strokeDasharray = totalPathLength;
+    }
+    window.addEventListener('resize', recalculateVectorBounds, { passive: true });
+
+    // Streamlined scroll event interceptor
+    window.addEventListener('scroll', () => {
+        const scrolledDistance = window.scrollY || document.documentElement.scrollTop;
+        const totalScrollableDepth = document.documentElement.scrollHeight - window.innerHeight;
+        
+        if (totalScrollableDepth <= 0) return;
+        
+        // Lock percentage between 0.00 and 1.00 bounds
+        targetScrollPercentage = Math.max(0, Math.min(1, scrolledDistance / totalScrollableDepth));
+    }, { passive: true });
+
+    // Frame Tick Execution Loop (Syncs directly to display frequency limits)
+    function processTransitTick() {
+        // LERP Math: currentPos = currentPos + (targetPos - currentPos) * ease
+        currentScrollPercentage += (targetScrollPercentage - currentScrollPercentage) * dragMomentumCoeff;
+
+        const currentDistanceOffset = currentScrollPercentage * totalPathLength;
+        
+        // Leverage the high-speed browser geometry engine for path plotting
+        const spaceCoordinates = targetPath.getPointAtLength(currentDistanceOffset);
+
+        // Update the white stardust stroke ahead of the view track position
+        targetPath.style.strokeDashoffset = totalPathLength - currentDistanceOffset;
+
+        // Perform layout transformations using hardware accelerated translates
+        starGroup.setAttribute('transform', `translate(${spaceCoordinates.x}, ${spaceCoordinates.y})`);
+
+        requestAnimationFrame(processTransitTick);
+    }
+
+    // Connect logging trace outputs straight into your terminal diagnostic screen
+    if (typeof appendLog === 'function') {
+        appendLog(`ORBITAL MONITOR: Kinetic track generated. Mapping trace coordinates across ${Math.round(totalPathLength)}px document path.`, "system-line");
+    }
+
+    // Run the execution frame pipeline
+    requestAnimationFrame(processTransitTick);
+}
