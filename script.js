@@ -348,36 +348,59 @@ addons.forEach(box => {
 function triggerSvgTracerPulse(startSelector, endSelector) {
     const startNode = document.querySelector(startSelector);
     const endNode = document.querySelector(endSelector);
-    if (!startNode || !endNode || !pulsingTracer) return;
+    if (!startNode || !endNode || !pulsingTracer || !svgElement) return;
     
-    // Resolve centroids
-    const startBox = startNode.getBoundingClientRect();
-    const endBox = endNode.getBoundingClientRect();
-    const parentBox = svgElement.getBoundingClientRect();
+    // 1. Create native SVG points for transformation matrix math
+    const ptStart = svgElement.createSVGPoint();
+    const ptEnd = svgElement.createSVGPoint();
     
-    const startX = (startBox.left + startBox.width / 2) - parentBox.left;
-    const startY = (startBox.top + startBox.height / 2) - parentBox.top;
+    // 2. Map to your actual classes (.node-header / .node-rect) or fallback to the parent <g>
+    const startRect = startNode.querySelector('.node-header') || startNode.querySelector('.node-rect') || startNode;
+    const endRect = endNode.querySelector('.node-header') || endNode.querySelector('.node-rect') || endNode;
     
-    const endX = (endBox.left + endBox.width / 2) - parentBox.left;
-    const endY = (endBox.top + endBox.height / 2) - parentBox.top;
+    const startBox = startRect.getBoundingClientRect();
+    const endBox = endRect.getBoundingClientRect();
     
-    pulsingTracer.setAttribute('cx', startX * (800 / parentBox.width));
-    pulsingTracer.setAttribute('cy', startY * (420 / parentBox.height));
+    // Calculate center screen coordinates
+    ptStart.x = startBox.left + (startBox.width / 2);
+    ptStart.y = startBox.top + (startBox.height / 2);
+    
+    ptEnd.x = endBox.left + (endBox.width / 2);
+    ptEnd.y = endBox.top + (endBox.height / 2);
+    
+    // 3. Perfect pixel-to-SVG viewbox conversion using Inverse CTM Matrix
+    const svgInverseMatrix = svgElement.getScreenCTM().inverse();
+    const localStart = ptStart.matrixTransform(svgInverseMatrix);
+    const localEnd = ptEnd.matrixTransform(svgInverseMatrix);
+    
+    // 4. Anchor tracer to start position
+    pulsingTracer.setAttribute('cx', localStart.x);
+    pulsingTracer.setAttribute('cy', localStart.y);
     pulsingTracer.style.display = 'block';
 
+    // 5. Fire GSAP animation
     if (window.gsap) {
         gsap.to(pulsingTracer, {
             attr: {
-                cx: endX * (800 / parentBox.width),
-                cy: endY * (420 / parentBox.height)
+                cx: localEnd.x,
+                cy: localEnd.y
             },
-            duration: 0.5,
+            duration: 0.6,
             ease: "power2.inOut",
             onComplete() {
                 pulsingTracer.style.display = 'none';
-                gsap.fromTo(endNode, { scale: 1 }, { scale: 1.05, duration: 0.15, yoyo: true, repeat: 1 });
+                
+                // Set the transform-origin directly on the <g> block so it scales gracefully from its center
+                gsap.fromTo(endNode, 
+                    { transformOrigin: "50% 50%", scale: 1 }, 
+                    { scale: 1.04, duration: 0.15, yoyo: true, repeat: 1, ease: "power1.inOut" }
+                );
             }
         });
+    } else {
+        pulsingTracer.setAttribute('cx', localEnd.x);
+        pulsingTracer.setAttribute('cy', localEnd.y);
+        setTimeout(() => { pulsingTracer.style.display = 'none'; }, 200);
     }
 }
 
@@ -813,17 +836,22 @@ const systemResizeObserver = new ResizeObserver(() => {
 });
 systemResizeObserver.observe(document.body);
 
-document.addEventListener('DOMContentLoaded', () => {
+function initializeCoreArchitecture() {
     // Pricing configurations initial triggers
     if (tierSelect) {
         tierSelect.value = "12000";
     }
-    calculatePrice();
+    if (typeof calculatePrice === 'function') {
+        calculatePrice();
+    }
 
     // Spawn backdrop stars drift loop
     initStarfield();
     resizeStarfield();
     requestAnimationFrame(animateStarfield);
+
+    // 🚀 ADDED: KICKSTART CELESTIAL PATH-SCROLL TRAILER
+    initConstellationScrollPathing();
 
     // Spawn schematic JVM traversal states
     initMemoryGrid();
@@ -843,80 +871,113 @@ document.addEventListener('DOMContentLoaded', () => {
             ease: 'power3.out'
         });
     }
-});
+}
+
+// Safe check for ES Modules where DOMContentLoaded might have already fired
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeCoreArchitecture);
+} else {
+    initializeCoreArchitecture();
+}
 
 
 // ==========================================================================
-// 8. HIGH-PERFORMANCE SPACE-CONSTELLATION SCROLL PATHING MODULE
+// 8. HIGH-PERFORMANCE KINETIC NEBULA TRAIL ENGINE
 // ==========================================================================
-
 function initConstellationScrollPathing() {
-    const svgOverlay = document.getElementById('constellation-scroll-svg');
-    const targetPath = document.getElementById('active-nebula-path');
-    const starGroup = document.getElementById('tracer-star-group');
-    
-    if (!svgOverlay || !targetPath || !starGroup) return;
-    
-    // Check system preference restrictions (respecting your prefersReducedMotion state)
+    // 1. Grab the clean HTML5 Canvas component from the DOM context
+    const canvas = document.getElementById('cursor-trail-canvas');
+    if (!canvas) return;
+
+    // 2. Extract the high-performance 2D drawing rendering pipeline interface
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // 3. Gracefully step out if the client OS layer enforces accessibility limits
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        svgOverlay.style.display = 'none';
+        canvas.style.display = 'none';
         return;
     }
-
-    // Capture explicit pixel trace parameters of the path
-    let totalPathLength = targetPath.getTotalLength();
     
-    // Initialize stroke mapping array structures to match total distance 1:1
-    targetPath.style.strokeDasharray = totalPathLength;
-    targetPath.style.strokeDashoffset = totalPathLength;
+    // 4. Setup a FIFO history collection array to track prior coordinate positions
+    const pathHistoryPoints = [];
+    const TRAIL_LENGTH_LIMIT = 24; // Limits tracking length frame calculations
 
-    // Linear Interpolation Frame State Variables
-    let currentScrollPercentage = 0;
-    let targetScrollPercentage = 0;
-    const dragMomentumCoeff = 0.075; // Kinetic drag factor (Lower is smoother, higher is punchier)
-
-    // Handle viewport changes without throwing tracking alignment out of alignment
-    function recalculateVectorBounds() {
-        totalPathLength = targetPath.getTotalLength();
-        targetPath.style.strokeDasharray = totalPathLength;
+    // 5. Scale buffer coordinate grids based on monitor hardware display pixel densities
+    function resizeTrailCanvas() {
+        const dpr = Math.max(1, window.devicePixelRatio || 1);
+        canvas.width = Math.floor(window.innerWidth * dpr);
+        canvas.height = Math.floor(window.innerHeight * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // Locks 1:1 crisp display layout dimensions
     }
-    window.addEventListener('resize', recalculateVectorBounds, { passive: true });
+    
+    resizeTrailCanvas();
+    window.addEventListener('resize', resizeTrailCanvas, { passive: true });
 
-    // Streamlined scroll event interceptor
-    window.addEventListener('scroll', () => {
-        const scrolledDistance = window.scrollY || document.documentElement.scrollTop;
-        const totalScrollableDepth = document.documentElement.scrollHeight - window.innerHeight;
+    // 6. High frequency animation frame sequencing tick engine
+    function renderTrailFrameSequence() {
+        // 7. Clear the graphics buffer window right before calculating next steps
+        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+        // 8. Capture and append pre-existing global mouse metrics into local tracking cache
+        pathHistoryPoints.push({ x: mouseX, y: mouseY });
         
-        if (totalScrollableDepth <= 0) return;
-        
-        // Lock percentage between 0.00 and 1.00 bounds
-        targetScrollPercentage = Math.max(0, Math.min(1, scrolledDistance / totalScrollableDepth));
-    }, { passive: true });
+        // 9. Trim excess records to preserve strict memory footprint allocation scales
+        if (pathHistoryPoints.length > TRAIL_LENGTH_LIMIT) {
+            pathHistoryPoints.shift();
+        }
 
-    // Frame Tick Execution Loop (Syncs directly to display frequency limits)
-    function processTransitTick() {
-        // LERP Math: currentPos = currentPos + (targetPos - currentPos) * ease
-        currentScrollPercentage += (targetScrollPercentage - currentScrollPercentage) * dragMomentumCoeff;
+        const activePointsCount = pathHistoryPoints.length;
 
-        const currentDistanceOffset = currentScrollPercentage * totalPathLength;
-        
-        // Leverage the high-speed browser geometry engine for path plotting
-        const spaceCoordinates = targetPath.getPointAtLength(currentDistanceOffset);
+        // 10. Only compute interpolation physics if we have valid movement tracking chains
+        if (activePointsCount > 1) {
+            // 11. Activate premium visual blur drop-shadows matching your brand accents
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = '#fb48c4'; // Magenta vector glow trail
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
 
-        // Update the white stardust stroke ahead of the view track position
-        targetPath.style.strokeDashoffset = totalPathLength - currentDistanceOffset;
+            // 12. Traverse path queues, building midpoints for smooth curve geometry mapping
+            for (let i = 1; i < activePointsCount - 1; i++) {
+                const startNode = pathHistoryPoints[i];
+                const endNode = pathHistoryPoints[i + 1];
+                
+                // 13. Map out exact vector center coordinates to prevent jagged path joins
+                const midPointX = (startNode.x + endNode.x) / 2;
+                const midPointY = (startNode.y + endNode.y) / 2;
 
-        // Perform layout transformations using hardware accelerated translates
-        starGroup.setAttribute('transform', `translate(${spaceCoordinates.x}, ${spaceCoordinates.y})`);
+                // 14. Scale stroke thickness variables based on historical item depth age weights
+                const lifetimeRatio = i / activePointsCount;
+                ctx.lineWidth = 4.5 * lifetimeRatio; // Beautifully tapers line down to a fine tip at the tail
+                ctx.strokeStyle = `rgba(255, 72, 196, ${0.75 * lifetimeRatio})`; // Seamless transparency bleed
 
-        requestAnimationFrame(processTransitTick);
+                // 15. Apply native hardware quadratic curves through coordinate intersections
+                ctx.beginPath();
+                ctx.moveTo(startNode.x, startNode.y);
+                ctx.quadraticCurveTo(startNode.x, startNode.y, midPointX, midPointY);
+                ctx.stroke();
+            }
+
+            // 16. Overlay a sharp, bright high-contrast white stardust core right on the cursor node
+            const leadingCoreNode = pathHistoryPoints[activePointsCount - 1];
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = '#00d4ff'; // Cyber cyan leading core aura profile
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(leadingCoreNode.x, leadingCoreNode.y, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 17. Safe state teardown: wipe shadows to protect background starfield rendering pipelines
+            ctx.shadowBlur = 0;
+        }
+
+        // 18. Queue up calculations cleanly for the next hardware display cycle sweep
+        requestAnimationFrame(renderTrailFrameSequence);
     }
 
-    // Connect logging trace outputs straight into your terminal diagnostic screen
     if (typeof appendLog === 'function') {
-        appendLog(`ORBITAL MONITOR: Kinetic track generated. Mapping trace coordinates across ${Math.round(totalPathLength)}px document path.`, "system-line");
+        appendLog(`ORBITAL MONITOR: Kinetic ribbon trail engine successfully bound to active rendering canvas viewport.`, "system-line");
     }
 
-    // Run the execution frame pipeline
-    requestAnimationFrame(processTransitTick);
+    requestAnimationFrame(renderTrailFrameSequence);
 }

@@ -1291,25 +1291,13 @@ html[dir="rtl"] .pane-blockquote {
 }
 
 
-/* Constellation Vector Layer Setup */
-#constellation-scroll-svg {
-    position: absolute;
+/* High-Performance Kinetic Trailer Layer Setup */
+#cursor-trail-canvas {
+    position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    min-height: 100vh;
-    pointer-events: none; /* Passes user clicks directly through to your interactive bento slots */
-    z-index: 1;           /* Places it cleanly above background starfield but beneath dashboard boxes */
-    overflow: visible;
-}
-
-#active-nebula-path {
-    stroke-dasharray: 1;
-    stroke-dashoffset: 1;
-    will-change: stroke-dashoffset;
-}
-
-#tracer-star-group {
-    will-change: transform;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none; /* Passes mouse actions directly to bento card structures below */
+    z-index: 9999;        /* Safely positions the glowing trail lines over text fields */
 }
