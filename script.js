@@ -933,7 +933,7 @@ function initConstellationScrollPathing() {
         if (activePointsCount > 1) {
             // 11. Activate premium visual blur drop-shadows matching your brand accents
             ctx.shadowBlur = 12;
-            ctx.shadowColor = '#fb48c4'; // Magenta vector glow trail
+            ctx.shadowColor = '#4863fb'; // Magenta vector glow trail
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
@@ -948,8 +948,11 @@ function initConstellationScrollPathing() {
 
                 // 14. Scale stroke thickness variables based on historical item depth age weights
                 const lifetimeRatio = i / activePointsCount;
-                ctx.lineWidth = 4.5 * lifetimeRatio; // Beautifully tapers line down to a fine tip at the tail
-                ctx.strokeStyle = `rgba(255, 72, 196, ${0.75 * lifetimeRatio})`; // Seamless transparency bleed
+                const r = Math.round(255 - (255 - 59) * lifetimeRatio);
+                const g = Math.round(72 + (130 - 72) * lifetimeRatio);
+                const b = Math.round(196 + (246 - 196) * lifetimeRatio);
+
+            ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${0.75 * lifetimeRatio})`;
 
                 // 15. Apply native hardware quadratic curves through coordinate intersections
                 ctx.beginPath();
