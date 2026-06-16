@@ -383,8 +383,10 @@ hr.separator {
 
 .specs-table {
     width: 100%;
-    border-collapse: collapse;
-    margin-top: calc(14px * var(--space-scale));
+    border-collapse: separate;
+    border-spacing: 0 4px;
+    border-spacing: 4px 4px;
+    margin-top: calc(18px * var(--space-scale));
     font-size: calc(0.85rem * var(--font-scale));
     text-align: start;
 }
@@ -396,19 +398,29 @@ hr.separator {
     font-size: calc(0.72rem * var(--font-scale));
     font-weight: 700;
     letter-spacing: 0.08em;
-    padding: 10px 14px;
-    border-radius: 6px;
+    padding: 12px 16px; 
+    border-radius: 8px;
     text-align: start;
 }
 
 .specs-table td {
-    padding: 12px 14px;
+    padding: 14px 16px; 
     border-bottom: 1px solid var(--border);
     color: var(--muted);
+    transition: color var(--duration-snappy) ease;
 }
 
 .specs-table tr:last-child td {
     border-bottom: none;
+}
+
+.demographic-specs {
+    display: block;
+    width: 100%;
+    /* This handles the horizontal inset so the table can never touch the border edges */
+    padding: 0 16px; 
+    /* Force proper box sizing calculations */
+    box-sizing: border-box; 
 }
 
 .specs-table strong {
@@ -1301,3 +1313,41 @@ html[dir="rtl"] .pane-blockquote {
     pointer-events: none; /* Passes mouse actions directly to bento card structures below */
     z-index: 9999;        /* Safely positions the glowing trail lines over text fields */
 }
+
+
+/* --- Icon Fixes --- */
+#theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    width: 40px;
+    height: 40px;
+}
+
+/* Force the SVG inside to be sharp and visible */
+.theme-icon svg {
+    width: 22px !important;
+    height: 22px !important;
+    display: block;
+    transition: transform var(--duration-snappy) ease;
+}
+
+#theme-toggle:hover svg {
+    transform: scale(1.1);
+}
+
+/* Colors for Dark/Light mode icon states */
+[data-theme="dark"] #theme-toggle .theme-icon-sun svg {
+    color: #ffb700;
+    filter: drop-shadow(0 0 8px rgba(255, 183, 0, 0.5));
+}
+
+[data-theme="light"] #theme-toggle .theme-icon-moon svg {
+    color: #4f46e5;
+}
+
+

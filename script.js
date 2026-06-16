@@ -952,7 +952,7 @@ function initConstellationScrollPathing() {
                 const g = Math.round(72 + (130 - 72) * lifetimeRatio);
                 const b = Math.round(196 + (246 - 196) * lifetimeRatio);
 
-            ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${0.75 * lifetimeRatio})`;
+                ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${0.75 * lifetimeRatio})`;
 
                 // 15. Apply native hardware quadratic curves through coordinate intersections
                 ctx.beginPath();

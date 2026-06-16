@@ -22,13 +22,25 @@
         <div class="bento-item profile" id="profile-card">
             <div class="profile-actions" role="toolbar" aria-label="Theme and language settings">
                 <button id="theme-toggle" type="button" aria-label="Toggle dark and light mode">
-                    <span class="theme-icon theme-icon-sun" aria-hidden="true" title="Switch to light mode">
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M17.36 17.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M17.36 6.64l1.42-1.42"/></svg>
-                    </span>
-                    <span class="theme-icon theme-icon-moon" aria-hidden="true" title="Switch to dark mode">
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 0010.1 9.79z"/></svg>
-                    </span>
-                </button>
+    <span class="theme-icon theme-icon-sun" aria-hidden="true" title="Switch to light mode">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2v2"/>
+            <path d="M12 20v2"/>
+            <path d="m4.93 4.93 1.41 1.41"/>
+            <path d="m17.66 17.66 1.41 1.41"/>
+            <path d="M2 12h2"/>
+            <path d="M20 12h2"/>
+            <path d="m6.34 17.66-1.41 1.41"/>
+            <path d="m19.07 4.93-1.41 1.41"/>
+        </svg>
+    </span>
+    <span class="theme-icon theme-icon-moon" aria-hidden="true" title="Switch to dark mode">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+        </svg>
+    </span>
+</button>
                 <button id="lang-toggle" type="button" aria-label="Toggle between English and Arabic">EN/AR</button>
             </div>
             
@@ -439,24 +451,24 @@
             </div>
         </div>
 
-        <div class="bento-item ship-box" id="interstellar-asset-card">
-            <div class="tech-tag" data-i18n="interstellar">Interstellar Interface</div>
-            <div class="canvas-wrapper">
-                <model-viewer
-                    id="ship-viewer"
-                    src="assets/Planet.glb" 
-                    alt="3D planet"
-                    auto-rotate
-                    rotation-per-sec="15deg"
-                    camera-controls
-                    touch-action="pan-y"
-                    ar
-                    exposure="1.2"
-                    style="width: 100%; height: 100%;">
-                </model-viewer>
-            </div>
-            <p class="ship-hint" data-i18n="shipHint">Interact directly with the local 3D rendering cache using swipe/pinch gestures.</p>
-        </div>
+<div class="bento-item ship-box" id="interstellar-asset-card">
+    <div class="tech-tag" data-i18n="interstellar">Interstellar Interface</div>
+    <div class="canvas-wrapper">
+        <model-viewer
+            id="ship-viewer"
+            src="./assets/Planet.glb" 
+            alt="3D planet"
+            auto-rotate
+            rotation-per-sec="15deg"
+            camera-controls
+            touch-action="pan-y"
+            ar
+            exposure="1.2"
+            style="width: 100%; height: 100%;">
+        </model-viewer>
+    </div>
+    <p class="ship-hint" data-i18n="shipHint">Interact directly with the local 3D rendering cache using swipe/pinch gestures.</p>
+</div>
     </main>
 
     <footer class="page-footer" id="portfolio-footer">
