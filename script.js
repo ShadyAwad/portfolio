@@ -145,9 +145,9 @@ function animateStarfield(currentTime = performance.now()) {
     requestAnimationFrame(animateStarfield);
 }
 
-// ==========================================================================
+// =========================================================================
 // 2. BIDIRECTIONAL SCHEMA L10N & CRYSTAL THEMING
-// ==========================================================================
+// =========================================================================
 async function l10nFetch() {
     try {
         const res = await fetch('./translations.json');
