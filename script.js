@@ -150,80 +150,79 @@ function animateStarfield(currentTime = performance.now()) {
 // =========================================================================
 async function l10nFetch() {
     try {
-        const res = await fetch('./translations.json');
+        const res = await fetch('./translations.json?v=4');
         if (!res.ok) throw new Error("Faulty transaction headers");
         activeTranslations = await res.json();
     } catch {
         // Fallback structures if translations server is unresponsive
         activeTranslations = {
             en: {
-                badgeOnline: "SYSTEM ACTIVE",
-                name: "Shady Awad",
-                title: "Lead Software Engineer & Systems Architect",
-                description: "I am a 29-year-old Lead Software Engineer & Systems Architect focused on building high-performance, enterprise-grade progressive web applications (PWAs). I specialize in writing optimization-focused raw SQL over heavy, slow ORMs, leveraging Vanilla JavaScript for zero abstraction overhead, and enforcing rigid security policies such as Row-Level Security (RLS) deep in the database layer. My engineering philosophy prioritizes bare-metal performance, extreme rendering optimization, and bulletproof security systems.",
-                projectEstimator: "Enterprise Provisioning & Estimator",
-                solutionTier: "Arch Type & SLA Level",
-                tier1: "Tier 1: High-Performance Standalone",
-                tier2: "Tier 2: Multi-Tenant Enterprise Cluster",
-                tier3: "Tier 3: Distributed High-Availability Grid",
-                addons: "Custom System Integration Addons",
-                checkbox3D: "Custom WebGL / Canvas Components",
-                checkboxAI: "Embedded Security Audit Logging Modules",
-                estInvestment: "Est. Monthly SLA Commitment:",
-                tierEstimates: "Provisioning Baseline Cost (EGP)",
-                systemTopology: "Systems Architecture & Topology",
-                topologyDesc: "Interactive Database Schema & System Topology Map. Toggle between optimized Raw SQL execution paths and database Row-Level Security (RLS) policies. Rendering active query flows at 60 FPS.",
-                viewSqlBtn: "View Recursive Query CTE",
-                viewRlsBtn: "View RLS Security Rules",
-                schemaVisualizer: "Database & Query Performance Visualizer",
-                visualizerDesc: "Traverse a B+ Tree indexing pathway or compact memory block fragments. Watch low-abstraction systems logic execute at 60fps.",
-                searchKeyLabel: "Search Index DB Key:",
-                compactHeapLabel: "Execute Garbage Collection (GC)",
-                terminalLogsLabel: "Systems Log Stream & Stack Frame Output",
-                featuredProjects: "Micro-Architectural Showcase (Flagship Systems)",
-                explore: "Explore System Repositories →",
-                interstellar: "Low-Latency Simulation Asset",
-                shipDesc: "This interactive asset was modeled and textured in Blender, utilizing a custom Fresnel shader to simulate atmospheric scattering. It was exported as a compressed glTF/GLB asset and integrated using a responsive web component to ensure 60fps performance without external cloud dependencies.",
-                shipHint: "Interact directly with the local 3D rendering cache using swipe/pinch gestures.",
-                about: "About",
-                projects: "Projects",
-                contact: "Contact",
-                copyright: "© 2026 Shady Awad. Handcrafted in pure Vanilla JavaScript & CSS. No bloat, no overhead."
-            },
-            ar: {
-                badgeOnline: "النظام نشط",
-                name: "شادي عوض",
-                title: "رئيس مهندسي البرمجيات ومعماري الأنظمة",
-                description: "أنا رئيس مهندسي برمجيات ومعماري أنظمة أبلغ من العمر 29 عامًا، أعمل على بناء تطبيقات الويب التقدمية (PWAs) عالية الأداء والمخصصة للمؤسسات الكبرى. أتخصص في كتابة استعلامات SQL المنقحة لتحسين الأداء بدلاً من استخدام مخططات ORM الثقيلة والبطيئة، مع الاستفادة من لغة Vanilla JavaScript للتخلص من أعباء التجريد البرمجي، وفرض سياسات أمان صارمة مثل أمن مستوى الصف (RLS) في طبقة قواعد البيانات مباشرةً. ترتكز فلسفتي الهندسية على الأداء الخام والسرعة القصوى وبناء الأنظمة المحصنة والآمنة.",
-                projectEstimator: "بوابة تسعير الموارد وحساب تكلفة البنية التحتية",
-                solutionTier: "نوع الهيكل ومستوى اتفاقية الخدمة (SLA)",
-                tier1: "المستوى 1: نظام مستقل عالي الأداء",
-                tier2: "المستوى 2: تجميعة سحابية للمؤسسات متعددة المستأجرين",
-                tier3: "المستوى 3: شبكة توزيع موزعة عالية التوافر والاستقرار",
-                addons: "وحدات وتكاملات اختيارية إضافية",
-                checkbox3D: "رسوم WebGL / مكونات تفاعلية خاصة",
-                checkboxAI: "وحدات تدقيق الأمان المدمجة لتسجيل العمليات (Audit Log)",
-                estInvestment: "التزام الخدمة الشهري المقدر (SLA):",
-                tierEstimates: "التكلفة الأساسية للتهيئة (بالجنيه المصري EGP)",
-                systemTopology: "هيكل الأنظمة والترابط الشبكي للشبكة",
-                topologyDesc: "مخطط هيكل قاعدة البيانات وخريطة الترابط الشبكي للأنظمة. اختر بين استعراض مسار استعلام SQL المعقد وسياسات أمان مستوى الصف (RLS) لـ PostgreSQL. محاكاة معدل إطارات 60Hz.",
-                viewSqlBtn: "عرض استعلام الـ CTE المتكرر",
-                viewRlsBtn: "عرض سياسات أمان الـ RLS",
-                schemaVisualizer: "أداة تتبع مسار الفهرسة ومخصص الذاكرة والعمليات",
-                visualizerDesc: "تتبع مسار استعلام شجرة B+ أو قم بضغط كتل الذاكرة المجزأة. شاهد منطق الأنظمة منخفض التجريد يعمل بسرعة 60 إطارًا في الثانية.",
-                searchKeyLabel: "البحث عن مفتاح قاعدة بيانات:",
-                compactHeapLabel: "تشغيل مجمع المهملات وإخلاء الذاكرة (GC)",
-                terminalLogsLabel: "منصة مخرجات النظام وسجلات استدعاء الدوال (Stack Frame)",
-                featuredProjects: "معرض البنى والأنظمة الدقيقة (النظم الرئيسية)",
-                explore: "تصفح مستودعات الكود للأنظمة ←",
-                interstellar: "محاكاة ثلاثية الأبعاد منخفضة الاستجابة",
-                shipDesc: "تم تصميم هذا المكون التفاعلي وتكوينه في Blender، باستخدام مظلل Fresnel مخصص لمحاكاة التشتت الجوي. تم تصديره كأصل glTF/GLB مضغوط ودمجه باستخدام مكون ويب متجاوب لضمان أداء 60 إطارًا في الثانية دون اعتمادات سحابية خارجية.",
-                shipHint: "تفاعل بشكل مباشر مع ذاكرة العرض ثلاثية الأبعاد المحلية من خلال السحب والتكبير.",
-                about: "حول",
-                projects: "المشاريع",
-                contact: "اتصل بنا",
-                copyright: "© 2026 شادي عوض. مصمم بلغة Vanilla JS النقية وتنسيقات CSS المدمجة الأصيلة. أداء نقي بدون تضخم برمي."
-            }
+    badgeOnline: "AVAILABLE FOR OPPORTUNITIES",
+    name: "Shady Awad",
+    title: "Software & Web Developer",
+    description: "I am a self-taught Software & Web Developer focused on building modern full-stack web applications with JavaScript, Node.js, PostgreSQL, and progressive web technologies. I enjoy working across both frontend and backend systems, with a strong interest in database design, application performance, authentication, authorization, and clean user experiences. Through personal projects, I have gained hands-on experience designing relational schemas, writing raw SQL, building responsive interfaces, and improving real-world project structure. I am continuously expanding my skills through personal projects and hands-on development, with a focus on building reliable, performant, and maintainable software solutions." ,
+    projectEstimator: "Technical Focus Areas",
+    solutionTier: "Development Focus",
+    tier1: "Backend Development & API Design",
+    tier2: "Database Design & PostgreSQL",
+    tier3: "Progressive Web Applications",
+    addons: "Additional Strengths",
+    checkbox3D: "Interactive UI, Canvas & 3D Components",
+    checkboxAI: "Authentication, Authorization & Audit Logging",
+    estInvestment: "Estimated Project Scope:",
+    tierEstimates: "Focus Area Examples",
+    systemTopology: "Database Schema & System Architecture",
+    topologyDesc: "Interactive database schema and system topology map. Toggle between SQL query examples and PostgreSQL Row-Level Security (RLS) policy examples to explore backend architecture concepts visually.",
+    viewSqlBtn: "View Recursive Query CTE",
+    viewRlsBtn: "View RLS Policy Example",
+    schemaVisualizer: "Database & Query Visualizer",
+    visualizerDesc: "Traverse a B+ Tree indexing pathway or compact memory block fragments. This visualizer reflects my interest in databases, performance, and how systems behave under the hood.",
+    searchKeyLabel: "Search Index Key:",
+    compactHeapLabel: "Compact Memory Blocks",
+    terminalLogsLabel: "Visualizer Log Output",
+    featuredProjects: "Featured Project Showcase",
+    explore: "Explore Project Repositories →",
+    interstellar: "Interactive 3D Web Asset",
+    shipDesc: "This interactive asset was modeled and textured in Blender, exported as a compressed glTF/GLB file, and integrated into the page using a responsive web component. It reflects my interest in combining performance-conscious frontend development with polished visual presentation.",
+    shipHint: "Interact with the 3D asset using swipe, drag, or pinch gestures.",
+    about: "About",
+    projects: "Projects",
+    contact: "Contact",
+    copyright: "© 2026 Shady Awad. Built with Vanilla JavaScript, CSS, and a focus on performance."
+},
+ar: {
+    badgeOnline: "متاح لفرص العمل",
+    name: "شادي عوض",
+    title: "مطور برمجيات وويب",
+    description: "أنا مطور برمجيات وويب ذاتي التعلم، أركز على بناء تطبيقات ويب حديثة باستخدام  وتقنيات تطبيقات الويب التقدمية. أعمل على تطوير الواجهات الأمامية والخلفية، مع اهتمام خاص بتصميم قواعد البيانات، وتحسين الأداء، وأنظمة المصادقة والصلاحيات، وتجربة المستخدم. من خلال مشاريعي الشخصية، اكتسبت خبرة عملية في تصميم قواعد بيانات علائقية، وكتابة استعلامات SQL مباشرة، وبناء واجهات متجاوبة، وتحسين بنية المشاريع وتنظيمها. أواصل تطوير مهاراتي من خلال المشاريع العملية والتطبيق المستمر، مع التركيز على بناء حلول برمجية موثوقة، عالية الأداء، وقابلة للصيانة.",    projectEstimator: "مجالات التركيز التقنية",
+    solutionTier: "مجال التطوير",
+    tier1: "تطوير الواجهات الخلفية وتصميم واجهات API",
+    tier2: "تصميم قواعد البيانات و PostgreSQL",
+    tier3: "تطبيقات الويب التقدمية PWA",
+    addons: "نقاط قوة إضافية",
+    checkbox3D: "واجهات تفاعلية ومكونات Canvas و 3D",
+    checkboxAI: "تسجيل الدخول والصلاحيات وسجلات التدقيق",
+    estInvestment: "نطاق المشروع التقريبي:",
+    tierEstimates: "أمثلة على مجالات التركيز",
+    systemTopology: "تصميم قاعدة البيانات وهيكل النظام",
+    topologyDesc: "خريطة تفاعلية لتصميم قاعدة البيانات وهيكل النظام. يمكنك التبديل بين أمثلة استعلامات SQL وأمثلة سياسات Row-Level Security في PostgreSQL لاستعراض مفاهيم الواجهة الخلفية بشكل بصري.",
+    viewSqlBtn: "عرض مثال CTE متكرر",
+    viewRlsBtn: "عرض مثال سياسة RLS",
+    schemaVisualizer: "أداة تصور قواعد البيانات والاستعلامات",
+    visualizerDesc: "تتبع مسار فهرسة B+ Tree أو قم بضغط كتل الذاكرة. يعكس هذا التصور اهتمامي بقواعد البيانات، والأداء، وفهم طريقة عمل الأنظمة من الداخل.",
+    searchKeyLabel: "البحث عن مفتاح فهرسة:",
+    compactHeapLabel: "ضغط كتل الذاكرة",
+    terminalLogsLabel: "مخرجات أداة التصور",
+    featuredProjects: "معرض المشاريع المميزة",
+    explore: "تصفح مستودعات المشاريع ←",
+    interstellar: "عنصر ويب ثلاثي الأبعاد تفاعلي",
+    shipDesc: "تم تصميم هذا العنصر التفاعلي وإعداده في Blender، ثم تصديره كملف glTF/GLB مضغوط ودمجه داخل الصفحة باستخدام مكون ويب متجاوب. يعكس هذا اهتمامي بالجمع بين تطوير واجهات أمامية تراعي الأداء وتقديم بصري احترافي.",
+    shipHint: "يمكنك التفاعل مع العنصر ثلاثي الأبعاد بالسحب أو اللمس أو التكبير.",
+    about: "حول",
+    projects: "المشاريع",
+    contact: "اتصل بنا",
+    copyright: "© 2026 شادي عوض. تم بناؤه باستخدام Vanilla JavaScript و CSS مع التركيز على الأداء."
+}
         };
     }
 }
@@ -272,7 +271,7 @@ async function startL10nTheme() {
 }
 
 // ==========================================
-// 3. SNAPPY INTERACTIVE SAAS PROVISION ESTIMATOR
+// 3. INTERACTIVE SAAS PROVISION ESTIMATOR
 // ==========================================
 function formatEGP(val) {
     return val.toLocaleString('en-US');
