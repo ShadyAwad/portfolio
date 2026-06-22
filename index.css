@@ -230,6 +230,7 @@ button:active {
 
 .calculator {
     grid-column: span 5;
+    padding-top: calc(42px * var(--space-scale));
 }
 
 .systems-topology {
