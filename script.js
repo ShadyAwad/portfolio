@@ -1,6 +1,3 @@
-// ==========================================================================
-// SHADY AWAD | HIGH-PERFORMANCE NATIVE JS CORE SYSTEMS ENGINE
-// ==========================================================================
 
 // Global Parallax Starfield State
 const bgCanvas = document.getElementById('starfield');
@@ -181,7 +178,7 @@ async function l10nFetch() {
     compactHeapLabel: "Compact Memory Blocks",
     terminalLogsLabel: "Visualizer Log Output",
     featuredProjects: "Featured Project Showcase",
-    explore: "Explore Project Repositories →",
+    explore: "Explore Project Repository →",
     interstellar: "Interactive 3D Web Asset",
     shipDesc: "This interactive asset was modeled and textured in Blender, exported as a compressed glTF/GLB file, and integrated into the page using a responsive web component. It reflects my interest in combining performance-conscious frontend development with polished visual presentation.",
     shipHint: "Interact with the 3D asset using swipe, drag, or pinch gestures.",
@@ -214,7 +211,7 @@ ar: {
     compactHeapLabel: "ضغط كتل الذاكرة",
     terminalLogsLabel: "مخرجات أداة التصور",
     featuredProjects: "معرض المشاريع المميزة",
-    explore: "تصفح مستودعات المشاريع ←",
+    explore: "عرض مستودع المشروع ←",
     interstellar: "عنصر ويب ثلاثي الأبعاد تفاعلي",
     shipDesc: "تم تصميم هذا العنصر التفاعلي وإعداده في Blender، ثم تصديره كملف glTF/GLB مضغوط ودمجه داخل الصفحة باستخدام مكون ويب متجاوب. يعكس هذا اهتمامي بالجمع بين تطوير واجهات أمامية تراعي الأداء وتقديم بصري احترافي.",
     shipHint: "يمكنك التفاعل مع العنصر ثلاثي الأبعاد بالسحب أو اللمس أو التكبير.",
@@ -229,6 +226,7 @@ ar: {
 
 function updateLanguage(lang) {
     const dict = activeTranslations[lang] || activeTranslations.en;
+
     i18nElements.forEach(elem => {
         const key = elem.dataset.i18n;
         if (dict[key]) elem.textContent = dict[key];
@@ -236,6 +234,11 @@ function updateLanguage(lang) {
 
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+
+    if (langToggle) {
+        langToggle.textContent = lang === 'en' ? 'AR' : 'EN';
+    }
+
     localStorage.setItem('awad-portfolio-lang', lang);
 }
 
@@ -257,7 +260,6 @@ if (langToggle) {
         const cur = document.documentElement.lang || 'en';
         const next = cur === 'en' ? 'ar' : 'en';
         updateLanguage(next);
-        langToggle.textContent = next.toUpperCase();
     });
 }
 
@@ -267,7 +269,6 @@ async function startL10nTheme() {
     updateTheme(savedTheme);
     const savedLang = localStorage.getItem('awad-portfolio-lang') || 'en';
     updateLanguage(savedLang);
-    if (langToggle) langToggle.textContent = savedLang.toUpperCase();
 }
 
 // ==========================================
@@ -797,27 +798,56 @@ if (garbageCollectBtn) {
 // ==========================================================================
 // 6. DYNAMIC FLAGSHIP PROJECT SHEETS SLIDER
 // ==========================================================================
+const repoLink = document.getElementById('explore-repositories-trigger');
+
+const projectRepositories = {
+    p1: "https://github.com/ShadyAwad/Horizon-HR-v2",
+    p2: "https://github.com/ShadyAwad"
+};
+
+// Add the click listener ONCE
+if (repoLink) {
+    repoLink.addEventListener('click', () => {
+        appendLog(
+            `SYSTEM REDIRECT: Resolving remote secure VCS repository link.`,
+            "system-line"
+        );
+    });
+}
+
 projectSelectors.forEach(selector => {
     selector.addEventListener('click', () => {
         const targetProj = selector.dataset.project;
+
         projectSelectors.forEach(s => s.classList.remove('active'));
         selector.classList.add('active');
 
         documentationPanes.forEach(pane => {
             if (pane.id === `pane-${targetProj}`) {
                 pane.classList.add('active');
+
                 if (window.gsap) {
-                     gsap.fromTo(pane, { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" });
+                    gsap.fromTo(
+                        pane,
+                        { opacity: 0, y: 15 },
+                        { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }
+                    );
                 }
             } else {
                 pane.classList.remove('active');
             }
         });
-        
-        appendLog(`FLAGSHIP VIEWER: Mapped architectural blueprint document sheet for project '${targetProj}'`, "system-line");
+
+        if (repoLink) {
+            repoLink.href = projectRepositories[targetProj];
+        }
+
+        appendLog(
+            `FLAGSHIP VIEWER: Mapped architectural blueprint document sheet for project '${targetProj}'`,
+            "system-line"
+        );
     });
 });
-
 // Explore system repositories anchor animation
 const exploreTrigger = document.getElementById('explore-repositories-trigger');
 if (exploreTrigger) {
