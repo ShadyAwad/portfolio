@@ -145,87 +145,38 @@ function animateStarfield(currentTime = performance.now()) {
 // =========================================================================
 // 2. BIDIRECTIONAL SCHEMA L10N & CRYSTAL THEMING
 // =========================================================================
-async function l10nFetch() {
-    try {
-        const res = await fetch('./translations.json?v=4');
-        if (!res.ok) throw new Error("Faulty transaction headers");
-        activeTranslations = await res.json();
-    } catch {
-        // Fallback structures if translations server is unresponsive
-        activeTranslations = {
-            en: {
-    badgeOnline: "AVAILABLE FOR OPPORTUNITIES",
-    name: "Shady Awad",
-    title: "Software & Web Developer",
-    description: "I am a self-taught Software & Web Developer focused on building modern full-stack web applications with JavaScript, Node.js, PostgreSQL, and progressive web technologies. I enjoy working across both frontend and backend systems, with a strong interest in database design, application performance, authentication, authorization, and clean user experiences. Through personal projects, I have gained hands-on experience designing relational schemas, writing raw SQL, building responsive interfaces, and improving real-world project structure. I am continuously expanding my skills through personal projects and hands-on development, with a focus on building reliable, performant, and maintainable software solutions." ,
-    projectEstimator: "Technical Focus Areas",
-    solutionTier: "Development Focus",
-    tier1: "Backend Development & API Design",
-    tier2: "Database Design & PostgreSQL",
-    tier3: "Progressive Web Applications",
-    addons: "Additional Strengths",
-    checkbox3D: "Interactive UI, Canvas & 3D Components",
-    checkboxAI: "Authentication, Authorization & Audit Logging",
-    estInvestment: "Estimated Project Scope:",
-    tierEstimates: "Focus Area Examples",
-    systemTopology: "Database Schema & System Architecture",
-    topologyDesc: "Interactive database schema and system topology map. Toggle between SQL query examples and PostgreSQL Row-Level Security (RLS) policy examples to explore backend architecture concepts visually.",
-    viewSqlBtn: "View Recursive Query CTE",
-    viewRlsBtn: "View RLS Policy Example",
-    schemaVisualizer: "Database & Query Visualizer",
-    visualizerDesc: "Traverse a B+ Tree indexing pathway or compact memory block fragments. This visualizer reflects my interest in databases, performance, and how systems behave under the hood.",
-    searchKeyLabel: "Search Index Key:",
-    compactHeapLabel: "Compact Memory Blocks",
-    terminalLogsLabel: "Visualizer Log Output",
-    featuredProjects: "Featured Project Showcase",
-    explore: "Explore Project Repository →",
-    interstellar: "Interactive 3D Web Asset",
-    shipDesc: "This interactive asset was modeled and textured in Blender, exported as a compressed glTF/GLB file, and integrated into the page using a responsive web component. It reflects my interest in combining performance-conscious frontend development with polished visual presentation.",
-    shipHint: "Interact with the 3D asset using swipe, drag, or pinch gestures.",
-    about: "About",
-    projects: "Projects",
-    contact: "Contact",
-    copyright: "© 2026 Shady Awad. Built with Vanilla JavaScript, CSS, and a focus on performance."
-},
-ar: {
-    badgeOnline: "متاح لفرص العمل",
-    name: "شادي عوض",
-    title: "مطور برمجيات وويب",
-    description: "أنا مطور برمجيات وويب ذاتي التعلم، أركز على بناء تطبيقات ويب حديثة باستخدام  وتقنيات تطبيقات الويب التقدمية. أعمل على تطوير الواجهات الأمامية والخلفية، مع اهتمام خاص بتصميم قواعد البيانات، وتحسين الأداء، وأنظمة المصادقة والصلاحيات، وتجربة المستخدم. من خلال مشاريعي الشخصية، اكتسبت خبرة عملية في تصميم قواعد بيانات علائقية، وكتابة استعلامات SQL مباشرة، وبناء واجهات متجاوبة، وتحسين بنية المشاريع وتنظيمها. أواصل تطوير مهاراتي من خلال المشاريع العملية والتطبيق المستمر، مع التركيز على بناء حلول برمجية موثوقة، عالية الأداء، وقابلة للصيانة.",    projectEstimator: "مجالات التركيز التقنية",
-    solutionTier: "مجال التطوير",
-    tier1: "تطوير الواجهات الخلفية وتصميم واجهات API",
-    tier2: "تصميم قواعد البيانات و PostgreSQL",
-    tier3: "تطبيقات الويب التقدمية PWA",
-    addons: "نقاط قوة إضافية",
-    checkbox3D: "واجهات تفاعلية ومكونات Canvas و 3D",
-    checkboxAI: "تسجيل الدخول والصلاحيات وسجلات التدقيق",
-    estInvestment: "نطاق المشروع التقريبي:",
-    tierEstimates: "أمثلة على مجالات التركيز",
-    systemTopology: "تصميم قاعدة البيانات وهيكل النظام",
-    topologyDesc: "خريطة تفاعلية لتصميم قاعدة البيانات وهيكل النظام. يمكنك التبديل بين أمثلة استعلامات SQL وأمثلة سياسات Row-Level Security في PostgreSQL لاستعراض مفاهيم الواجهة الخلفية بشكل بصري.",
-    viewSqlBtn: "عرض مثال CTE متكرر",
-    viewRlsBtn: "عرض مثال سياسة RLS",
-    schemaVisualizer: "أداة تصور قواعد البيانات والاستعلامات",
-    visualizerDesc: "تتبع مسار فهرسة B+ Tree أو قم بضغط كتل الذاكرة. يعكس هذا التصور اهتمامي بقواعد البيانات، والأداء، وفهم طريقة عمل الأنظمة من الداخل.",
-    searchKeyLabel: "البحث عن مفتاح فهرسة:",
-    compactHeapLabel: "ضغط كتل الذاكرة",
-    terminalLogsLabel: "مخرجات أداة التصور",
-    featuredProjects: "معرض المشاريع المميزة",
-    explore: "عرض مستودع المشروع ←",
-    interstellar: "عنصر ويب ثلاثي الأبعاد تفاعلي",
-    shipDesc: "تم تصميم هذا العنصر التفاعلي وإعداده في Blender، ثم تصديره كملف glTF/GLB مضغوط ودمجه داخل الصفحة باستخدام مكون ويب متجاوب. يعكس هذا اهتمامي بالجمع بين تطوير واجهات أمامية تراعي الأداء وتقديم بصري احترافي.",
-    shipHint: "يمكنك التفاعل مع العنصر ثلاثي الأبعاد بالسحب أو اللمس أو التكبير.",
-    about: "حول",
-    projects: "المشاريع",
-    contact: "اتصل بنا",
-    copyright: "© 2026 شادي عوض. تم بناؤه باستخدام Vanilla JavaScript و CSS مع التركيز على الأداء."
+const supportedLocales = new Set(['en', 'ar']);
+let locale = 'en';
+
+function normalizeLocale(value) {
+    const normalized = String(value || '').toLowerCase().slice(0, 2);
+    return supportedLocales.has(normalized) ? normalized : 'en';
 }
-        };
+
+function getPreferredLocale() {
+    const params = new URLSearchParams(window.location.search);
+    const requestedLocale = params.get('lang') || params.get('locale');
+    const storedLocale = localStorage.getItem('user_language') || localStorage.getItem('awad-portfolio-lang');
+    return normalizeLocale(requestedLocale || storedLocale || navigator.language || 'en');
+}
+
+async function loadLocale(nextLocale = getPreferredLocale()) {
+    locale = normalizeLocale(nextLocale);
+
+    try {
+        // Dynamically load only the needed module over the wire
+        const module = await import(`./translations/${locale}.js`);
+        activeTranslations = module.lang;
+    } catch (error) {
+        console.error("Critical: Failed to resolve localization chunk", error);
+        // Minimal emergency recovery layout if module fails
+        activeTranslations = { badgeOnline: "Available", name: "Shady Awad" };
+        locale = 'en';
     }
 }
 
-function updateLanguage(lang) {
-    const dict = activeTranslations[lang] || activeTranslations.en;
+function renderLanguage(lang) {
+    const dict = activeTranslations;
 
     i18nElements.forEach(elem => {
         const key = elem.dataset.i18n;
@@ -239,7 +190,13 @@ function updateLanguage(lang) {
         langToggle.textContent = lang === 'en' ? 'AR' : 'EN';
     }
 
+    localStorage.setItem('user_language', lang);
     localStorage.setItem('awad-portfolio-lang', lang);
+}
+
+async function updateLanguage(lang) {
+    await loadLocale(lang);
+    renderLanguage(locale);
 }
 
 function updateTheme(mode) {
@@ -256,19 +213,18 @@ if (themeToggle) {
 }
 
 if (langToggle) {
-    langToggle.addEventListener('click', () => {
-        const cur = document.documentElement.lang || 'en';
+    langToggle.addEventListener('click', async () => {
+        const cur = locale || document.documentElement.lang || 'en';
         const next = cur === 'en' ? 'ar' : 'en';
-        updateLanguage(next);
+        await updateLanguage(next);
     });
 }
 
 async function startL10nTheme() {
-    await l10nFetch();
     const savedTheme = localStorage.getItem('awad-portfolio-theme') || 'dark';
     updateTheme(savedTheme);
-    const savedLang = localStorage.getItem('awad-portfolio-lang') || 'en';
-    updateLanguage(savedLang);
+    await loadLocale();
+    renderLanguage(locale);
 }
 
 // ==========================================
