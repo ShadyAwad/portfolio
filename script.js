@@ -15,12 +15,12 @@ const themeToggle = document.getElementById('theme-toggle');
 const langToggle = document.getElementById('lang-toggle');
 let activeTranslations = {};
 
-// Provisioning Pricing Spec Variables
+// Freelance Service Pricing Spec Variables
 const tierSelect = document.getElementById('tier');
-const threadsSlider = document.getElementById('threads');
-const activeCoresVal = document.getElementById('active-cores-val');
+const activeTierVal = document.getElementById('active-tier-val');
 const addons = document.querySelectorAll('.addon');
 const priceDisplay = document.getElementById('price-display');
+const tierSubtitle = document.getElementById('tier-subtitle');
 const baselineLinks = document.querySelectorAll('.baseline-link');
 
 // Systems Topology Interactive Map SVG State
@@ -228,25 +228,113 @@ async function startL10nTheme() {
 }
 
 // ==========================================
-// 3. INTERACTIVE SAAS PROVISION ESTIMATOR
+// 3. INTERACTIVE FREELANCE SERVICE ESTIMATOR
 // ==========================================
-function formatEGP(val) {
+const serviceTiers = [
+    {
+        id: 1,
+        name: "Tier 1: Static Blueprint",
+        price: 75,
+        subtitle: "High-performance single-page layout or landing page.",
+        color: "#38d5ff",
+        glow: "0 0 14px rgba(56, 213, 255, 0.28)"
+    },
+    {
+        id: 2,
+        name: "Tier 2: Dynamic Multi-View",
+        price: 200,
+        subtitle: "Multi-page architecture with localized routing and client-side global state.",
+        color: "#2dd4bf",
+        glow: "0 0 14px rgba(45, 212, 191, 0.28)"
+    },
+    {
+        id: 3,
+        name: "Tier 3: Full-Stack Core + AI",
+        price: 450,
+        subtitle: "Database integrated MVP, user dashboards, and basic AI API integration (automated text/summarization).",
+        color: "#39ff88",
+        glow: "0 0 18px rgba(57, 255, 136, 0.38)"
+    },
+    {
+        id: 4,
+        name: "Tier 4: Enterprise Secure & Cognitive",
+        price: 850,
+        subtitle: "Scale-ready app featuring multi-tenant isolation, advanced PostgreSQL RLS, and custom AI vector search/embeddings.",
+        color: "#9dff6a",
+        glow: "0 0 20px rgba(157, 255, 106, 0.36)"
+    },
+    {
+        id: 5,
+        name: "Tier 5: Bespoke Interactive Canvas",
+        price: 1400,
+        subtitle: "Premium mathematically reactive 3D rendering, custom Blender assets, and real-time data streaming.",
+        color: "#d6a93a",
+        glow: "0 0 24px rgba(214, 169, 58, 0.52)"
+    }
+];
+
+let lastEstimatorLogSignature = "";
+
+function formatUSD(val) {
     return val.toLocaleString('en-US');
+}
+
+function getActiveServiceTier() {
+    const tierIndex = Math.min(Math.max(Number(tierSelect ? tierSelect.value : 1), 1), serviceTiers.length);
+    return serviceTiers[tierIndex - 1];
+}
+
+function applyPriceMetricStyle(tier) {
+    if (!priceDisplay) return;
+    priceDisplay.style.color = tier.color;
+    priceDisplay.style.textShadow = tier.glow;
+    priceDisplay.style.transform = tier.id === 5 ? "scale(1.04)" : "scale(1)";
+}
+
+function injectEstimatorLogs(tier, hasAIAddon) {
+    if (typeof appendLog !== 'function') return;
+
+    const hasAITier = tier.id === 3 || tier.id === 4;
+    const signature = `${tier.id}:${hasAIAddon}:${hasAITier}`;
+    if (signature === lastEstimatorLogSignature) return;
+    lastEstimatorLogSignature = signature;
+
+    if (tier.id <= 2) {
+        appendLog("[SYSTEM INFO] Instantiating high-performance static client engine.", "system-line");
+    } else if (tier.id <= 4) {
+        appendLog("[DATABASE MONITOR] Relational schema active. Row-Level Security listener attached.", "traversal-line");
+    } else {
+        appendLog("[ORBITAL MONITOR] 3D asset canvas loop rendering at 60FPS.", "system-line");
+    }
+
+    if (hasAITier || hasAIAddon) {
+        appendLog("[AI CORE] Vector embedding pipeline initialized. Cognitive model latency: 12ms.", "system-line");
+    }
 }
 
 function calculatePrice() {
     if (!tierSelect || !priceDisplay) return;
-    const base = Number(tierSelect.value) || 12000;
-    const coreCount = Number(threadsSlider ? threadsSlider.value : 4);
-    
-    // Core scaling factor (threads scale costs by a factor of 1200 EGP per core over baseline)
-    const threadCost = (coreCount - 1) * 2300;
-    
-    // Addon checkboxes
+    const tier = getActiveServiceTier();
     const addonCost = Array.from(addons).reduce((sum, box) => sum + (box.checked ? Number(box.value) : 0), 0);
-    
-    const targetPrice = base + threadCost + addonCost;
-    const oldPrice = Number(priceDisplay.dataset.price || 12000);
+    const targetPrice = tier.price + addonCost;
+    const oldPrice = Number(priceDisplay.dataset.price || tier.price);
+    const hasAIAddon = Boolean(document.getElementById('opt-ai')?.checked);
+
+    if (activeTierVal) {
+        activeTierVal.textContent = tier.name;
+        activeTierVal.style.color = tier.color;
+    }
+
+    if (tierSubtitle) {
+        tierSubtitle.textContent = tier.subtitle;
+    }
+
+    baselineLinks.forEach(link => {
+        link.classList.toggle('active', Number(link.dataset.tierIndex) === tier.id);
+    });
+
+    applyPriceMetricStyle(tier);
+    injectEstimatorLogs(tier, hasAIAddon);
 
     if (window.gsap) {
         gsap.to({ val: oldPrice }, {
@@ -255,43 +343,34 @@ function calculatePrice() {
             ease: 'none',
             onUpdate() {
                  const currentTickVal = Math.round(this.targets()[0].val);
-                 priceDisplay.innerText = formatEGP(currentTickVal);
+                 priceDisplay.innerText = formatUSD(currentTickVal);
             },
             onComplete() {
                  priceDisplay.dataset.price = targetPrice;
-                 priceDisplay.innerText = formatEGP(targetPrice);
+                 priceDisplay.innerText = formatUSD(targetPrice);
             }
         });
     } else {
-        priceDisplay.innerText = formatEGP(targetPrice);
+        priceDisplay.innerText = formatUSD(targetPrice);
         priceDisplay.dataset.price = targetPrice;
     }
 }
 
-// Baseline cost links presets triggers
+// Baseline service tier presets triggers
 baselineLinks.forEach(link => {
     link.addEventListener('click', (e) => {
         e.preventDefault();
-        const tierValue = link.dataset.tierVal;
-        if (tierSelect && tierValue) {
-            tierSelect.value = tierValue;
+        const tierIndex = link.dataset.tierIndex;
+        if (tierSelect && tierIndex) {
+            tierSelect.value = tierIndex;
             calculatePrice();
         }
     });
 });
 
 if (tierSelect) {
+    tierSelect.addEventListener('input', calculatePrice);
     tierSelect.addEventListener('change', calculatePrice);
-}
-
-if (threadsSlider) {
-    threadsSlider.addEventListener('input', () => {
-        if (activeCoresVal) {
-            const val = threadsSlider.value;
-            activeCoresVal.textContent = `${val} Cores (${val == 4 ? 'Optimal' : val > 4 ? 'High Performance' : 'SaaS Constrained'})`;
-        }
-        calculatePrice();
-    });
 }
 
 addons.forEach(box => {
@@ -824,7 +903,7 @@ systemResizeObserver.observe(document.body);
 function initializeCoreArchitecture() {
     // Pricing configurations initial triggers
     if (tierSelect) {
-        tierSelect.value = "12000";
+        tierSelect.value = "1";
     }
     if (typeof calculatePrice === 'function') {
         calculatePrice();

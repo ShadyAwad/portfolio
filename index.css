@@ -480,7 +480,7 @@ hr.separator {
     margin-top: 6px;
     font-family: 'JetBrains Mono', monospace;
 }
-#active-cores-val {
+#active-tier-val {
     color: var(--accent);
     font-weight: 700;
 }
@@ -545,6 +545,10 @@ hr.separator {
     margin-top: 4px;
 }
 
+#price-display {
+    transition: color var(--duration-snappy) ease, text-shadow var(--duration-snappy) ease, transform var(--duration-snappy) ease;
+}
+
 .price-row small {
     font-family: 'JetBrains Mono', monospace;
     font-size: calc(0.95rem * var(--font-scale));
@@ -567,6 +571,13 @@ hr.separator {
     letter-spacing: 0.1em;
     text-transform: uppercase;
     font-family: 'JetBrains Mono', monospace;
+}
+
+.tier-links p {
+    color: var(--muted);
+    font-size: calc(0.86rem * var(--font-scale));
+    line-height: 1.55;
+    margin-bottom: 12px;
 }
 
 .tier-links ul {
@@ -593,6 +604,12 @@ hr.separator {
 .tier-links li a:hover {
     border-color: var(--accent);
     background: var(--accent-glow);
+}
+
+.tier-links li a.active {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+    color: var(--accent);
 }
 
 /* ==========================================================================

@@ -88,40 +88,38 @@
         <div class="bento-item calculator" id="estimator-card">
             <h3 data-i18n="projectEstimator">Project Scope Estimator</h3>
             <div class="calc-ui">
-                <label id="solutionTierLabel" for="tier" data-i18n="solutionTier">Project Type & Complexity</label>
-                <select id="tier">
-                    <option value="12000" data-i18n="tier1">Small Business Website / Landing Page</option>
-                    <option value="36000" data-i18n="tier2">Full-Stack Web App / Dashboard</option>
-                    <option value="85000" data-i18n="tier3">Advanced PWA / Multi-User System</option>
-                </select>
-                
-                <label id="pipelineScaleLabel" for="threads" style="margin-top: 15px; display: block;" class="control-label">Feature Scope</label>
+                <label id="solutionTierLabel" for="tier" data-i18n="solutionTier">Freelance Service Tier</label>
                 <div class="range-wrapper">
-                    <input type="range" id="threads" min="1" max="8" value="4" class="slider-control" />
+                    <input type="range" id="tier" min="1" max="5" step="1" value="1" class="slider-control" />
                     <div class="range-labels">
-                        <span>Basic</span>
-                        <span id="active-cores-val">Standard Scope</span>
-                        <span>Advanced</span>
+                        <span data-i18n="tierRangeStart">Static</span>
+                        <span id="active-tier-val">Tier 1: Static Blueprint</span>
+                        <span data-i18n="tierRangeEnd">Bespoke</span>
                     </div>
                 </div>
 
                 <label id="addonsLabel" style="margin-top: 20px; display: block;" data-i18n="addons">Optional Features</label>
                 <div class="checkbox-group">
-                    <label><input type="checkbox" class="addon" id="opt-canvas" value="8000"> <span data-i18n="checkbox3D">Interactive UI / Canvas Components</span></label>
-                    <label><input type="checkbox" class="addon" id="opt-logging" value="15000"> <span data-i18n="checkboxAI">Authentication / Audit Logging Features</span></label>
+                    <label><input type="checkbox" class="addon" id="opt-pwa" value="75"> <span data-i18n="checkboxPwa">Native Mobile Installation (PWA)</span></label>
+                    <label><input type="checkbox" class="addon" id="opt-l10n" value="50"> <span data-i18n="checkboxL10n">Asynchronous Multi-Language Matrix (l10n)</span></label>
+                    <label><input type="checkbox" class="addon" id="opt-rbac" value="100"> <span data-i18n="checkboxRBAC">Secure RBAC Authentication & Audit Logging</span></label>
+                    <label><input type="checkbox" class="addon" id="opt-ai" value="150"> <span data-i18n="checkboxAI">Smart AI Assistant / Custom LLM Pipelines</span></label>
                 </div>
 
                 <div class="price-box">
-                    <span data-i18n="estInvestment">Estimated Project Range:</span>
-                    <div class="price-row"><strong id="price-display">12,000</strong> <small>EGP</small></div>
+                    <span data-i18n="estInvestment">Estimated Project Price:</span>
+                    <div class="price-row"><small>$</small><strong id="price-display">75</strong> <small>USD</small></div>
                 </div>
 
                 <div class="tier-links">
-                    <h4 data-i18n="tierEstimates">Example Baseline Ranges (EGP)</h4>
+                    <h4 data-i18n="tierEstimates">Active Service Blueprint</h4>
+                    <p id="tier-subtitle">High-performance single-page layout or landing page.</p>
                     <ul>
-                        <li><a href="#" class="baseline-link" data-tier-val="12000" data-i18n="tier1">Small Business Website / Landing Page</a></li>
-                        <li><a href="#" class="baseline-link" data-tier-val="36000" data-i18n="tier2">Full-Stack Web App / Dashboard</a></li>
-                        <li><a href="#" class="baseline-link" data-tier-val="85000" data-i18n="tier3">Advanced PWA / Multi-User System</a></li>
+                        <li><a href="#" class="baseline-link" data-tier-index="1" data-i18n="tier1">Tier 1: Static Blueprint</a></li>
+                        <li><a href="#" class="baseline-link" data-tier-index="2" data-i18n="tier2">Tier 2: Dynamic Multi-View</a></li>
+                        <li><a href="#" class="baseline-link" data-tier-index="3" data-i18n="tier3">Tier 3: Full-Stack Core + AI</a></li>
+                        <li><a href="#" class="baseline-link" data-tier-index="4" data-i18n="tier4">Tier 4: Enterprise Secure & Cognitive</a></li>
+                        <li><a href="#" class="baseline-link" data-tier-index="5" data-i18n="tier5">Tier 5: Bespoke Interactive Canvas</a></li>
                     </ul>
                 </div>
             </div>
