@@ -509,6 +509,12 @@ hr.separator {
     background: rgba(0, 0, 0, 0.15);
     transition: background var(--duration-snappy) ease, border-color var(--duration-snappy) ease;
 }
+
+html[dir="rtl"] .checkbox-group label {
+    direction: rtl;
+    justify-content: flex-start;
+}
+
 .checkbox-group label:hover {
     background: var(--card-bg-hover);
     border-color: var(--accent);
@@ -524,6 +530,11 @@ hr.separator {
 .checkbox-group label span {
     color: var(--text);
     font-weight: 500;
+}
+
+.ltr-tech {
+    direction: ltr;
+    unicode-bidi: isolate;
 }
 
 .price-box {
