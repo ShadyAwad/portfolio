@@ -1,0 +1,319 @@
+/* The stage reserves room for all four visible slots, the throw, and their shadows. */
+#pane-p1 { min-inline-size: 0; }
+html[dir="rtl"] #pane-p1 { direction: rtl; }
+[data-theme="light"] .flagship-documentation-viewport:has(#pane-p1.active) {
+    background: var(--terminal-bg);
+}
+
+.stanza-showcase {
+    display: grid;
+    gap: clamp(1.15rem, 2.1vw, 1.75rem);
+    align-items: center;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 1151px) {
+    .stanza-showcase { grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr); }
+}
+
+.stanza-gallery {
+    inline-size: 100%;
+    max-inline-size: 48rem;
+    justify-self: center;
+    min-inline-size: 0;
+    container-type: inline-size;
+    border-radius: 16px;
+}
+
+.stanza-gallery:focus-visible,
+.stanza-controls button:focus-visible,
+.stanza-architecture summary:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+}
+
+.stanza-stage {
+    --stanza-step-x: clamp(8px, 3.7cqw, 23px);
+    --stanza-step-y: clamp(7px, 2.7cqw, 17px);
+    --stanza-edge: clamp(11px, 3.3cqw, 23px);
+    display: grid;
+    isolation: isolate;
+    direction: ltr;
+    perspective: 1100px;
+    padding: calc(var(--stanza-edge) + 3 * var(--stanza-step-y))
+             calc(var(--stanza-edge) + 3 * var(--stanza-step-x))
+             var(--stanza-edge) var(--stanza-edge);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: radial-gradient(ellipse at 72% 6%, var(--table-header), transparent 66%), var(--input-bg);
+    touch-action: pan-y pinch-zoom;
+    user-select: none;
+}
+
+.stanza-card {
+    --slot: 0;
+    --tilt: 0deg;
+    --slot-x: calc(var(--stanza-step-x) * var(--slot));
+    --slot-y: calc(-1 * var(--stanza-step-y) * var(--slot));
+    --slot-z: calc(-9px * var(--slot));
+    --slot-scale: calc(1 - 0.013 * var(--slot));
+    --pose: translate3d(var(--slot-x), var(--slot-y), var(--slot-z)) rotateZ(var(--tilt)) scale(var(--slot-scale));
+    grid-area: 1 / 1;
+    min-inline-size: 0;
+    margin: 0;
+    position: relative;
+    z-index: calc(10 - var(--slot));
+    transform: var(--pose);
+    transition: transform 385ms cubic-bezier(.2, .75, .25, 1), opacity 220ms ease, visibility 220ms;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--accent) 37%, var(--border));
+    border-radius: clamp(7px, 1.8cqw, 12px);
+    background: var(--card-bg-hover);
+    box-shadow: 0 7px 16px -7px rgba(2, 3, 8, .64);
+}
+
+.stanza-card[data-slot="1"] { --slot: 1; --tilt: -.55deg; }
+.stanza-card[data-slot="2"] { --slot: 2; --tilt: -1.1deg; }
+.stanza-card[data-slot="3"] { --slot: 3; --tilt: -1.65deg; }
+.stanza-card[data-slot="4"] { --slot: 4; }
+.stanza-card[data-slot="5"] { --slot: 5; }
+
+.stanza-card:not([data-slot="0"]) {
+    cursor: pointer;
+    background: color-mix(in srgb, var(--accent) 10%, var(--card-bg-hover));
+}
+
+.stanza-card:is([data-slot="4"], [data-slot="5"]) {
+    --slot-x: calc(3 * var(--stanza-step-x));
+    --slot-y: calc(-3 * var(--stanza-step-y));
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.stanza-card[data-slot="0"] { cursor: grab; }
+.stanza-card[data-slot="0"]:only-child { cursor: auto; }
+
+@media (hover: hover) and (pointer: fine) {
+    .stanza-stage:hover .stanza-card:not([data-slot="0"]) {
+        --slot-y: calc(-1.06 * var(--stanza-step-y) * min(3, var(--slot)));
+    }
+}
+
+.stanza-card.is-dragging,
+.stanza-card.is-releasing {
+    pointer-events: none;
+    z-index: 12;
+    transform: translate3d(var(--throw-x, 0px), var(--throw-y, 0px), 0)
+               rotateZ(var(--throw-angle, 0deg)) scale(var(--throw-scale, 1));
+}
+.stanza-card.is-dragging { transition: none; }
+.stanza-stage.is-dragging { cursor: grabbing; }
+.stanza-card.is-releasing {
+    opacity: .04;
+    transition: transform 230ms cubic-bezier(.23, .58, .32, 1), opacity 230ms ease-in;
+}
+.stanza-card.is-tucking { animation: stanza-tuck 390ms cubic-bezier(.18, .7, .28, 1); }
+.stanza-card.is-tucking:is([data-slot="4"], [data-slot="5"]) {
+    --stanza-tuck-opacity: .38;
+    visibility: visible;
+}
+
+@keyframes stanza-tuck {
+    from {
+        transform: translate3d(var(--slot-x), calc(var(--slot-y) + 12px), var(--slot-z))
+                   rotateZ(var(--tilt)) scale(calc(var(--slot-scale) - .045));
+        opacity: var(--stanza-tuck-opacity, 0);
+    }
+}
+
+.stanza-card-label {
+    min-block-size: 2.1em;
+    display: flex;
+    align-items: center;
+    gap: .55em;
+    padding: .25em .65em;
+    color: var(--text);
+    font: 650 clamp(.68rem, 2.3cqw, .82rem)/1.3 Inter, system-ui, sans-serif;
+}
+.stanza-card-label::before {
+    content: "";
+    flex: none;
+    inline-size: .44em;
+    block-size: .44em;
+    border-radius: 50%;
+    background: var(--accent);
+}
+.stanza-card:not([data-slot="0"]) .stanza-card-label { opacity: 0; }
+
+.stanza-media {
+    position: relative;
+    aspect-ratio: 1586 / 992;
+    background: var(--input-bg);
+    overflow: hidden;
+}
+
+.stanza-media img {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: contain;
+    pointer-events: none;
+}
+.stanza-media img[hidden] { display: none; }
+.stanza-card:not([data-slot="0"]) .stanza-media::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: color-mix(in srgb, var(--input-bg) 36%, transparent);
+}
+.stanza-fallback:not([hidden]) {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    text-align: center;
+    color: var(--muted);
+}
+
+.stanza-controls:not([hidden]) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    margin-block-start: .65rem;
+}
+.stanza-navigation { display: flex; align-items: center; gap: .65rem; }
+
+.stanza-controls button {
+    display: grid;
+    place-items: center;
+    inline-size: 44px;
+    block-size: 44px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--input-bg);
+    color: var(--text);
+    padding: 0;
+}
+.stanza-controls button:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+.stanza-controls button[hidden] { display: none; }
+
+.stanza-controls svg {
+    inline-size: 18px;
+    block-size: 18px;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+.stanza-navigation:dir(rtl) svg { transform: scaleX(-1); }
+.stanza-play-icon,
+.stanza-autoplay[data-paused] .stanza-pause-icon { display: none; }
+.stanza-autoplay[data-paused] .stanza-play-icon { display: initial; }
+
+.stanza-counter {
+    direction: ltr;
+    unicode-bidi: isolate;
+    color: var(--muted);
+    font: 600 .75rem/1 'JetBrains Mono', monospace;
+    white-space: nowrap;
+}
+
+.stanza-summary { min-inline-size: 0; }
+.stanza-eyebrow {
+    color: var(--accent);
+    font: 700 .69rem/1.3 'JetBrains Mono', system-ui, monospace;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+}
+.stanza-eyebrow:dir(rtl) { letter-spacing: normal; }
+.stanza-summary h2 {
+    margin-block: .45rem .6rem;
+    font-size: clamp(1.22rem, 2vw, 1.7rem);
+    line-height: 1.19;
+    overflow-wrap: anywhere;
+}
+.stanza-summary .pane-desc { margin-block: 0 .95rem; }
+.stanza-caption {
+    padding: .8rem;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-inline-start: 2px solid var(--accent);
+    border-radius: 10px;
+}
+.stanza-caption h3 {
+    font-size: 1.02rem;
+    color: var(--text);
+    margin-block: .18rem .25rem;
+}
+.stanza-caption p,
+.stanza-architecture dd {
+    color: var(--muted);
+    font-size: .85rem;
+    line-height: 1.55;
+}
+.stanza-highlights {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .38rem;
+    margin-block-start: .85rem;
+    list-style: none;
+}
+.stanza-highlights li {
+    padding: .32em .62em;
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    color: var(--muted);
+    font-size: .72rem;
+}
+
+#explore-repositories-trigger[hidden] { display: none; }
+.stanza-repo {
+    display: inline-block;
+    margin-block: 1.1rem .8rem;
+}
+.stanza-architecture {
+    border-block-start: 1px solid var(--border);
+    padding-block-start: .7rem;
+}
+.stanza-architecture summary {
+    cursor: pointer;
+    color: var(--text);
+    font-size: .86rem;
+    font-weight: 650;
+}
+.stanza-architecture dl {
+    display: grid;
+    gap: .7rem 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+    margin-block-start: .8rem;
+}
+.stanza-architecture dt { font-size: .86rem; font-weight: 650; }
+.stanza-architecture dd { margin: .2em 0 0; }
+
+.stanza-sr-only {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    clip-path: inset(50%);
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .stanza-card,
+    .stanza-card.is-releasing,
+    .stanza-card.is-tucking {
+        transition: none;
+        animation: none;
+    }
+    .stanza-stage:hover .stanza-card:not([data-slot="0"]) {
+        --slot-y: calc(-1 * var(--stanza-step-y) * min(3, var(--slot)));
+    }
+}

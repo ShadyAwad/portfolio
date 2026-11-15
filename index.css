@@ -230,7 +230,6 @@ button:active {
 
 .calculator {
     grid-column: span 5;
-    padding-top: calc(42px * var(--space-scale));
 }
 
 .systems-topology {
@@ -840,20 +839,20 @@ html[dir="rtl"] .checkbox-group label {
    ========================================================================== */
 .flagship-dashboard-layout {
     display: grid;
-    grid-template-columns: repeat(12, 1fr);
+    grid-template-columns: minmax(0, 1fr);
     gap: calc(20px * var(--space-scale));
     margin-top: calc(14px * var(--space-scale));
 }
 
 .flagship-project-selectors {
-    grid-column: span 4;
     list-style: none;
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     gap: 12px;
 }
 
 .flagship-selector {
+    flex: 1 1 15rem;
     cursor: pointer;
     border: 1px solid var(--border);
     border-radius: 18px;
@@ -896,7 +895,6 @@ html[dir="rtl"] .checkbox-group label {
 
 /* Documentation sheets viewports */
 .flagship-documentation-viewport {
-    grid-column: span 8;
     background: rgba(0, 0, 0, 0.2);
     border: 1px solid var(--border);
     border-radius: 24px;
@@ -1287,17 +1285,6 @@ html[dir="rtl"] .pane-blockquote {
     .topology-code-side {
         grid-column: span 12;
     }
-    .flagship-project-selectors {
-        grid-column: span 12;
-        flex-direction: row;
-        flex-wrap: wrap;
-    }
-    .flagship-project-selectors li {
-        flex-grow: 1;
-    }
-    .flagship-documentation-viewport {
-        grid-column: span 12;
-    }
     .visualizer-viewport {
         grid-column: span 12;
     }
@@ -1318,6 +1305,9 @@ html[dir="rtl"] .pane-blockquote {
     }
     .flagship-project-selectors {
         flex-direction: column;
+    }
+    .flagship-selector {
+        flex-basis: auto;
     }
     .flagship-documentation-viewport {
         padding: 16px;

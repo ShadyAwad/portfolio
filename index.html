@@ -6,6 +6,7 @@
     <title>Shady Awad | Software & Web Developer Portfolio</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg">
     <link rel="stylesheet" href="./index.css">
+    <link rel="preload" as="image" href="%BASE_URL%images/stanza/performance.webp" type="image/webp">
     <script type="module" src="./script.js"></script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -50,6 +51,7 @@
             
             <p data-i18n="description" class="lead-bio">
                 I am a self-taught Software & Web Developer focused on building modern full-stack web applications with JavaScript, Node.js, PostgreSQL, and progressive web technologies. I enjoy working across both frontend and backend systems, with a strong interest in database design, application performance, authentication, authorization, and clean user experiences. Through personal projects, I have gained hands-on experience designing relational schemas, writing raw SQL, building responsive interfaces, and improving real-world project structure. I am continuously expanding my skills through personal projects and hands-on development, with a focus on building reliable, performant, and maintainable software solutions.
+            </p>
             <div class="demographic-specs">
                 <hr class="separator" />
                 <table class="specs-table">
@@ -60,10 +62,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td><strong data-i18n="specAge">Age</strong></td>
-                            <td>29</td>
-                        </tr>
                         <tr>
                             <td><strong data-i18n="specLocation">Location</strong></td>
                             <td data-i18n="specLocationValue">Cairo, Egypt</td>
@@ -297,8 +295,8 @@
                     <li class="flagship-selector active" data-project="p1" id="project-p1-selector">
                         <div class="selector-number">01</div>
                         <div class="selector-meta">
-                            <h4>Horizon HR Engine</h4>
-                            <span>Enterprise PWA Multi-Tenant Cluster</span>
+                            <h4>Stanza HR</h4>
+                            <span data-i18n="stanzaSelector">Workforce management PWA</span>
                         </div>
                     </li>
                     <li class="flagship-selector" data-project="p2" id="project-p2-selector">
@@ -312,55 +310,73 @@
 
                 <div class="flagship-documentation-viewport">
                     <div class="flagship-pane active" id="pane-p1">
-                        <div class="pane-header">
-                            <span class="pane-badge">CLUSTER ARCHITECTURE</span>
-                            <h2>Project 01: Horizon HR (Enterprise PWA)</h2>
-                        </div>
-                        <p class="pane-desc">
-                            A highly available multi-tenant business engine integrating a native offline-first sync architecture. Designed with hand-crafted PostgreSQL execution plans that completely bypass slow ORMs. Database isolation is established directly at the backend driver layer utilizing PostgreSQL security kernels.
-                        </p>
-                        
-                        <hr class="pane-divider" />
-                        
-                        <h5 class="pane-subtitle">TECHNICAL STATS & PERFORMANCE MATRIX</h5>
-                        <table class="matrix-table">
-                            <thead>
-                                <tr>
-                                    <th>Vector / Operational Indicator</th>
-                                    <th>Baseline (Heavy ORM Stack)</th>
-                                    <th>Optimization Delta</th>
-                                    <th>Attained Rate</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><strong>Multi-Tenant Isolated Leakage</strong></td>
-                                    <td>Variable Hazard</td>
-                                    <td><strong>Strict Row-Level Policy Enforce</strong></td>
-                                    <td>0.00% Leakage</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Local DB Buffer Sync Overhead</strong></td>
-                                    <td>1,200ms REST Poll</td>
-                                    <td><strong>Diff Write-Ahead Log Traversal</strong></td>
-                                    <td>&lt; 12ms (Native Sync)</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Index Read Concurrency Latency</strong></td>
-                                    <td>450ms (ORM Table Scans)</td>
-                                    <td><strong>Segmented Composite B+ Trees</strong></td>
-                                    <td>1.8ms (Raw Latency)</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <section class="stanza-showcase" data-stanza-showcase aria-labelledby="stanza-title">
+                            <div class="stanza-gallery" tabindex="0" role="region" aria-label="Stanza HR product screenshots">
+                                <div class="stanza-stage" id="stanza-stage">
+                                    <figure class="stanza-card" data-slot="0">
+                                        <figcaption class="stanza-card-label" dir="auto">Performance</figcaption>
+                                        <div class="stanza-media">
+                                            <img src="%BASE_URL%images/stanza/performance.webp" width="1586" height="992"
+                                                fetchpriority="high" draggable="false"
+                                                alt="Stanza Performance dashboard showing the active review cycle and overview metrics">
+                                            <span class="stanza-fallback" hidden></span>
+                                        </div>
+                                    </figure>
+                                </div>
+                                <div class="stanza-controls" hidden>
+                                    <div class="stanza-navigation">
+                                        <button type="button" data-stanza-prev aria-label="Previous screenshot" aria-controls="stanza-stage">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+                                        </button>
+                                        <span class="stanza-counter" data-stanza-counter aria-hidden="true">01 / 06</span>
+                                        <button type="button" data-stanza-next aria-label="Next screenshot" aria-controls="stanza-stage">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+                                        </button>
+                                    </div>
+                                    <button type="button" class="stanza-autoplay" data-stanza-play aria-label="Pause autoplay">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="stanza-pause-icon" d="M9 5v14m6-14v14"/><path class="stanza-play-icon" d="m9 5 10 7-10 7Z"/></svg>
+                                    </button>
+                                </div>
+                                <span class="stanza-sr-only" data-stanza-status role="status"></span>
+                            </div>
 
-                        <blockquote class="pane-blockquote">
-                            <strong>Architectural Core Integration Architecture:</strong> This enterprise PWA cluster utilizes a local indexed DB page cache communicating directly with PostgreSQL schema indexes via an asynchronous Node.js transaction log pipeline, maximizing client rendering efficiency.
-                        </blockquote>
-                        
-                        <div class="pane-meta">
-                            <strong>Core Stack:</strong> PostgreSQL (No-ORM Raw SQL), Node.js (Express Clusters), Vanilla JavaScript, WebSockets.
-                        </div>
+                            <div class="stanza-summary">
+                                <span class="stanza-eyebrow" data-i18n="stanzaEyebrow">Product showcase</span>
+                                <h2 id="stanza-title" data-i18n="stanzaTitle">Stanza HR — Multi-Tenant Workforce Management Platform</h2>
+                                <p class="pane-desc" data-i18n="stanzaDescription">A customizable, multi-tenant workforce management platform built with Node.js, Express, PostgreSQL, React, Redis, and BullMQ. The system combines secure tenant isolation, role-based access control, geofenced attendance, HR workflows, and semantic intelligence in a performance-focused progressive web application.</p>
+                                <div class="stanza-caption">
+                                    <span class="stanza-eyebrow" data-i18n="stanzaCaption">On screen</span>
+                                    <h3 data-stanza-title>Performance</h3>
+                                    <p data-stanza-description>Performance reviews, goals and OKRs, recognition, and review cycles.</p>
+                                </div>
+                                <ul class="stanza-highlights" aria-label="Stanza HR">
+                                    <li data-i18n="stanzaAttendance">Geofenced attendance</li>
+                                    <li data-i18n="stanzaAccess">Role-based access</li>
+                                    <li data-i18n="stanzaWorkflows">HR workflows</li>
+                                </ul>
+                            </div>
+                        </section>
+
+                        <a class="view-all stanza-repo" data-project-repository href="https://github.com/ShadyAwad/Horizon-HR-v2"
+                            target="_blank" rel="noopener noreferrer" data-i18n="explore">View Project Repository →</a>
+
+                        <details class="stanza-architecture">
+                            <summary data-i18n="stanzaArchitecture">Architecture notes</summary>
+                            <dl>
+                                <div>
+                                    <dt data-i18n="stanzaArchitectureData">API and data</dt>
+                                    <dd data-i18n="stanzaArchitectureDataDetail">Node.js and Express serve the application API. PostgreSQL stores workforce records within tenant boundaries, and role-based access controls which workflows are available to each user.</dd>
+                                </div>
+                                <div>
+                                    <dt data-i18n="stanzaArchitectureApp">Workspace and jobs</dt>
+                                    <dd data-i18n="stanzaArchitectureAppDetail">The React PWA brings attendance, organisation, performance, and payroll into one workspace. Redis and BullMQ support background job processing.</dd>
+                                </div>
+                                <div>
+                                    <dt data-i18n="stanzaArchitectureSemantic">Semantic routing</dt>
+                                    <dd data-i18n="stanzaArchitectureSemanticDetail">The workspace exposes routing analytics, matching results, approved examples, and privacy settings for administrators to review.</dd>
+                                </div>
+                            </dl>
+                        </details>
                     </div>
 
                     <div class="flagship-pane" id="pane-p2">
@@ -420,7 +436,9 @@
             <a
     class="view-all"
     id="explore-repositories-trigger"
-    href="https://github.com/ShadyAwad/Horizon-HR-v2"
+    data-project-repository
+    hidden
+    href="https://github.com/ShadyAwad"
     target="_blank"
     rel="noopener noreferrer"
     data-i18n="explore"

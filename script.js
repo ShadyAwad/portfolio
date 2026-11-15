@@ -1,3 +1,4 @@
+import { mountStanzaCardSwap } from './src/components/stanza-card-swap.js';
 
 // Global Parallax Starfield State
 const bgCanvas = document.getElementById('starfield');
@@ -63,6 +64,9 @@ const TOTAL_RAM_BLOCKS = RAM_GRID_COLS * RAM_GRID_ROWS;
 // Flagship Project Showcase Toggles
 const projectSelectors = document.querySelectorAll('.flagship-selector');
 const documentationPanes = document.querySelectorAll('.flagship-pane');
+const stanzaShowcaseRoot = document.querySelector('[data-stanza-showcase]');
+let stanzaShowcase;
+if (import.meta.hot) import.meta.hot.dispose(() => stanzaShowcase?.destroy());
 
 // ==========================================================================
 // 1. DYNAMIC SYSTEM PARALLAX STARFIELD
@@ -185,6 +189,11 @@ function renderLanguage(lang) {
 
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+
+    if (stanzaShowcaseRoot && dict.stanzaGallery) {
+        if (stanzaShowcase) stanzaShowcase.localize(dict.stanzaGallery, lang);
+        else stanzaShowcase = mountStanzaCardSwap(stanzaShowcaseRoot, dict.stanzaGallery, lang);
+    }
 
     if (langToggle) {
         langToggle.textContent = lang === 'en' ? 'AR' : 'EN';
@@ -835,20 +844,14 @@ if (garbageCollectBtn) {
 // ==========================================================================
 const repoLink = document.getElementById('explore-repositories-trigger');
 
-const projectRepositories = {
-    p1: "https://github.com/ShadyAwad/Horizon-HR-v2",
-    p2: "https://github.com/ShadyAwad"
-};
-
-// Add the click listener ONCE
-if (repoLink) {
-    repoLink.addEventListener('click', () => {
+document.querySelectorAll('[data-project-repository]').forEach(link => {
+    link.addEventListener('click', () => {
         appendLog(
             `SYSTEM REDIRECT: Resolving remote secure VCS repository link.`,
             "system-line"
         );
     });
-}
+});
 
 projectSelectors.forEach(selector => {
     selector.addEventListener('click', () => {
@@ -874,7 +877,7 @@ projectSelectors.forEach(selector => {
         });
 
         if (repoLink) {
-            repoLink.href = projectRepositories[targetProj];
+            repoLink.hidden = targetProj !== 'p2';
         }
 
         appendLog(
@@ -925,13 +928,14 @@ function initializeCoreArchitecture() {
     // Initial load translations, lang mappings and themes settings
     startL10nTheme();
 
-    if (window.gsap) {
-        // High quality snap staggered entry timelines
-        gsap.from('.bento-item', {
+    if (window.gsap && !prefersReducedMotion) {
+        // Start the shared top row together and restore the stylesheet after the entrance.
+        gsap.fromTo('.bento-item', { y: 30, opacity: 0 }, {
             duration: 0.6,
-            y: 30,
-            opacity: 0,
-            stagger: 0.08,
+            y: 0,
+            opacity: 1,
+            stagger: index => Math.max(0, index - 1) * 0.08,
+            clearProps: 'transform,opacity',
             ease: 'power3.out'
         });
     }
