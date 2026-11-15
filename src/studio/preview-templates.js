@@ -11,6 +11,13 @@ export const translations = {
     system: ['System', 'حسب الجهاز'],
     light: ['Light', 'فاتح'],
     dark: ['Dark', 'داكن'],
+    desktop: ['Desktop', 'سطح المكتب'],
+    tablet: ['Tablet', 'جهاز لوحي'],
+    mobile: ['Mobile', 'هاتف'],
+    viewport: ['Preview viewport', 'حجم نافذة المعاينة'],
+    useDark: ['Switch preview to dark mode', 'حوّل المعاينة إلى الوضع الداكن'],
+    useLight: ['Switch preview to light mode', 'حوّل المعاينة إلى الوضع الفاتح'],
+    demoSaved: ['Demo request recorded in this preview only.', 'سُجّل الطلب التجريبي في هذه المعاينة فقط.'],
     features: ['Prototype features', 'ميزات النموذج'],
     saas: ['SaaS Dashboard', 'لوحة تحكم SaaS'],
     ecommerce: ['E-commerce', 'متجر إلكتروني'],
@@ -42,66 +49,160 @@ const table = (headers, rows, label) => `<table class="mock-table"><thead><tr>${
     .map(header => `<th scope="col">${label(header)}</th>`).join('')}</tr></thead><tbody>${rows
     .map(row => `<tr>${row.map(cell => `<td>${Array.isArray(cell) ? label(cell) : cell}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
 
+const nav = (name, links, label) => `<nav class="mock-nav" aria-label="${label(name)}">${links.map(([target, text]) =>
+    `<button type="button" data-preview-jump="${target}"${target === 'overview' ? ' aria-current="location"' : ''}>${label(text)}</button>`).join('')}</nav>`;
+const account = (label, initials, name, subtitle) => `<details class="mock-account">
+    <summary><span class="mock-avatar" aria-hidden="true">${initials}</span><span>${name}</span></summary>
+    <div><strong>${name}</strong><p>${label(subtitle)}</p></div></details>`;
+
 function saas(label) {
     return `<div class="mock-saas">
-        <aside class="mock-sidebar"><strong>Pulse</strong>
-            <span>${label(['Overview','نظرة عامة'])}</span><span>${label(['Analytics','التحليلات'])}</span><span>${label(['Team','الفريق'])}</span>
+        <aside class="mock-sidebar"><strong><span class="mock-brand-mark" aria-hidden="true">◈</span> Pulse</strong>
+            ${nav(['Workspace navigation','التنقل في مساحة العمل'], [
+                ['overview',['Overview','نظرة عامة']], ['activity',['Activity','النشاط']], ['team',['Team','الفريق']]
+            ], label)}
+            <p data-workspace-name>Northstar Studio</p>
         </aside>
         <div class="mock-saas-content">
-            <h4>${label(['Workspace overview','نظرة عامة على مساحة العمل'])}</h4>
-            ${metrics([[['Active users','المستخدمون النشطون'],'1,284'],[['New accounts','الحسابات الجديدة'],'208'],[['Retention','الاحتفاظ'],'91%']],label)}
-            <div class="mock-card"><strong>${label(['Weekly activity','النشاط الأسبوعي'])}</strong>
-                ${bars(label(['Activity peaks on Friday','ذروة النشاط يوم الجمعة']),[36,48,44,62,84,58,64])}
+            <div class="mock-appbar" data-preview-workspace><span>${label(['Workspace / Overview','مساحة العمل / نظرة عامة'])}</span>
+                ${account(label, 'MR', 'Maya Reed', ['Workspace administrator','مسؤولة مساحة العمل'])}</div>
+            <div class="mock-page-content" data-preview-modules>
+                <header class="mock-page-heading" data-preview-section="overview" tabindex="-1">
+                    <div><h4>${label(['Workspace overview','نظرة عامة على مساحة العمل'])}</h4>
+                    <p>${label(['Here’s how your workspace performed this week.','إليك أداء مساحة عملك هذا الأسبوع.'])}</p></div>
+                    ${badge(label(['Last 7 days','آخر 7 أيام']))}</header>
+                ${metrics([[['Active users','المستخدمون النشطون'],'1,284'],[['New accounts','الحسابات الجديدة'],'208'],[['Retention','الاحتفاظ'],'91%']],label)}
+                <section class="mock-card mock-activity" data-preview-section="activity" tabindex="-1">
+                    <div class="mock-section-title"><strong>${label(['Weekly activity','النشاط الأسبوعي'])}</strong>
+                    <span class="mock-trend">↑ 12.4%</span></div>
+                    <p>${label(['Daily active members compared with last week','الأعضاء النشطون يوميًا مقارنة بالأسبوع الماضي'])}</p>
+                    ${bars(label(['Activity peaks on Friday','ذروة النشاط يوم الجمعة']),[36,48,44,62,84,58,64])}
+                    <div class="mock-chart-days" aria-hidden="true">${label(['Mon Tue Wed Thu Fri Sat Sun','إثن ثلا أرب خمي جمع سبت أحد']).split(' ').map(day => `<span>${day}</span>`).join('')}</div>
+                </section>
+                <section class="mock-card mock-team" data-preview-section="team" tabindex="-1">
+                    <div class="mock-section-title"><strong>${label(['Team members','أعضاء الفريق'])}</strong><span>${label(['3 members','3 أعضاء'])}</span></div>
+                    ${table([['Member','العضو'],['Role','الدور'],['Status','الحالة']], [
+                        ['Maya Reed',['Administrator','مسؤولة'],badge(label(['Active','نشط']))],
+                        ['Samir Noor',['Analyst','محلل'],badge(label(['Active','نشط']))],
+                        ['Lina Park',['Editor','محررة'],badge(label(['Invited','تمت الدعوة']))]
+                    ], label)}
+                </section>
             </div>
-            <div class="mock-section-title"><strong>${label(['Team members','أعضاء الفريق'])}</strong>${badge(label(['Invite member','دعوة عضو']))}</div>
-            ${table([['Name','الاسم'],['Status','الحالة']], [['Samir Noor',['Active','نشط']],['Lina Reed',['Invited','تمت الدعوة']]], label)}
         </div>
     </div>`;
 }
 
+const products = [
+    ['lamp','lighting',['Arc Table Lamp','مصباح آرك'],['Brushed brass · linen shade','نحاس مصقول · غطاء كتاني'],64],
+    ['chair','furniture',['Fold Lounge Chair','كرسي فولد'],['Solid oak · olive upholstery','خشب البلوط · قماش زيتوني'],120],
+    ['clock','decor',['Dial Wall Clock','ساعة دَيل'],['Warm walnut · silent sweep','خشب الجوز · حركة هادئة'],38]
+];
+
+const filterButtons = (attribute, items, label) => items.map(([value, caption], index) =>
+    `<button type="button" ${attribute}="${value}" aria-pressed="${index === 0}">${label(caption)}</button>`).join('');
+
 function ecommerce(label) {
-    const products = [
-        ['lamp', ['Arc Lamp','مصباح آرك'], '64'],
-        ['chair', ['Fold Chair','كرسي فولد'], '120'],
-        ['clock', ['Dial Clock','ساعة دَيل'], '38']
-    ];
     return `<div class="mock-store">
-        <div class="mock-store-header"><strong>Form &amp; Field</strong><span>${label(['Shop · Home edit','المتجر · مختارات المنزل'])}</span>${badge(label(['Bag · 1','السلة · 1']))}</div>
-        <header><p>${label(['THE HOME EDIT','مختارات المنزل'])}</p><h4>${label(['Objects for everyday living','قطع للحياة اليومية'])}</h4></header>
-        <div class="mock-products">${products.map(([shape, name, price]) => `<article class="mock-product">
-            <div class="mock-product-art" data-product="${shape}" aria-hidden="true"><i></i></div>
-            <strong>${label(name)}</strong><span dir="ltr">$${price}</span></article>`).join('')}</div>
-        <div class="mock-store-cart"><strong>${label(['Your bag','سلتك'])}</strong><span>${label(['Arc Lamp × 1','مصباح آرك × 1'])}</span><b dir="ltr">$64</b></div>
+        <div class="mock-store-header" data-preview-workspace><strong>Form &amp; Field</strong>
+            ${nav(['Store navigation','التنقل في المتجر'], [
+                ['collection',['Shop','تسوّق']],['store-story',['The Home Edit','مختارات المنزل']]
+            ], label)}
+            <button class="mock-bag" type="button" data-preview-jump="cart">
+                <span class="mock-bag-icon" aria-hidden="true"></span> ${label(['Bag','السلة'])} <b data-cart-count>0</b></button></div>
+        <header class="mock-store-hero" data-preview-section="store-story" tabindex="-1"><div>
+            <p>${label(['The Home Edit','مختارات المنزل'])}</p>
+            <h4>${label(['Good design. Better days.','تصميم جميل لأيام أجمل.'])}</h4>
+            <div>${label(['Thoughtful objects for the spaces you live in.','قطع مدروسة للمساحات التي تعيش فيها.'])}</div>
+        </div><div class="mock-product-art mock-store-feature" data-product="lamp" aria-hidden="true"><i></i></div></header>
+        <section class="mock-collection" data-preview-section="collection" tabindex="-1">
+            <div class="mock-section-title"><strong>${label(['Shop the collection','تسوّق المجموعة'])}</strong></div>
+            <div class="mock-filters" role="group" aria-label="${label(['Product categories','فئات المنتجات'])}">
+                ${filterButtons('data-store-category', [['all',['All items','كل القطع']], ['lighting',['Lighting','الإضاءة']],
+                    ['furniture',['Furniture','الأثاث']], ['decor',['Decor','الديكور']]], label)}
+            </div>
+            <div class="mock-products">${products.map(([shape, category, name, material, price]) => `<article class="mock-product" data-category="${category}">
+                <div class="mock-product-art" data-product="${shape}" aria-hidden="true"><i></i></div>
+                <div class="mock-product-info"><strong>${label(name)}</strong><p>${label(material)}</p>
+                    <div><bdi>$${price}</bdi><button type="button" class="mock-action" data-cart-add="${price}" aria-label="${label(['Add to bag','أضف إلى السلة'])} · ${label(name)}">${label(['Add','أضف'])}</button></div>
+                </div></article>`).join('')}</div>
+        </section>
+        <section class="mock-store-cart" data-preview-section="cart" tabindex="-1">
+            <strong>${label(['Your bag','سلتك'])}</strong>
+            <span role="status"><b data-cart-total dir="ltr">$0</b></span>
+            <button type="button" data-cart-clear disabled>${label(['Empty bag','إفراغ السلة'])}</button>
+        </section>
     </div>`;
 }
 
 function landing(label) {
     const points = [
-        ['01',['Start with a clear brief','ابدأ بموجز واضح']],
-        ['02',['Share milestones','شارك مراحل العمل']],
-        ['03',['Deliver together','أنجز العمل مع فريقك']]
+        ['◇',['Plan with clarity','خطّط بوضوح'],['Turn a rough idea into a brief with owners and clear next steps.','حوّل فكرة أولية إلى موجز يحدد المسؤوليات والخطوات التالية.']],
+        ['↗',['See what’s moving','تابع المستجدات'],['Track milestones, decisions, and changes in one place.','تابع المراحل والقرارات والتغييرات في مكان واحد.']],
+        ['✓',['Launch together','أطلق مع فريقك'],['Keep design, engineering, and stakeholders in sync.','نسّق بين فرق التصميم والهندسة وأصحاب المصلحة.']]
     ];
     return `<div class="mock-landing">
-        <div class="mock-landing-nav"><strong>Linearise</strong><span>${label(['Product · About','المنتج · نبذة'])}</span></div>
+        <div class="mock-landing-nav" data-preview-workspace><strong><span class="mock-brand-mark" aria-hidden="true">✳</span> Linearise</strong>
+            ${nav(['Marketing navigation','التنقل في موقع المنتج'], [
+                ['features',['Product','المنتج']],['about',['About','نبذة']]
+            ], label)}
+            <button type="button" data-preview-start>${label(['Get started','ابدأ الآن'])}</button></div>
         <header class="mock-landing-hero">
-            <p>${label(['A calmer way to launch','طريقة أبسط للإطلاق'])}</p>
-            <h4>${label(['Give every launch a clear path.','امنح كل إطلاق مسارًا واضحًا.'])}</h4>
-            <p>${label(['One workspace for briefs, milestones and delivery.','مساحة واحدة للموجز ومراحل العمل والتسليم.'])}</p>
-            ${badge(label(['Explore the product →','استكشف المنتج ←']))}
+            <div><h4>${label(['Give every launch a clear path.','امنح كل إطلاق مسارًا واضحًا.'])}</h4>
+                <p>${label(['Plan the work, share progress, and bring your whole team to launch day with one workspace.','خطّط للعمل وشارك التقدم واصطحب فريقك إلى يوم الإطلاق في مساحة عمل واحدة.'])}</p>
+                <button type="button" class="mock-action" data-preview-start>${label(['Explore the workspace','استكشف مساحة العمل'])}</button></div>
+            <div class="mock-launch-art" aria-hidden="true">
+                <span>${label(['SUMMER LAUNCH','إطلاق الصيف'])}</span>
+                <strong>${label(['Launch plan','خطة الإطلاق'])}</strong>
+                ${[['Brief approved','اعتُمد الموجز'],['Design review','مراجعة التصميم'],['Launch day','يوم الإطلاق']].map((step, index) =>
+                    `<div><i>${['✓','◒','○'][index]}</i>${label(step)}</div>`).join('')}
+            </div>
         </header>
-        <div class="mock-benefits">${points.map(([num,title]) => `<div><span>${num}</span><strong>${label(title)}</strong></div>`).join('')}</div>
+        <section class="mock-feature-section" data-preview-section="features" tabindex="-1">
+            <h5>${label(['From first brief to launch day','من أول موجز إلى يوم الإطلاق'])}</h5>
+            <div class="mock-benefits">${points.map(([icon,title,body]) => `<div><span aria-hidden="true">${icon}</span><strong>${label(title)}</strong><p>${label(body)}</p></div>`).join('')}</div>
+        </section>
+        <footer class="mock-landing-footer" data-preview-section="about" data-preview-footer tabindex="-1">
+            <strong>Linearise</strong><span>${label(['A workspace for teams that ship together.','مساحة عمل للفرق التي تطلق منتجاتها معًا.'])}</span>
+        </footer>
     </div>`;
 }
 
 function internalTool(label) {
+    const records = [
+        ['review','REQ-201',['Printer replacement','استبدال طابعة'],'Lina Park',['In review','قيد المراجعة']],
+        ['approved','REQ-202',['Warehouse access','دخول المستودع'],'Samir Noor',['Approved','معتمد']],
+        ['pending','REQ-203',['Vendor onboarding','تهيئة مورد'],'Noor Ali',['Pending','معلق']],
+        ['review','REQ-204',['Equipment renewal','تجديد المعدات'],'Maya Reed',['In review','قيد المراجعة']]
+    ];
     return `<div class="mock-ops">
-        <div class="mock-ops-header"><strong>Relay / ${label(['Operations','العمليات'])}</strong>${badge(label(['New record','سجل جديد']))}</div>
-        <div class="mock-ops-toolbar"><span>${label(['Records','السجلات'])}</span><span>${label(['Workflow queue','قائمة سير العمل'])}</span><span>${label(['This week','هذا الأسبوع'])}</span></div>
-        ${metrics([[['Open','مفتوحة'],'24'],[['Awaiting review','بانتظار المراجعة'],'8'],[['Completed','مكتملة'],'63']],label)}
-        ${table([['Record','السجل'],['Owner','المسؤول'],['Status','الحالة']],[
-            ['REQ-201','Lina',['Review','مراجعة']],['REQ-202','Samir',['Approved','موافق عليه']],['REQ-203','Noor',['Pending','معلق']]
-        ],label)}
-        <div class="mock-workflow"><strong>${label(['Selected record · REQ-201','السجل المحدد · REQ-201'])}</strong>${badge(label(['Assign','تعيين']))}${badge(label(['Move to review','نقل للمراجعة']))}</div>
+        <div class="mock-ops-header" data-preview-workspace><strong><span class="mock-brand-mark" aria-hidden="true">▣</span> Relay</strong>
+            ${nav(['Operations navigation','التنقل في العمليات'], [
+                ['records',['Records','السجلات']],['workflow',['Workflow','سير العمل']]
+            ], label)}
+            ${account(label,'LP','Lina Park',['Operations coordinator','منسقة العمليات'])}</div>
+        <div class="mock-page-content" data-preview-modules>
+            <header class="mock-page-heading"><div><h4>${label(['Operations inbox','صندوق العمليات'])}</h4>
+                <p>${label(['Track service requests and approvals across your team.','تابع طلبات الخدمة والموافقات عبر فريقك.'])}</p></div></header>
+            ${metrics([[['Open requests','طلبات مفتوحة'],'24'],[['Awaiting review','بانتظار المراجعة'],'8'],[['Completed this week','المكتملة هذا الأسبوع'],'63']],label)}
+            <section class="mock-card mock-records" data-preview-section="records" tabindex="-1">
+                <div class="mock-section-title"><strong>${label(['Service requests','طلبات الخدمة'])}</strong>
+                    <label>${label(['Status','الحالة'])} <select data-record-filter>
+                        ${[['all',['All statuses','كل الحالات']],['review',['In review','قيد المراجعة']],
+                            ['approved',['Approved','معتمد']],['pending',['Pending','معلق']]].map(([value, text]) =>
+                            `<option value="${value}">${label(text)}</option>`).join('')}
+                    </select></label>
+                </div>
+                <table class="mock-table"><thead><tr>${[['Request','الطلب'],['Owner','المسؤول'],['Status','الحالة']].map(text =>
+                    `<th scope="col">${label(text)}</th>`).join('')}</tr></thead><tbody>
+                    ${records.map(([status,id,title,owner,text]) => `<tr data-record-status="${status}"><td><strong>${label(title)}</strong>
+                        <small dir="ltr">${id}</small></td><td>${owner}</td><td>${badge(label(text))}</td></tr>`).join('')}
+                </tbody></table>
+            </section>
+            <section class="mock-workflow" data-preview-section="workflow" tabindex="-1">
+                <div><strong>${label(['Approval workflow','مسار الموافقة'])}</strong><p>${label(['Requests move from intake to review before approval.','تنتقل الطلبات من الاستلام إلى المراجعة قبل الموافقة.'])}</p></div>
+                <div class="mock-workflow-steps">${badge(label(['Intake','الاستلام']))}${badge(label(['Review','المراجعة']))}${badge(label(['Approved','الموافقة']))}</div>
+            </section>
+        </div>
     </div>`;
 }
 
@@ -114,7 +215,13 @@ export function featureModules(label) {
         storage: `<strong>${label(['File library','مكتبة الملفات'])}</strong><div class="mock-drop">${label(['Drop files here · Browse','أفلت الملفات هنا · تصفح'])}</div><span>brief.pdf · 340 KB</span>`,
         jobs: `<strong>${label(['Processing queue','قائمة المعالجة'])}</strong><div class="mock-inline"><span>${label(['Export report','تصدير التقرير'])}</span>${badge(label(['Processing · 64%','قيد المعالجة · 64%']))}</div><progress max="100" value="64" aria-label="${label(['Report progress','تقدم التقرير'])}"></progress>`,
         orders: `<strong>${label(['Recent orders','الطلبات الأخيرة'])}</strong>${table([['Order','الطلب'],['Status','الحالة']], [['#1042',['Ready to ship','جاهز للشحن']],['#1041',['Paid','مدفوع']]],label)}`,
-        conversion: `<strong>${label(['Request a demo','اطلب عرضًا تجريبيًا'])}</strong><div class="mock-inline"><span class="mock-field">you@example.test</span>${badge(label(['Request demo','اطلب عرضًا']))}</div>`,
+        conversion: `<strong>${label(['Request a demo','اطلب عرضًا تجريبيًا'])}</strong>
+            <form class="mock-demo-form" data-preview-demo>
+                <label>${label(['Sample email','بريد إلكتروني تجريبي'])}
+                    <input type="email" value="maya@example.test" required></label>
+                <button type="submit" class="mock-action">${label(['Request demo','اطلب عرضًا'])}</button>
+                <p role="status"></p>
+            </form>`,
         roles: `<strong>${label(['Roles &amp; permissions','الأدوار والصلاحيات'])}</strong>${table([['Role','الدور'],['Permission','الصلاحية']], [[['Administrator','مسؤول'],['Manage workspace','إدارة مساحة العمل']],[['Viewer','مشاهد'],['Read only','القراءة فقط']]],label)}`
     };
 }

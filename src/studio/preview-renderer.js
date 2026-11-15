@@ -2,8 +2,10 @@ import { APPLICATION_TYPES, PREVIEW_FEATURE_KEYS } from './configuration.js';
 import { derivePreview } from './preview-model.js';
 import { featureModules, templates, translations } from './preview-templates.js';
 import { mountArchitectureExplorer } from './architecture/explorer.js';
+import { bindPreviewInteractions } from './preview-interactions.js';
 
 const displayFeatures = [...PREVIEW_FEATURE_KEYS, 'roles'];
+const viewports = ['desktop', 'tablet', 'mobile'];
 
 export function mountDesignStudio(store, reset) {
     const anchor = document.getElementById('architectural-showcase-card');
@@ -28,7 +30,6 @@ export function mountDesignStudio(store, reset) {
     <div class="studio-layout" id="studio-workspace">
         <form class="studio-settings" aria-label="Preview settings">
             <label>${localized('template')}<select name="applicationType">${options(APPLICATION_TYPES)}</select></label>
-            <label>${localized('theme')}<select name="theme">${options(['system', 'light', 'dark'])}</select></label>
             <fieldset><legend data-studio-copy="features"></legend>${displayFeatures.map(featureInput).join('')}</fieldset>
             <button type="button" class="studio-plan-link" data-studio-plan data-studio-copy="plan"></button>
             <button type="button" data-studio-reset data-studio-copy="reset"></button>
@@ -36,10 +37,19 @@ export function mountDesignStudio(store, reset) {
         </form>
         <div class="studio-canvas">
             <div class="studio-canvas-bar">${localized('preview')}<strong data-studio-current></strong></div>
-            <div data-studio-preview-panel><div class="studio-preview">
-                <div class="studio-workspaces" data-studio-module="tenancy"><div></div></div>
+            <div data-studio-preview-panel>
+            <div class="studio-preview-tools">
+                <div class="studio-viewport-controls" dir="auto" role="group">${viewports.map((mode, index) =>
+                    `<button type="button" data-preview-viewport="${mode}" data-studio-copy="${mode}" aria-pressed="${index === 0}"></button>`).join('')}</div>
+                <button class="studio-preview-theme" type="button"><span aria-hidden="true"></span></button>
+            </div>
+            <div class="studio-preview-frame" data-viewport="desktop">
+            <div class="studio-frame-chrome"><span aria-hidden="true"></span><strong dir="auto"></strong></div>
+            <div class="studio-preview">
+                <div class="studio-workspaces" data-studio-module="tenancy" hidden><div></div></div>
                 <div class="studio-template"></div>
                 <div class="studio-modules"></div>
+            </div>
             </div>
             <p class="studio-recommendation" data-studio-copy="signFirst" hidden></p>
             </div>
@@ -52,6 +62,10 @@ export function mountDesignStudio(store, reset) {
     const workspace = studio.querySelector('#studio-workspace');
     const status = studio.querySelector('[role="status"]');
     const preview = studio.querySelector('.studio-preview');
+    const frame = studio.querySelector('.studio-preview-frame');
+    const viewportControls = studio.querySelector('.studio-viewport-controls');
+    const themeButton = studio.querySelector('.studio-preview-theme');
+    const systemTheme = matchMedia('(prefers-color-scheme: dark)');
     const screen = studio.querySelector('.studio-template');
     const modules = studio.querySelector('.studio-modules');
     const workspaces = studio.querySelector('.studio-workspaces');
@@ -72,6 +86,15 @@ export function mountDesignStudio(store, reset) {
 
     const label = pair => pair[language === 'ar' ? 1 : 0];
     const copy = key => label(translations[key]);
+    function renderTheme() {
+        const theme = store.getState().visual.theme;
+        const dark = theme === 'system' ? systemTheme.matches : theme === 'dark';
+        const action = copy(dark ? 'useLight' : 'useDark');
+        preview.dataset.previewTheme = dark ? 'dark' : 'light';
+        themeButton.setAttribute('aria-label', action);
+        themeButton.title = action;
+        themeButton.firstElementChild.textContent = dark ? '☀' : '☾';
+    }
     function setExpanded(expanded) {
         workspace.hidden = !expanded;
         disclosure.setAttribute('aria-expanded', String(expanded));
@@ -86,13 +109,14 @@ export function mountDesignStudio(store, reset) {
             studio.lang = language;
             studio.dir = language === 'ar' ? 'rtl' : 'ltr';
             form.setAttribute('aria-label', copy('controls'));
+            viewportControls.setAttribute('aria-label', copy('viewport'));
             returnLink.textContent = copy('backToStudio');
             studio.querySelectorAll('[data-studio-copy]').forEach(node => {
                 node.textContent = copy(node.dataset.studioCopy);
             });
             setExpanded(!workspace.hidden);
-            workspaces.firstElementChild.innerHTML = `<span>${label(['Workspace','مساحة العمل'])}</span>
-                <strong>Northstar Studio <span aria-hidden="true">⌄</span></strong>`;
+            workspaces.firstElementChild.innerHTML = `<label>${label(['Workspace','مساحة العمل'])}
+                <select data-preview-workspace-select><option>Northstar Studio</option><option>Harbor Design</option></select></label>`;
         }
 
         const state = store.getState();
@@ -100,7 +124,17 @@ export function mountDesignStudio(store, reset) {
         const templateChanged = localeChanged || model.template !== previous?.template;
         if (templateChanged) {
             current.textContent = copy(model.template);
+            frame.querySelector('.studio-frame-chrome strong').textContent = {
+                saas: 'app.pulse.example', ecommerce: 'formandfield.example',
+                landing: 'linearise.example', 'internal-tool': 'ops.relay.example'
+            }[model.template];
             screen.innerHTML = templates[model.template](label);
+            screen.querySelector('[data-preview-workspace]').append(workspaces);
+            const footer = screen.querySelector('[data-preview-footer]');
+            if (footer) footer.before(modules);
+            else (screen.querySelector('[data-preview-modules]') ?? screen.firstElementChild).append(modules);
+            const workspaceName = screen.querySelector('[data-workspace-name]');
+            if (workspaceName) workspaceName.textContent = workspaces.querySelector('select').value;
         }
 
         if (localeChanged) {
@@ -114,14 +148,14 @@ export function mountDesignStudio(store, reset) {
                 return section;
             }));
         }
-        if (model.theme !== previous?.theme) preview.dataset.previewTheme = model.theme;
+        if (localeChanged || model.theme !== previous?.theme) renderTheme();
         if (model.density !== previous?.density) preview.dataset.density = model.density;
         if (templateChanged) form.elements.applicationType.value = model.template;
-        if (model.theme !== previous?.theme) form.elements.theme.value = model.theme;
         for (const key of displayFeatures) {
             const active = key === 'roles' ? model.roles : model.capabilities[key];
             const wasActive = key === 'roles' ? previous?.roles : previous?.capabilities[key];
             if (localeChanged || active !== wasActive) {
+                if (key === 'tenancy') workspaces.hidden = !active;
                 moduleElements[key].classList.toggle('is-active', active);
                 moduleElements[key].inert = !active;
                 moduleElements[key].setAttribute('aria-hidden', String(!active));
@@ -134,12 +168,24 @@ export function mountDesignStudio(store, reset) {
     }
 
     listen(form, 'submit', event => event.preventDefault());
+    bindPreviewInteractions(preview, events.signal, () => copy('demoSaved'));
+    listen(systemTheme, 'change', () => {
+        if (store.getState().visual.theme === 'system') renderTheme();
+    });
+    listen(themeButton, 'click', () => store.update({ visual: { theme: preview.dataset.previewTheme === 'dark' ? 'light' : 'dark' } }));
+    listen(viewportControls, 'click', event => {
+        const mode = event.target.closest('[data-preview-viewport]')?.dataset.previewViewport;
+        if (!viewports.includes(mode) || mode === frame.dataset.viewport) return;
+        frame.dataset.viewport = mode;
+        for (const button of viewportControls.children) {
+            button.setAttribute('aria-pressed', String(button.dataset.previewViewport === mode));
+        }
+    });
     listen(disclosure, 'click', () => setExpanded(workspace.hidden));
     listen(form, 'change', ({ target }) => {
         status.textContent = '';
         const { name, value, checked } = target;
         if (name === 'applicationType') store.update({ applicationType: value });
-        else if (name === 'theme') store.update({ visual: { theme: value } });
         else if (name === 'roles') store.update({ engineering: { rbac: checked } });
         else if (PREVIEW_FEATURE_KEYS.includes(name)) store.update({ previewFeatures: { [name]: checked } });
     });

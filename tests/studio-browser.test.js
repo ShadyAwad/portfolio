@@ -104,4 +104,15 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await check("q('.studio-settings [name=jobs]').checked && q('.universe-panel').hidden");
     await evaluate("click('[data-studio-reset]')");
     await check("q('.studio-settings select[name=applicationType]').value === 'saas' && !q('.studio-settings [name=jobs]').checked && localStorage.getItem('awad-portfolio-studio') === null");
+
+    await evaluate(`template('ecommerce');view(0);
+        window.beforeCart = localStorage.getItem('awad-portfolio-studio');
+        click('[data-store-category=lighting]');click('[data-cart-add]');click('[data-preview-viewport=mobile]');`);
+    await check("q('[data-cart-count]').textContent === '1' && q('[data-category=furniture]').hidden && q('.studio-preview-frame').dataset.viewport === 'mobile' && localStorage.getItem('awad-portfolio-studio') === beforeCart");
+    await evaluate("window.previewTheme = q('.studio-preview').dataset.previewTheme;click('.studio-preview-theme')");
+    await check("q('.studio-preview').dataset.previewTheme !== previewTheme && document.documentElement.dataset.theme === 'light' && q('[data-cart-count]').textContent === '1'");
+    await evaluate("template('landing');click('.studio-settings [name=conversion]');click('[data-preview-start]')");
+    await check("document.activeElement.type === 'email' && q('[data-preview-demo]').closest('.mock-landing')");
+    await evaluate("template('internal-tool');set('[data-record-filter]', 'review', 'change')");
+    await check("document.querySelectorAll('[data-record-status]:not([hidden])').length === 2");
 });

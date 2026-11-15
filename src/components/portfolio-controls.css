@@ -14,6 +14,7 @@ html[dir="rtl"] .profile {
 }
 .contact-dock {
     display: flex;
+    flex-wrap: wrap;
     align-self: start;
     align-items: end;
     gap: 12px;
@@ -28,6 +29,22 @@ html[dir="rtl"] .profile {
     scroll-margin-block-start: 3.5rem;
 }
 
+.dock-copy {
+    align-self: center;
+    min-block-size: 44px;
+    padding: .4rem .65rem;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    color: var(--text);
+    background: var(--input-bg);
+    font: inherit;
+    font-size: .78rem;
+    cursor: pointer;
+}
+.dock-copy:hover, .dock-copy:focus-visible { border-color: var(--accent); color: var(--accent); }
+.dock-status { color: var(--muted); font-size: .8rem; overflow-wrap: anywhere; }
+.dock-status:not(:empty) { margin-block-start: .45rem; }
+.dock-copy-field { position: fixed; inset-block-start: 0; inset-inline-start: 0; opacity: 0; pointer-events: none; }
 .contact-dock a {
     position: relative;
     display: grid;
@@ -88,6 +105,10 @@ html[dir="rtl"] .profile {
     .contact-dock a:hover::after,
     .contact-dock a:hover .dock-label { opacity: 1; }
     .contact-dock a:hover .dock-icon { color: var(--accent); border-color: var(--accent); }
+}
+@media (max-width: 480px) {
+    .contact-dock { gap: 5px; padding-inline: 7px; }
+    .contact-dock a { inline-size: 44px; }
 }
 
 .configurator-header {
