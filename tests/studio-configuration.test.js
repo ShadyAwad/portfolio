@@ -11,7 +11,7 @@ test('partial updates publish one immutable snapshot and preserve other inputs',
     const listener = (next, previous) => calls.push([next, previous]);
     const unsubscribe = store.subscribe(listener);
     store.subscribe(listener);
-    const patch = { applicationType: 'api', pricingTier: 4, features: { pwa: true }, usage: { users: 50 } };
+    const patch = { applicationType: 'internal-tool', pricingTier: 4, features: { pwa: true }, usage: { users: 50 } };
     const next = store.update(patch);
     patch.features.pwa = false;
     assert.equal(next.features.pwa, true);
@@ -34,7 +34,7 @@ test('validation applies safe defaults, bounds counts, and preserves zero versus
         engineering: { rls: true, audit: 1 }, unknown: 'value'
     });
     const state = store.getState();
-    assert.equal(state.applicationType, 'unspecified');
+    assert.equal(state.applicationType, 'saas');
     assert.equal(state.pricingTier, 1);
     assert.deepEqual(state.visual, { theme: 'system', density: 'compact' });
     assert.deepEqual(state.features, { pwa: false, l10n: false, rbac: false, ai: false });

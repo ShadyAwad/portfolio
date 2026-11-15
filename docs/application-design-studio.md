@@ -29,3 +29,12 @@ Counts accept finite numbers, round down and clamp to 0–1 billion. Unknown fie
 - Decide whether drafts are session-only, saved locally, or shareable. Persistence would need explicit schema versioning and migrations.
 - Decide whether priced and engineering RBAC should be linked automatically, and how incompatible features should be represented.
 - Agree on the preview and diagram contracts before implementing either renderer. Any change to the existing pricing table or planning assumptions should be reviewed separately.
+
+## Checkpoint 2
+
+Application types are now `saas` (default), `ecommerce`, `landing`, and `internal-tool`. Earlier provisional values are unsupported and normalize to the default when loading a draft. The new `previewFeatures` group holds independent boolean prototype flags for authentication, analytics, tenancy, storage, background jobs, order management, and conversion forms. All default to false. Orders render only in E-commerce and conversion forms render only in Landing Page. Selections are retained across templates. Engineering RBAC supplies the roles preview and never enables the priced add-on. Authentication recommendations are advisory.
+
+- `preview-model.js` derives a read-only template, theme, feature availability, and recommendations from the validated snapshot. Pricing and usage estimates are outside this view model.
+- `preview-templates.js` holds localized, fictional UI samples. `preview-renderer.js` binds a single form and updates only affected modules. It rebuilds the sample template on type or language changes and reuses it for feature changes.
+- `persistence.js` reads and writes a version 1 envelope under `awad-portfolio-studio`. It persists validated configuration only. Reset applies the store defaults and removes that key. Invalid envelopes are ignored, known fields are validated, and storage failures leave the Studio usable for the session. Shareable URLs and cross-tab synchronization are outside this checkpoint.
+- `preview-entry.js` restores state before the estimator initializes and mounts the builder independently of the hero markup. The preview theme follows its explicit setting or the device scheme and does not change the portfolio theme.

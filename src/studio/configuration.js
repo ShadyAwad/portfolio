@@ -1,11 +1,14 @@
 export const MAX_USAGE = 1_000_000_000;
 export const FEATURE_KEYS = Object.freeze(['pwa', 'l10n', 'rbac', 'ai']);
 export const ENGINEERING_KEYS = Object.freeze(['semantic', 'schedules', 'rbac', 'audit', 'webauthn', 'rls']);
+export const APPLICATION_TYPES = Object.freeze(['saas', 'ecommerce', 'landing', 'internal-tool']);
+export const PREVIEW_FEATURE_KEYS = Object.freeze(['auth', 'analytics', 'tenancy', 'storage', 'jobs', 'orders', 'conversion']);
 
 const defaults = freeze({
-    applicationType: 'unspecified',
+    applicationType: 'saas',
     pricingTier: 1,
     features: { pwa: false, l10n: false, rbac: false, ai: false },
+    previewFeatures: Object.fromEntries(PREVIEW_FEATURE_KEYS.map(key => [key, false])),
     usage: { tenants: 5, users: 250, requests: null, records: 10000, uploads: 100, jobs: 0, notifications: 0 },
     visual: { theme: 'system', density: 'comfortable' },
     engineering: { semantic: false, schedules: false, rbac: false, audit: false, webauthn: false, rls: false }
@@ -36,9 +39,10 @@ function applyPatch(current, patch) {
     const input = object(patch);
     const visual = object(input.visual);
     return freeze({
-        applicationType: choice(input.applicationType, ['unspecified', 'web', 'pwa', 'internal-tool', 'api'], current.applicationType),
+        applicationType: choice(input.applicationType, APPLICATION_TYPES, current.applicationType),
         pricingTier: choice(input.pricingTier, [1, 2, 3, 4, 5], current.pricingTier),
         features: patchGroup(current.features, input.features, flag),
+        previewFeatures: patchGroup(current.previewFeatures, input.previewFeatures, flag),
         usage: patchGroup(current.usage, input.usage, (value, previous, key) =>
             key === 'requests' && value === null ? null : count(value, previous)),
         visual: {

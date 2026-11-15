@@ -1,3 +1,4 @@
+import './src/studio/preview-entry.js';
 import { configuration } from './src/studio/configuration.js';
 import { priceProject } from './src/studio/pricing.js';
 import { bindArchitectureInputs, unbindArchitectureInputs } from './src/studio/architecture-inputs.js';
