@@ -24,8 +24,8 @@ export function bindArchitectureInputs(root) {
         if (ENGINEERING_KEYS.includes(key)) {
             configuration.update({ engineering: { [key]: target.checked } });
         } else if (Object.hasOwn(configuration.getState().usage, key)) {
-            const value = target.value === '' && key === 'requests' ? null : target.valueAsNumber || 0;
-            // A blank number can be part of an edit, even when the model uses zero.
+            const value = target.value === '' ? null : target.valueAsNumber;
+            // Keep the user's draft while the validated snapshot updates.
             editingInput = target;
             try {
                 configuration.update({ usage: { [key]: value } });

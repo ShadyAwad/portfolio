@@ -38,3 +38,64 @@ Application types are now `saas` (default), `ecommerce`, `landing`, and `interna
 - `preview-templates.js` holds localized, fictional UI samples. `preview-renderer.js` binds a single form and updates only affected modules. It rebuilds the sample template on type or language changes and reuses it for feature changes.
 - `persistence.js` reads and writes a version 1 envelope under `awad-portfolio-studio`. It persists validated configuration only. Reset applies the store defaults and removes that key. Invalid envelopes are ignored, known fields are validated, and storage failures leave the Studio usable for the session. Shareable URLs and cross-tab synchronization are outside this checkpoint.
 - `preview-entry.js` restores state before the estimator initializes and mounts the builder independently of the hero markup. The preview theme follows its explicit setting or the device scheme and does not change the portfolio theme.
+
+## Checkpoint 3: Engineering capacity and effort
+
+The canonical snapshot now has a flat `capacity` group. The existing v1 draft envelope remains compatible: older drafts receive defaults for absent fields and known fields are validated. Null capacity assumptions mean unavailable. Blank workload counts are now stored as null; the existing blank daily requests field still means use the per-user model, and explicit zero still means zero. The legacy Architecture Mode score, pricing, and previews keep their existing contracts.
+
+All model metrics are structured as `{ value, unit, status, warnings, assumptions, intermediates }`. Status is `ok`, `warning`, or `unavailable`; unavailable metrics have null values and a reason. Individual metrics can remain valid when a related input is missing. Counts and byte totals that require exact integers are checked against Number.MAX_SAFE_INTEGER (9,007,199,254,740,991); larger exact sums or products become unavailable. Storage and effort use integer arithmetic internally, and queue slot thresholds use exact arithmetic for entered decimals. Display formatting rounds rates for readability.
+
+### API workload
+
+- Daily requests = daily active users × requests per active user per day, unless an explicit validated daily override is set.
+- Average RPS = daily requests ÷ 86,400 seconds.
+- Busiest-hour average RPS = daily requests × busiest-hour share ÷ 3,600 seconds. The share is between 1/24 (uniform traffic) and 1.
+- Illustrative burst RPS = busiest-hour average RPS × the assumed burst multiplier. This is a scenario without a predicted duration or percentile.
+
+Defaults are 10 requests per active user, a 15% busiest-hour share, and 2× burst. For 12,000 users × 18 requests, daily volume is 216,000. Dividing by 86,400 gives 2.5 average RPS. A 15% busiest hour has 32,400 requests or 9 RPS; at 2.5× the illustrative burst is 22.5 RPS. These rates do not predict database query latency or server counts.
+
+### Background processing
+
+- Arrival rate λ = (background jobs/day + notifications/day) ÷ 86,400. One notification is modeled as one additional job. Jobs already counted as notifications must be excluded from background jobs. Include reports and scheduled runs in the background jobs count; a schedule flag alone cannot determine their volumes.
+- Effective slots C = worker processes × concurrent slots per process. A process can serve more than one concurrent task, subject to resource limits.
+- Theoretical capacity = C ÷ mean service time S (jobs/s). Utilization = λ × S ÷ C. Zero capacity has undefined utilization even if arrivals are zero.
+- Net backlog growth = max(0, λ − C/S) × 86,400 jobs/day under sustained load. Exactly 100% has zero net deterministic growth and no margin for variability.
+- Minimum slots at target utilization u = ceil(λ × S ÷ u), where 0 < u < 1. The UI accepts 1% through 99%. This is a slot count, with no implied number of processes.
+
+Defaults are 0.5 seconds/job, one process with four slots, and a 70% target. For 864,000 jobs/day, λ = 10 jobs/s. With four slots and 0.5 seconds/job, capacity is 8 jobs/s, utilization is 125%, and net backlog grows 2 × 86,400 = 172,800 jobs/day. The target needs ceil(5 ÷ .7) = 8 slots.
+
+This fluid model assumes a stationary sustained arrival rate, a representative mean service time, homogeneous pooled slots, and enough CPU/I/O capacity. It excludes arrival burstiness, service-time tails, retries, scaling delays, contention, external rate limits, and priority effects. Utilization alone does not determine waiting time.
+
+### Monthly database and storage growth
+
+- Structured bytes = records × average record bytes. Audit bytes = audit records × average audit record bytes when audit is enabled. File bytes = uploads × average upload bytes.
+- Raw vector bytes = monthly embedding count × dimensions × bytes per element when semantic search is enabled. Element widths of 2, 4, or 8 bytes describe raw encodings only; the selected storage engine may use a different representation.
+- Raw application bytes = sum of those four components. Raw DB bytes = structured + audit + vectors.
+- DB overhead and index overhead are independent percentages of raw DB bytes, each rounded up to a whole byte. Object metadata = uploads × metadata bytes per upload.
+- Primary bytes = raw bytes + DB overhead + indexes + object metadata. Replica bytes and backup bytes are each primary bytes × their configured full-copy count. Estimated total = primary + replicas + backups. This deliberately models uniform full copies for both database and objects; set counts to zero if irrelevant or estimate those copies externally for more specific strategies.
+- Bytes are exact within the safe integer range. GiB = bytes ÷ 2³⁰; MiB = bytes ÷ 2²⁰. No decimal GB/MB is implied.
+
+Defaults: 2,048 bytes/record, 512 bytes/audit record, 5 MiB/upload, 1,536 vector dimensions at 4 bytes each, 25% database overhead, 30% index overhead, 1,024 bytes/file metadata, and zero additional replicas/backups. Enabled audit/vector components require their own counts, with no assumed counts or implied audit events per request.
+
+For 100 records × 2,000 B, 20 audit records × 500 B, 2 uploads × 1,000,000 B, and 10 vectors × 768 × 4 B, raw bytes are 2,240,720. The DB subtotal is 240,720 B. With 25% and 30% overhead, the additions are 60,180 B and 72,216 B. With 100 B per upload, primary storage is 2,373,316 B. One extra replica and one backup give 7,119,948 B/month, about 6.7901 MiB. This is gross monthly growth before deletions or retention, and cannot reproduce PostgreSQL page, tuple, TOAST, WAL, index, compression or vector index behavior.
+
+### Development effort
+
+The effort model accepts explicit baseline and feature range tables, in whole engineering hours. It adds selected feature ranges within each package, then independently sums lower and upper bounds. Missing, reversed, or unsafe ranges make the affected package and total unavailable. The current view uses the documented default tables. There is no complexity-to-hours multiplier or change to pricing. Work is additive person-hours with no calendar or parallelism assumptions. Integration uncertainty, QA depth, accessibility targets and scope changes still need human review.
+
+| Work package | Baseline hours | Additional hours if selected |
+| --- | ---: | --- |
+| Frontend | 12–24 | Analytics 4–8, conversion 3–6, PWA 4–8, localization 4–10 |
+| Backend/API | 10–20 | Orders 8–16, tenancy 6–12 |
+| Database/queries | 6–12 | Semantic search 6–14, audit 4–8 |
+| Authentication/authorization | 0–0 | Sign-in 6–12, RBAC 4–10, WebAuthn 4–8, RLS 6–12 |
+| Background processing | 0–0 | Jobs 6–12, schedules 3–6 |
+| Integrations | 0–0 | File storage 4–8, AI integration 6–14 |
+| Testing/validation | 8–16 | Included in baseline |
+| Deployment | 4–8 | Included in baseline |
+
+Jobs or notifications above zero and uploads above zero can imply their respective work packages even if the visual prototype flags are off. Order and conversion work obey template compatibility. Paid and engineering RBAC can express the same work but are counted once here; the model does not toggle either flag. With a 40–80 hour base, sign-in adds 6–12, RBAC 4–10, and jobs 6–12, producing 56–114 engineering hours with no file integration. It is a planning range, not a delivery promise.
+
+### Boundaries
+
+`src/studio/capacity/` contains independently testable workload, queue, storage, effort, assumption validation, and result modules. The browser panel only binds assumption inputs and renders the results with formulas and intermediate quantities. The optional existing planner receives the panel; a compact Advanced Architecture Mode shell is provided when that earlier uncommitted UI is absent. Pricing and the four frontend previews retain their separate model boundaries. Architecture graph design and commercial pricing changes remain future checkpoints.

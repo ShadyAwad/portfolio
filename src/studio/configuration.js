@@ -1,3 +1,5 @@
+import { capacityDefaults, validAssumption } from './capacity/assumptions.js';
+
 export const MAX_USAGE = 1_000_000_000;
 export const FEATURE_KEYS = Object.freeze(['pwa', 'l10n', 'rbac', 'ai']);
 export const ENGINEERING_KEYS = Object.freeze(['semantic', 'schedules', 'rbac', 'audit', 'webauthn', 'rls']);
@@ -11,6 +13,7 @@ const defaults = freeze({
     previewFeatures: Object.fromEntries(PREVIEW_FEATURE_KEYS.map(key => [key, false])),
     usage: { tenants: 5, users: 250, requests: null, records: 10000, uploads: 100, jobs: 0, notifications: 0 },
     visual: { theme: 'system', density: 'comfortable' },
+    capacity: capacityDefaults,
     engineering: { semantic: false, schedules: false, rbac: false, audit: false, webauthn: false, rls: false }
 });
 
@@ -43,13 +46,15 @@ function applyPatch(current, patch) {
         pricingTier: choice(input.pricingTier, [1, 2, 3, 4, 5], current.pricingTier),
         features: patchGroup(current.features, input.features, flag),
         previewFeatures: patchGroup(current.previewFeatures, input.previewFeatures, flag),
-        usage: patchGroup(current.usage, input.usage, (value, previous, key) =>
-            key === 'requests' && value === null ? null : count(value, previous)),
+        usage: patchGroup(current.usage, input.usage, (value, previous) =>
+            value === null ? null : count(value, previous)),
         visual: {
             theme: choice(visual.theme, ['system', 'light', 'dark'], current.visual.theme),
             density: choice(visual.density, ['comfortable', 'compact'], current.visual.density)
         },
-        engineering: patchGroup(current.engineering, input.engineering, flag)
+        engineering: patchGroup(current.engineering, input.engineering, flag),
+        capacity: patchGroup(current.capacity, input.capacity, (value, previous, key) =>
+            validAssumption(key, value) ? value : previous)
     });
 }
 
