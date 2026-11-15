@@ -1,6 +1,7 @@
 import { APPLICATION_TYPES, PREVIEW_FEATURE_KEYS } from './configuration.js';
 import { derivePreview } from './preview-model.js';
 import { featureModules, templates, translations } from './preview-templates.js';
+import { mountArchitectureExplorer } from './architecture/explorer.js';
 
 const displayFeatures = [...PREVIEW_FEATURE_KEYS, 'roles'];
 
@@ -33,12 +34,13 @@ export function mountDesignStudio(store, reset) {
         </form>
         <div class="studio-canvas">
             <div class="studio-canvas-bar">${localized('preview')}<strong data-studio-current></strong></div>
-            <div class="studio-preview">
+            <div data-studio-preview-panel><div class="studio-preview">
                 <div class="studio-workspaces" data-studio-module="tenancy"><div></div></div>
                 <div class="studio-template"></div>
                 <div class="studio-modules"></div>
             </div>
             <p class="studio-recommendation" data-studio-copy="signFirst" hidden></p>
+            </div>
         </div>
     </div>`;
     anchor.before(studio);
@@ -135,7 +137,10 @@ export function mountDesignStudio(store, reset) {
             PREVIEW_FEATURE_KEYS.some(key => next.previewFeatures[key] !== last.previewFeatures[key])) render();
     });
     render();
+    const unmountArchitecture = mountArchitectureExplorer(studio.querySelector('.studio-canvas'),
+        studio.querySelector('[data-studio-preview-panel]'), store);
     return () => {
+        unmountArchitecture();
         events.abort();
         observer.disconnect();
         unsubscribe();
