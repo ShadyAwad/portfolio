@@ -6,6 +6,7 @@ import { translations } from '../preview-templates.js';
 import { architectureCopy } from './copy.js';
 import { buildArchitectureGraph, resolveNodeSelection } from './graph.js';
 import { layoutArchitecture } from './layout.js';
+import { mountUniverse } from '../universe/view.js';
 import './explorer.css';
 
 const ns = 'http://www.w3.org/2000/svg';
@@ -19,9 +20,11 @@ export function mountArchitectureExplorer(canvas, preview, store) {
     const switcher = document.createElement('div');
     switcher.className = 'architecture-switch';
     switcher.setAttribute('role', 'group');
-    switcher.innerHTML = '<button type="button" aria-pressed="true"></button><button type="button" aria-pressed="false"></button>';
-    const [previewButton, architectureButton] = switcher.children;
+    switcher.innerHTML = Array.from({ length: 3 }, () => '<button type="button" aria-pressed="false"></button>').join('');
+    const [previewButton, architectureButton, universeButton] = switcher.children;
+    previewButton.setAttribute('aria-pressed', 'true');
     const explorer = document.createElement('div');
+    explorer.id = 'studio-architecture-panel';
     explorer.className = 'architecture-explorer';
     explorer.hidden = true;
     explorer.innerHTML = `<p class="architecture-hint"></p><div class="architecture-grid">
@@ -31,6 +34,16 @@ export function mountArchitectureExplorer(canvas, preview, store) {
     canvas.append(explorer);
     const hint = explorer.querySelector('.architecture-hint');
     const inspector = explorer.querySelector('.architecture-inspector');
+    const diagramGrid = inspector.parentElement;
+    const universe = mountUniverse(canvas, (id, focus) => {
+        selection = id;
+        updateSelection(focus);
+    });
+    preview.id = 'studio-preview-panel';
+    universe.panel.id = 'studio-universe-panel';
+    previewButton.setAttribute('aria-controls', preview.id);
+    architectureButton.setAttribute('aria-controls', explorer.id);
+    universeButton.setAttribute('aria-controls', universe.panel.id);
     const scroll = explorer.querySelector('.architecture-scroll');
     const legend = explorer.querySelector('.architecture-legend');
     const outline = explorer.querySelector('.architecture-outline');
@@ -50,6 +63,8 @@ export function mountArchitectureExplorer(canvas, preview, store) {
     const events = new AbortController();
     const listen = (root, name, handler) => root.addEventListener(name, handler, { signal: events.signal });
     let graph;
+    let graphState;
+    let view = 'preview';
     let selection;
     let locale = 'en';
     let outlineSignature = '';
@@ -110,7 +125,8 @@ export function mountArchitectureExplorer(canvas, preview, store) {
     function renderDetails() {
         const node = graph.nodes.find(item => item.id === selection);
         if (!node) return;
-        const signature = JSON.stringify([locale, node, graph.boundaries]);
+        const title = view === 'universe' && node.id === 'browser' ? label('universeCore') : label(node.label);
+        const signature = JSON.stringify([locale, title, node, graph.boundaries]);
         if (signature === inspectorSignature) return;
         inspectorSignature = signature;
         const metrics = Object.entries(node.metrics);
@@ -126,7 +142,7 @@ export function mountArchitectureExplorer(canvas, preview, store) {
             .filter(([, value]) => value !== null)
             .map(([key, value]) => `${label(key)}: ${assumptionValue(key, value)}`).join(' · ');
         inspector.innerHTML = `<div class="architecture-inspector-label">${label('selected')}</div>
-            <h4 aria-live="polite">${label(node.label)}</h4>
+            <h4 aria-live="polite">${title}</h4>
             <p>${label(node.description)}</p>
             ${boundary ? `<p class="architecture-context">${label('boundaries')}: ${label(boundary.id)}</p>` : ''}
             ${node.context.length ? `<p class="architecture-context">${label('setting')}: ${node.context.map(label).join(' · ')}</p>` : ''}
@@ -140,6 +156,11 @@ export function mountArchitectureExplorer(canvas, preview, store) {
     }
 
     function updateSelection(focus = false) {
+        if (view === 'universe') {
+            universe.updateSelection(selection, focus);
+            renderDetails();
+            return;
+        }
         for (const node of graph.nodes) {
             const element = nodeMap.get(node.id)?.element;
             element?.setAttribute('aria-pressed', String(node.id === selection));
@@ -156,17 +177,27 @@ export function mountArchitectureExplorer(canvas, preview, store) {
         locale = document.documentElement.lang.startsWith('ar') ? 'ar' : 'en';
         setText(previewButton, label('preview'));
         setText(architectureButton, label('architecture'));
+        setText(universeButton, label('universe'));
         switcher.setAttribute('aria-label', label('view'));
-        if (explorer.hidden) return;
+        if (view === 'preview') return;
 
         const state = store.getState();
-        graph = buildArchitectureGraph(state, {
-            api: modelApiWorkload(state.usage, state.capacity),
-            queue: modelQueueCapacity(state.usage, state.capacity),
-            storage: modelStorageGrowth(state.usage, state.engineering, state.capacity)
-        });
-        const focusedNode = document.activeElement?.dataset?.archNode;
+        if (graphState !== state) {
+            graph = buildArchitectureGraph(state, {
+                api: modelApiWorkload(state.usage, state.capacity),
+                queue: modelQueueCapacity(state.usage, state.capacity),
+                storage: modelStorageGrowth(state.usage, state.engineering, state.capacity)
+            });
+            graphState = state;
+        }
         selection = resolveNodeSelection(graph, selection);
+        if (view === 'universe') {
+            const focused = document.activeElement?.dataset?.universeNode;
+            universe.render(graph, label, locale);
+            updateSelection(Boolean(focused && focused !== selection));
+            return;
+        }
+        const focusedNode = document.activeElement?.dataset?.archNode;
         const rtl = locale === 'ar';
         const layout = layoutArchitecture(graph, rtl, compact.matches);
         activeLayout = layout;
@@ -233,17 +264,25 @@ export function mountArchitectureExplorer(canvas, preview, store) {
         }
     }
 
-    function switchView(showArchitecture) {
-        preview.hidden = showArchitecture;
-        explorer.hidden = !showArchitecture;
-        previewButton.setAttribute('aria-pressed', String(!showArchitecture));
-        architectureButton.setAttribute('aria-pressed', String(showArchitecture));
+    function switchView(next) {
+        if (view === next) return;
+        if (view === 'universe') universe.hide();
+        view = next;
+        preview.hidden = next !== 'preview';
+        explorer.hidden = next !== 'architecture';
+        universe.panel.hidden = next !== 'universe';
+        if (next === 'universe') universe.details.append(inspector);
+        if (next === 'architecture') diagramGrid.append(inspector);
+        for (const [button, name] of [[previewButton, 'preview'], [architectureButton, 'architecture'], [universeButton, 'universe']]) {
+            button.setAttribute('aria-pressed', String(next === name));
+        }
         render();
     }
 
-    listen(previewButton, 'click', () => switchView(false));
-    listen(architectureButton, 'click', () => switchView(true));
-    listen(compact, 'change', render);
+    listen(previewButton, 'click', () => switchView('preview'));
+    listen(architectureButton, 'click', () => switchView('architecture'));
+    listen(universeButton, 'click', () => switchView('universe'));
+    listen(compact, 'change', () => { if (view === 'architecture') render(); });
     listen(diagram, 'click', event => {
         const id = event.target.closest('[data-arch-node]')?.dataset.archNode;
         if (id && graph.nodes.some(node => node.id === id)) { selection = id; updateSelection(true); }
@@ -269,7 +308,7 @@ export function mountArchitectureExplorer(canvas, preview, store) {
 
     const unsubscribe = store.subscribe((next, previous) => {
         const changed = (group, keys = Object.keys(next[group])) => keys.some(key => next[group][key] !== previous[group][key]);
-        if (!explorer.hidden && (next.applicationType !== previous.applicationType ||
+        if (view !== 'preview' && (next.applicationType !== previous.applicationType ||
             changed('previewFeatures') || changed('engineering') || changed('usage') || changed('capacity') ||
             changed('features', ['ai']))) render();
     });
@@ -281,6 +320,7 @@ export function mountArchitectureExplorer(canvas, preview, store) {
         observer.disconnect();
         events.abort();
         for (const record of [...nodeMap.values(), ...edgeMap.values()]) clearTimeout(record.timer);
+        universe.destroy();
         switcher.remove();
         explorer.remove();
     };

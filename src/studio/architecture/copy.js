@@ -1,6 +1,10 @@
 export const architectureCopy = {
     preview: ['Live Application Preview','معاينة التطبيق'],
     architecture: ['System Architecture','بنية النظام'],
+    universe: ['System Universe','كون النظام'],
+    universeCore: ['Application core · Browser / frontend','نواة التطبيق · المتصفح / الواجهة الأمامية'],
+    universeHome: ['Return to application core','العودة إلى نواة التطبيق'],
+    universeHint: ['Select a celestial body to inspect its component. Use arrow keys to navigate and Home to return to the application.','اختر جرمًا سماويًا لفحص مكوّنه. استخدم مفاتيح الأسهم للتنقل ومفتاح Home للعودة إلى التطبيق.'],
     view: ['Studio view','عرض الاستوديو'],
     diagram: ['Illustrative architecture diagram','مخطط توضيحي لبنية النظام'],
     scrollHint: ['Select a component to inspect it. Use arrow keys to move between components.','اختر مكوّنًا لعرض تفاصيله. استخدم مفاتيح الأسهم للتنقل بين المكوّنات.'],
