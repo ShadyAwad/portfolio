@@ -225,11 +225,13 @@ button:active {
 
 /* Logical Grid Placements (Totaling 12 scale parameters) */
 .profile {
-    grid-column: span 12;
+    grid-column: span 7;
+    align-self: start;
 }
 
 .calculator {
-    grid-column: span 12;
+    grid-column: span 5;
+    align-self: start;
 }
 
 .systems-topology {

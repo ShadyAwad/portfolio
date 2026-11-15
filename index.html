@@ -61,6 +61,61 @@
             </nav>
         </div>
 
+        <section class="bento-item calculator configurator" id="estimator-card" aria-labelledby="configurator-title">
+            <header class="configurator-header">
+                <span class="configurator-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 2h14v20H5zM8 6h8v3H8zM8 13h1m6 0h1m-8 4h1m6 0h1"/></svg></span>
+                <div>
+                    <h3 id="configurator-title" data-i18n="projectEstimator">Freelance Project Configurator</h3>
+                    <p data-i18n="configuratorIntro">Compare five project tiers, choose optional features, and see your estimate update.</p>
+                </div>
+                <button type="button" class="configurator-toggle" aria-controls="configurator-panel" aria-expanded="false">
+                    <span data-i18n="configuratorOpen">Configure a Project</span>
+                    <span data-i18n="configuratorClose" hidden>Collapse configurator</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+            </header>
+            <div class="configurator-panel" id="configurator-panel" inert>
+                <div class="configurator-clip">
+                    <div class="calc-ui">
+                        <label id="solutionTierLabel" for="tier" data-i18n="solutionTier">Freelance Service Tier</label>
+                        <div class="range-wrapper">
+                            <input type="range" id="tier" min="1" max="5" step="1" value="1" class="slider-control" />
+                            <div class="range-labels">
+                                <span data-i18n="tierRangeStart">Static</span>
+                                <span id="active-tier-val">Tier 1: Static Blueprint</span>
+                                <span data-i18n="tierRangeEnd">Bespoke</span>
+                            </div>
+                        </div>
+
+                        <label id="addonsLabel" style="margin-top: 20px; display: block;" data-i18n="addons">Optional Features</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" class="addon" id="opt-pwa" value="75"> <span data-i18n="checkboxPwa">Native Mobile Installation (PWA)</span></label>
+                            <label><input type="checkbox" class="addon" id="opt-l10n" value="50"> <span data-i18n="checkboxL10n">Asynchronous Multi-Language Matrix (l10n)</span></label>
+                            <label><input type="checkbox" class="addon" id="opt-rbac" value="100"> <span data-i18n="checkboxRBAC">Secure RBAC Authentication & Audit Logging</span></label>
+                            <label><input type="checkbox" class="addon" id="opt-ai" value="150"> <span data-i18n="checkboxAI">Smart AI Assistant / Custom LLM Pipelines</span></label>
+                        </div>
+
+                        <div class="price-box">
+                            <span data-i18n="estInvestment">Estimated Project Price:</span>
+                            <div class="price-row"><small>$</small><strong id="price-display">75</strong> <small>USD</small></div>
+                        </div>
+
+                        <div class="tier-links">
+                            <h4 data-i18n="tierEstimates">Active Service Blueprint</h4>
+                            <p id="tier-subtitle">High-performance single-page layout or landing page.</p>
+                            <ul>
+                                <li><a href="#" class="baseline-link" data-tier-index="1" data-i18n="tier1">Tier 1: Static Blueprint</a></li>
+                                <li><a href="#" class="baseline-link" data-tier-index="2" data-i18n="tier2">Tier 2: Dynamic Multi-View</a></li>
+                                <li><a href="#" class="baseline-link" data-tier-index="3" data-i18n="tier3">Tier 3: Full-Stack Core + AI</a></li>
+                                <li><a href="#" class="baseline-link" data-tier-index="4" data-i18n="tier4">Tier 4: Enterprise Secure & Cognitive</a></li>
+                                <li><a href="#" class="baseline-link" data-tier-index="5" data-i18n="tier5">Tier 5: Bespoke Interactive Canvas</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <div class="bento-item project-showcase" id="architectural-showcase-card">
             <h3 data-i18n="featuredProjects">Micro-Architectural Showcase (Flagship Systems)</h3>
 
@@ -152,7 +207,7 @@
                                     </button>
                                 </header>
                                 <div class="stanza-lightbox-media">
-                                    <img width="1586" height="992" decoding="async" alt="" hidden>
+                                    <img decoding="async" alt="" hidden>
                                     <p class="stanza-fallback" role="status" hidden></p>
                                 </div>
                                 <footer class="stanza-lightbox-bar">
@@ -468,61 +523,6 @@
     </div>
     <p class="ship-hint" data-i18n="shipHint">Interact directly with the local 3D rendering cache using swipe/pinch gestures.</p>
 </div>
-        <section class="bento-item calculator configurator" id="estimator-card" aria-labelledby="configurator-title">
-            <header class="configurator-header">
-                <span class="configurator-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 2h14v20H5zM8 6h8v3H8zM8 13h1m6 0h1m-8 4h1m6 0h1"/></svg></span>
-                <div>
-                    <h3 id="configurator-title" data-i18n="projectEstimator">Freelance Project Configurator</h3>
-                    <p data-i18n="configuratorIntro">Compare five project tiers, choose optional features, and see your estimate update.</p>
-                </div>
-                <button type="button" class="configurator-toggle" aria-controls="configurator-panel" aria-expanded="false">
-                    <span data-i18n="configuratorOpen">Configure a Project</span>
-                    <span data-i18n="configuratorClose" hidden>Collapse configurator</span>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
-                </button>
-            </header>
-            <div class="configurator-panel" id="configurator-panel" inert>
-                <div class="configurator-clip">
-                    <div class="calc-ui">
-                        <label id="solutionTierLabel" for="tier" data-i18n="solutionTier">Freelance Service Tier</label>
-                        <div class="range-wrapper">
-                            <input type="range" id="tier" min="1" max="5" step="1" value="1" class="slider-control" />
-                            <div class="range-labels">
-                                <span data-i18n="tierRangeStart">Static</span>
-                                <span id="active-tier-val">Tier 1: Static Blueprint</span>
-                                <span data-i18n="tierRangeEnd">Bespoke</span>
-                            </div>
-                        </div>
-
-                        <label id="addonsLabel" style="margin-top: 20px; display: block;" data-i18n="addons">Optional Features</label>
-                        <div class="checkbox-group">
-                            <label><input type="checkbox" class="addon" id="opt-pwa" value="75"> <span data-i18n="checkboxPwa">Native Mobile Installation (PWA)</span></label>
-                            <label><input type="checkbox" class="addon" id="opt-l10n" value="50"> <span data-i18n="checkboxL10n">Asynchronous Multi-Language Matrix (l10n)</span></label>
-                            <label><input type="checkbox" class="addon" id="opt-rbac" value="100"> <span data-i18n="checkboxRBAC">Secure RBAC Authentication & Audit Logging</span></label>
-                            <label><input type="checkbox" class="addon" id="opt-ai" value="150"> <span data-i18n="checkboxAI">Smart AI Assistant / Custom LLM Pipelines</span></label>
-                        </div>
-
-                        <div class="price-box">
-                            <span data-i18n="estInvestment">Estimated Project Price:</span>
-                            <div class="price-row"><small>$</small><strong id="price-display">75</strong> <small>USD</small></div>
-                        </div>
-
-                        <div class="tier-links">
-                            <h4 data-i18n="tierEstimates">Active Service Blueprint</h4>
-                            <p id="tier-subtitle">High-performance single-page layout or landing page.</p>
-                            <ul>
-                                <li><a href="#" class="baseline-link" data-tier-index="1" data-i18n="tier1">Tier 1: Static Blueprint</a></li>
-                                <li><a href="#" class="baseline-link" data-tier-index="2" data-i18n="tier2">Tier 2: Dynamic Multi-View</a></li>
-                                <li><a href="#" class="baseline-link" data-tier-index="3" data-i18n="tier3">Tier 3: Full-Stack Core + AI</a></li>
-                                <li><a href="#" class="baseline-link" data-tier-index="4" data-i18n="tier4">Tier 4: Enterprise Secure & Cognitive</a></li>
-                                <li><a href="#" class="baseline-link" data-tier-index="5" data-i18n="tier5">Tier 5: Bespoke Interactive Canvas</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
     </main>
 
     <footer class="page-footer" id="portfolio-footer">

@@ -92,7 +92,7 @@ html[dir="rtl"] .profile {
 
 .configurator-header {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr);
     align-items: center;
     gap: clamp(.75rem, 2vw, 1.4rem);
 }
@@ -108,6 +108,8 @@ html[dir="rtl"] .profile {
 }
 .configurator-header p { margin-block-start: .2rem; color: var(--muted); }
 .configurator-toggle {
+    grid-column: 1 / -1;
+    justify-self: stretch;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -159,10 +161,6 @@ html[dir="rtl"] .profile {
     transform: translateY(0);
 }
 .configurator:has(.configurator-toggle[aria-expanded="true"]) .calc-ui::before { transform: scaleX(1); }
-@media (max-width: 640px) {
-    .configurator-header { grid-template-columns: auto minmax(0, 1fr); }
-    .configurator-toggle { grid-column: 1 / -1; }
-}
 @media (prefers-reduced-motion: reduce) {
     .dock-icon, .configurator-panel, .configurator .calc-ui,
     .configurator .calc-ui::before, .configurator-toggle svg { transition: none; }
