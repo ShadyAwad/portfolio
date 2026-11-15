@@ -21,7 +21,7 @@ export function mountDesignStudio(store, reset) {
 
     // All markup originates from the module's static labels and fictional sample templates.
     studio.innerHTML = `<header class="studio-heading">
-        <h3 id="design-studio-title" data-studio-copy="title"></h3>
+        <h3 id="design-studio-title" tabindex="-1" data-studio-copy="title"></h3>
         ${localized('intro', 'p')}
     </header>
     <div class="studio-layout">
@@ -29,6 +29,7 @@ export function mountDesignStudio(store, reset) {
             <label>${localized('template')}<select name="applicationType">${options(APPLICATION_TYPES)}</select></label>
             <label>${localized('theme')}<select name="theme">${options(['system', 'light', 'dark'])}</select></label>
             <fieldset><legend data-studio-copy="features"></legend>${displayFeatures.map(featureInput).join('')}</fieldset>
+            <button type="button" class="studio-plan-link" data-studio-plan data-studio-copy="plan"></button>
             <button type="button" data-studio-reset data-studio-copy="reset"></button>
             <p class="studio-announcement" role="status"></p>
         </form>
@@ -55,6 +56,13 @@ export function mountDesignStudio(store, reset) {
     const hint = studio.querySelector('.studio-recommendation');
     const events = new AbortController();
     const listen = (element, type, handler) => element.addEventListener(type, handler, { signal: events.signal });
+    const planner = document.getElementById('architecture-planner');
+    const plan = form.querySelector('[data-studio-plan]');
+    const returnLink = document.createElement('a');
+    returnLink.className = 'studio-return-link';
+    returnLink.href = '#application-design-studio';
+    planner?.querySelector(':scope > summary')?.after(returnLink);
+    plan.hidden = !planner;
     let language;
     let previous;
     let moduleElements;
@@ -70,6 +78,7 @@ export function mountDesignStudio(store, reset) {
             studio.lang = language;
             studio.dir = language === 'ar' ? 'rtl' : 'ltr';
             form.setAttribute('aria-label', copy('controls'));
+            returnLink.textContent = copy('backToStudio');
             studio.querySelectorAll('[data-studio-copy]').forEach(node => {
                 node.textContent = copy(node.dataset.studioCopy);
             });
@@ -128,6 +137,19 @@ export function mountDesignStudio(store, reset) {
         reset();
         status.textContent = copy('resetDone');
     });
+    listen(plan, 'click', () => {
+        const toggle = document.querySelector('.configurator-toggle');
+        if (!planner || !toggle) return;
+        if (toggle.getAttribute('aria-expanded') === 'false') toggle.click();
+        planner.open = true;
+        const summary = planner.querySelector(':scope > summary');
+        summary?.focus();
+        summary?.scrollIntoView({ block: 'nearest', behavior: 'instant' });
+    });
+    listen(returnLink, 'click', event => {
+        event.preventDefault();
+        studio.querySelector('h3').focus();
+    });
 
     const observer = new MutationObserver(render);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
@@ -141,6 +163,7 @@ export function mountDesignStudio(store, reset) {
         studio.querySelector('[data-studio-preview-panel]'), store);
     return () => {
         unmountArchitecture();
+        returnLink.remove();
         events.abort();
         observer.disconnect();
         unsubscribe();

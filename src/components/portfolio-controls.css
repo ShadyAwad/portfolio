@@ -205,23 +205,23 @@ html[dir="rtl"] .profile {
     border-radius: 14px;
     background: var(--input-bg);
 }
-.architecture-planner > summary, .planner-method > summary {
+.architecture-planner > summary {
     cursor: pointer;
     color: var(--text);
     font-weight: 650;
 }
-.architecture-planner > summary::marker, .planner-method > summary::marker { color: var(--accent); }
+.architecture-planner > summary::marker { color: var(--accent); }
 .planner-intro {
     color: var(--muted);
     font-size: .875rem;
     margin-block: .55rem 1rem;
 }
-.planner-controls, .planner-results {
+.planner-controls {
     display: grid;
     gap: .65rem;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
 }
-.planner-controls fieldset, .planner-results > div {
+.planner-controls fieldset {
     min-inline-size: 0;
     border: 1px solid var(--border);
     border-radius: 10px;
@@ -248,13 +248,3 @@ html[dir="rtl"] .profile {
     font: inherit;
 }
 .planner-controls small { color: var(--muted); }
-.planner-results { margin-block: .8rem; }
-@media (min-width: 850px) {
-    .planner-results { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-}
-.planner-results > div { background: var(--table-header); }
-.planner-results dt { font-size: .8rem; color: var(--muted); }
-.planner-results dd { margin-block-start: .25rem; color: var(--text); overflow-wrap: anywhere; }
-.planner-method { color: var(--muted); font-size: .84rem; }
-.planner-method ul { padding-inline-start: 1.1rem; margin-block-start: .55rem; }
-.planner-method li + li { margin-block-start: .35rem; }

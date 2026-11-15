@@ -1,7 +1,7 @@
 export const commercialCopy = {
     title: ['Advanced Engineering Estimate','التقدير الهندسي المتقدم'],
     intro: ['Illustrative estimate based on engineering hours. It is separate from the basic tier price.','تقدير توضيحي مبني على ساعات العمل الهندسي، وهو منفصل عن سعر الباقة الأساسية.'],
-    examples: ['Default examples: USD 15/hour and 15% contingency. These are planning inputs, not confirmed commercial rates.','الأمثلة الافتراضية: 15 دولارًا للساعة واحتياطي 15٪. هذه مدخلات للتخطيط وليست أسعارًا معتمدة.'],
+    examples: ['Default examples: USD 7/hour and 15% contingency. These are planning inputs, not confirmed commercial rates.','الأمثلة الافتراضية: 7 دولارات للساعة واحتياطي 15٪. هذه مدخلات للتخطيط وليست أسعارًا معتمدة.'],
     hours: ['Estimated engineering hours','ساعات العمل الهندسي المقدّرة'],
     labor: ['Development labor with contingency','أجور التطوير مع الاحتياطي'],
     fixed: ['One-time expenses','المصاريف لمرة واحدة'],

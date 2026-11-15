@@ -5,6 +5,7 @@ import { defaultEffortAssumptions, estimateEngineeringEffort } from '../src/stud
 import { priceProject } from '../src/studio/pricing.js';
 import { commercialDefaults, parseCommercialInput } from '../src/studio/commercial/inputs.js';
 import { estimateCommercialPrice, roundCurrencyCents } from '../src/studio/commercial/model.js';
+import { STORAGE_KEY, connectPersistence } from '../src/studio/persistence.js';
 
 const effort = (min, max) => ({ total: { value: { min, max } } });
 const cents = ({ value }) => [roundCurrencyCents(value.min), roundCurrencyCents(value.max)];
@@ -13,9 +14,9 @@ test('worked price bounds apply contingency to labor and add itemized expenses o
     const estimate = estimateCommercialPrice(effort(56, 114), {
         ...commercialDefaults, assetsCents: 10000, setupCents: 2500
     });
-    assert.deepEqual(cents(estimate.labor), [96600n, 196650n]);
+    assert.deepEqual(cents(estimate.labor), [45080n, 91770n]);
     assert.equal(roundCurrencyCents(estimate.fixed.value), 12500n);
-    assert.deepEqual(cents(estimate.total), [109100n, 209150n]);
+    assert.deepEqual(cents(estimate.total), [57580n, 104270n]);
     assert.deepEqual(Object.values(estimate.expenses).map(roundCurrencyCents), [10000n, 2500n, 0n]);
 });
 
@@ -24,7 +25,7 @@ test('zero hours, zero contingency and independent rate changes are valid', () =
     assert.deepEqual(cents(zero.labor), [0n, 0n]);
     assert.deepEqual(cents(zero.total), [1299n, 1299n]);
     const initial = estimateCommercialPrice(effort(10, 20), { ...commercialDefaults, contingencyBps: 0 });
-    assert.deepEqual(cents(initial.labor), [15000n, 30000n]);
+    assert.deepEqual(cents(initial.labor), [7000n, 14000n]);
     const revised = estimateCommercialPrice(effort(10, 20), { ...commercialDefaults, rateCents: 2200, contingencyBps: 0 });
     assert.deepEqual(cents(revised.labor), [22000n, 44000n]);
 });
@@ -47,7 +48,7 @@ test('invalid hours, missing inputs, and unsafe presentation bounds remain unava
     assert.equal(estimateCommercialPrice(effort(1, 2), {}).labor.reason, 'laborInputsUnavailable');
     assert.equal(estimateCommercialPrice(effort(1, 2), { ...commercialDefaults, contingencyBps: 10001 }).labor.value, null);
     const expense = estimateCommercialPrice(effort(1, 2), { ...commercialDefaults, setupCents: null });
-    assert.deepEqual(cents(expense.labor), [1725n, 3450n]);
+    assert.deepEqual(cents(expense.labor), [805n, 1610n]);
     assert.equal(expense.total.reason, 'expenseInputsUnavailable');
     const large = { ...commercialDefaults, rateCents: 1, contingencyBps: 0 };
     const max = Number.MAX_SAFE_INTEGER;
@@ -99,4 +100,25 @@ test('editor amounts convert exactly and validate the persisted input group', ()
     });
     assert.deepEqual(store.getState().commercial, { ...commercialDefaults, assetsCents: 99 });
     assert.deepEqual(store.reset().commercial, commercialDefaults);
+});
+
+test('older drafts preserve explicit rates and reset uses the new illustrative default', () => {
+    let saved = JSON.stringify({ version: 1, configuration: {
+        pricingTier: 4, commercial: { rateCents: 1500, contingencyBps: 1500, assetsCents: 12500 }
+    } });
+    const storage = {
+        getItem: key => key === STORAGE_KEY ? saved : null,
+        setItem: (_key, value) => { saved = value; },
+        removeItem: () => { saved = null; }
+    };
+    const store = createConfigurationStore();
+    const persistence = connectPersistence(store, storage);
+    assert.equal(store.getState().commercial.rateCents, 1500);
+    assert.equal(store.getState().commercial.assetsCents, 12500);
+    assert.equal(priceProject(store.getState()).total, 850);
+    persistence.reset();
+    assert.deepEqual(store.getState().commercial, {
+        rateCents: 700, contingencyBps: 1500, assetsCents: 0, setupCents: 0, otherCents: 0
+    });
+    assert.equal(saved, null);
 });

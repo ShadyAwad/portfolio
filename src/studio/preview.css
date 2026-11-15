@@ -252,3 +252,35 @@
 @media (prefers-reduced-motion: reduce) {
     .studio-module, .studio-workspaces { transition: none; }
 }
+
+.studio-heading { padding-block-end: .8rem; border-block-end: 1px solid var(--border); }
+.studio-heading p { max-inline-size: 62ch; margin-block-start: .25rem; }
+.studio-settings select, .studio-settings button { min-block-size: 44px; }
+.studio-settings .studio-plan-link {
+    margin-block-end: .45rem;
+    color: var(--accent);
+    background: var(--table-header);
+    border-color: var(--accent);
+}
+.studio-settings button[hidden] { display: none; }
+.studio-return-link {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 36px;
+    color: var(--accent);
+    font-size: .85rem;
+}
+.studio-template > div, .architecture-explorer:not([hidden]) {
+    animation: studio-view-entry 170ms ease-out both;
+}
+@keyframes studio-view-entry {
+    from { opacity: .55; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.mock-sidebar span:first-of-type { color: #fff; font-weight: 700; }
+.mock-store-cart, .mock-workflow { background: var(--mock-surface); }
+.mock-workflow { padding: .55rem; margin-block-start: .5rem; }
+.mock-landing-nav strong, .mock-ops-header strong { letter-spacing: .015em; }
+@media (prefers-reduced-motion: reduce) {
+    .studio-template > div, .architecture-explorer:not([hidden]) { animation: none; }
+}

@@ -1,7 +1,7 @@
 export const EXPENSE_KEYS = Object.freeze(['assetsCents', 'setupCents', 'otherCents']);
 export const MAX_USD_CENTS = 100_000_000;
 export const commercialDefaults = Object.freeze({
-    rateCents: 1500,
+    rateCents: 700,
     contingencyBps: 1500,
     assetsCents: 0,
     setupCents: 0,

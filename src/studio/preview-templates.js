@@ -1,6 +1,8 @@
 export const translations = {
     title: ['Application Design Studio', 'استوديو تصميم التطبيقات'],
-    intro: ['Choose a template, try features, and see how the interface changes.', 'اختر قالبًا وجرّب الميزات وشاهد كيف تتغير الواجهة.'],
+    intro: ['Choose a template and features, compare the preview and architecture, then model your workload and development cost.', 'اختر قالبًا وميزات، وقارن المعاينة وبنية النظام، ثم قدّر حجم العمل وتكلفة التطوير.'],
+    plan: ['Workload & estimates','حجم العمل والتقديرات'],
+    backToStudio: ['Return to preview and architecture','العودة إلى المعاينة وبنية النظام'],
     controls: ['Preview settings', 'إعدادات المعاينة'],
     template: ['Application type', 'نوع التطبيق'],
     theme: ['Preview theme', 'مظهر المعاينة'],

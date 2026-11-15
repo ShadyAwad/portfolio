@@ -45,6 +45,22 @@ export function mountCapacityPanel(store) {
     const events = new AbortController();
     let editing;
     let locale;
+    const groups = new Map();
+    function setText(node, value) {
+        if (node.textContent === value) return;
+        if (node.childNodes.length === 1 && node.firstChild.nodeType === Node.TEXT_NODE) {
+            node.firstChild.data = value;
+        } else {
+            node.textContent = value;
+        }
+    }
+    const renderedMarkup = new WeakMap();
+    function setMarkup(node, markup) {
+        if (renderedMarkup.get(node) === markup) return;
+        node.innerHTML = markup;
+        renderedMarkup.set(node, markup);
+    }
+
     const label = key => capacityCopy[key]?.[locale === 'ar' ? 1 : 0] ?? key;
 
     function render(state) {
@@ -88,27 +104,45 @@ export function mountCapacityPanel(store) {
         };
         const entries = { api: model.api, queue: model.queue, storage: model.storage,
             effort: { ...model.effort.packages, total: model.effort.total } };
-        // Keep the existing formula disclosure state as live results update.
-        const open = new Set([...output.querySelectorAll('details[open]')].map(node => node.dataset.capacityFormula));
-        const formulaHadFocus = output.contains(document.activeElement) && document.activeElement.matches('summary')
-            ? document.activeElement.parentElement.dataset.capacityFormula : null;
-        output.innerHTML = Object.entries(entries).map(([group, results]) => `<section class="capacity-group">
-            <h5>${label(group)}</h5><dl>${Object.entries(results).map(([key, result]) => `<div>
-                <dt>${label(group === 'storage' && key === 'audit' ? 'auditStorage' : key)}</dt>
-                <dd><b>${format(result)}</b>${result.warnings.map(warning => `<small>${label(warning)}</small>`).join('')}</dd>
-                </div>`).join('')}</dl>
-            <details data-capacity-formula="${group}" ${open.has(group) ? 'open' : ''}><summary>${label('formulas')}</summary>
-                <p>${label(group + '-formula')}</p>
-                ${group === 'effort' ? `<ul>${Object.entries(model.effort.packages).map(([key, result]) => `<li>
+        for (const [group, results] of Object.entries(entries)) {
+            let card = groups.get(group);
+            if (!card) {
+                const section = document.createElement('section');
+                section.className = 'capacity-group';
+                section.innerHTML = `<h5></h5><dl></dl><details data-capacity-formula="${group}">
+                    <summary></summary><p></p><div class="capacity-explanation"></div></details>`;
+                output.append(section);
+                card = { section, rows: new Map(), metrics: section.querySelector('dl'),
+                    heading: section.querySelector('h5'), summary: section.querySelector('summary'),
+                    formula: section.querySelector('details p'), explanation: section.querySelector('.capacity-explanation') };
+                groups.set(group, card);
+            }
+            setText(card.heading, label(group));
+            setText(card.summary, label('formulas'));
+            setText(card.formula, label(group + '-formula'));
+            for (const [key, result] of Object.entries(results)) {
+                let row = card.rows.get(key);
+                if (!row) {
+                    const element = document.createElement('div');
+                    element.innerHTML = '<dt></dt><dd><b></b><span></span></dd>';
+                    card.metrics.append(element);
+                    row = { title: element.querySelector('dt'), value: element.querySelector('b'), warnings: element.querySelector('span') };
+                    card.rows.set(key, row);
+                }
+                setText(row.title, label(group === 'storage' && key === 'audit' ? 'auditStorage' : key));
+                setText(row.value, format(result));
+                setMarkup(row.warnings, result.warnings.map(warning => `<small>${label(warning)}</small>`).join(''));
+            }
+            const detail = group === 'effort'
+                ? `<ul>${Object.entries(model.effort.packages).map(([key, result]) => `<li>
                     ${label(key)} · ${label('baseline')}: ${result.assumptions.baseline ? fmtRange(result.assumptions.baseline) : label('missing')}
                     ${Object.keys(result.assumptions.increments).length ? ` · ${label('increments')}: ${Object.entries(result.assumptions.increments)
                         .map(([feature, range]) => `${label(feature)} ${range ? fmtRange(range) : label('missing')}`).join(', ')}` : ''}
                     </li>`).join('')}</ul>`
-                    : `<dl class="capacity-intermediates">${Object.entries(intermediate[group]).map(([key, value]) => `<div>
-                        <dt>${label(key)}</dt><dd>${value == null ? label('missing') : typeof value === 'string' ? label(value) : number(value)}</dd></div>`).join('')}</dl>`}
-            </details>
-        </section>`).join('');
-        if (formulaHadFocus) output.querySelector(`[data-capacity-formula="${formulaHadFocus}"] > summary`)?.focus();
+                : `<dl class="capacity-intermediates">${Object.entries(intermediate[group]).map(([key, value]) => `<div>
+                    <dt>${label(key)}</dt><dd>${value == null ? label('missing') : typeof value === 'string' ? label(value) : number(value)}</dd></div>`).join('')}</dl>`;
+            setMarkup(card.explanation, detail);
+        }
     }
 
     panel.addEventListener('input', ({ target }) => {

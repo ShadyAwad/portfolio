@@ -93,11 +93,15 @@ window.addEventListener('touchmove', (e) => {
 function resizeStarfield() {
     if (!bgCanvas || !bgCtx) return;
     const dpr = Math.max(1, window.devicePixelRatio || 1);
-    bgCanvas.width = Math.floor(window.innerWidth * dpr);
-    bgCanvas.height = Math.floor(window.innerHeight * dpr);
+    const width = Math.floor(window.innerWidth * dpr);
+    const height = Math.floor(window.innerHeight * dpr);
+    if (bgCanvas.width === width && bgCanvas.height === height && bgCanvas.style.width === `${window.innerWidth}px`) return;
+    bgCanvas.width = width;
+    bgCanvas.height = height;
     bgCanvas.style.width = `${window.innerWidth}px`;
     bgCanvas.style.height = `${window.innerHeight}px`;
     bgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (prefersReducedMotion) animateStarfield();
 }
 
 function initStarfield() {
@@ -117,7 +121,7 @@ function animateStarfield(currentTime = performance.now()) {
     const delta = Math.min(1.5, (currentTime - lastFrameTime) / 16.6);
     lastFrameTime = currentTime;
 
-    const driftCoef = prefersReducedMotion ? 0.3 : 0.85;
+    const driftCoef = prefersReducedMotion ? 0 : 0.85;
     const scrollStep = driftCoef * delta;
     
     const displayWidth = bgCanvas.clientWidth;
@@ -150,7 +154,7 @@ function animateStarfield(currentTime = performance.now()) {
         bgCtx.fill();
     });
 
-    requestAnimationFrame(animateStarfield);
+    if (!prefersReducedMotion) requestAnimationFrame(animateStarfield);
 }
 
 // =========================================================================
@@ -584,11 +588,15 @@ function resizeVisCanvas() {
     visWidth = p.clientWidth;
     visHeight = p.clientHeight || 350;
     
-    visCanvas.width = Math.floor(visWidth * dpr);
-    visCanvas.height = Math.floor(visHeight * dpr);
+    const width = Math.floor(visWidth * dpr);
+    const height = Math.floor(visHeight * dpr);
+    if (visCanvas.width === width && visCanvas.height === height && visCanvas.style.width === `${visWidth}px`) return;
+    visCanvas.width = width;
+    visCanvas.height = height;
     visCanvas.style.width = `${visWidth}px`;
     visCanvas.style.height = `${visHeight}px`;
     visCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (visualizerInView) scheduleVisualizer();
 }
 
 function resolveCoords(nodeId) {
@@ -701,7 +709,7 @@ function drawTreeSimulation() {
 
     // Tracer simulation ticks pulse
     if (querySearching && tracePathNodes.length > 0) {
-        progressDelta += 0.05;
+        progressDelta += prefersReducedMotion ? 1 : 0.05;
         if (progressDelta >= 1) {
             progressDelta = 0;
             activeSearchIndex++;
@@ -797,8 +805,8 @@ function drawHeapGrid() {
         const deltaY = targetYCoord - b.y;
 
         if (Math.abs(deltaX) > 0.1 || Math.abs(deltaY) > 0.1) {
-            b.x += deltaX * 0.14; // Acceleration slide factors
-            b.y += deltaY * 0.14;
+            b.x += deltaX * (prefersReducedMotion ? 1 : 0.14); // Acceleration slide factors
+            b.y += deltaY * (prefersReducedMotion ? 1 : 0.14);
             defragmentationComplete = false;
         } else {
             b.x = targetXCoord;
@@ -848,14 +856,40 @@ function triggerMemoryCompaction() {
     freeGroup.forEach(b => { b.curr = counter++; });
 }
 
-function systemVisualizerTickLoop() {
-    if (!visCtx || !visCanvas) return;
-    if (visualizerLoopMode === "tree") {
-        drawTreeSimulation();
-    } else {
-        drawHeapGrid();
+let visualizerInView = false;
+let visualizerFrame = 0;
+
+function scheduleVisualizer() {
+    if (!visualizerFrame && visualizerInView && !document.hidden) {
+        visualizerFrame = requestAnimationFrame(systemVisualizerTickLoop);
     }
-    requestAnimationFrame(systemVisualizerTickLoop);
+}
+
+function systemVisualizerTickLoop() {
+    visualizerFrame = 0;
+    if (!visualizerInView || document.hidden || !visCtx) return;
+    if (visualizerLoopMode === "tree") drawTreeSimulation();
+    else drawHeapGrid();
+    if (!prefersReducedMotion || querySearching || garbageCollecting) scheduleVisualizer();
+}
+
+function observeVisualizer() {
+    if (!visCanvas) return;
+    const observer = new IntersectionObserver(([entry]) => {
+        visualizerInView = entry.isIntersecting;
+        if (visualizerInView) scheduleVisualizer();
+        else {
+            cancelAnimationFrame(visualizerFrame);
+            visualizerFrame = 0;
+        }
+    });
+    observer.observe(visCanvas);
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            cancelAnimationFrame(visualizerFrame);
+            visualizerFrame = 0;
+        } else scheduleVisualizer();
+    });
 }
 
 // Setup canvas metrics click listeners triggers
@@ -867,6 +901,7 @@ searchKeyBtns.forEach(btn => {
         
         const coreKey = parseInt(btn.dataset.key);
         executeTreeSearch(coreKey);
+        scheduleVisualizer();
     });
 });
 
@@ -874,6 +909,7 @@ if (garbageCollectBtn) {
     garbageCollectBtn.addEventListener('click', () => {
         if (querySearching || garbageCollecting) return;
         triggerMemoryCompaction();
+        scheduleVisualizer();
     });
 }
 
@@ -947,7 +983,7 @@ function initializeCoreArchitecture() {
     // Spawn backdrop stars drift loop
     initStarfield();
     resizeStarfield();
-    requestAnimationFrame(animateStarfield);
+    if (!prefersReducedMotion) requestAnimationFrame(animateStarfield);
 
     // 🚀 ADDED: KICKSTART CELESTIAL PATH-SCROLL TRAILER
     initConstellationScrollPathing();
@@ -955,7 +991,7 @@ function initializeCoreArchitecture() {
     // Spawn schematic JVM traversal states
     initMemoryGrid();
     resizeVisCanvas();
-    requestAnimationFrame(systemVisualizerTickLoop);
+    observeVisualizer();
 
     // Initial load translations, lang mappings and themes settings
     startL10nTheme();
@@ -1001,7 +1037,10 @@ function initConstellationScrollPathing() {
     
     // 4. Setup a FIFO history collection array to track prior coordinate positions
     const pathHistoryPoints = [];
-    const TRAIL_LENGTH_LIMIT = 24; // Limits tracking length frame calculations
+    const TRAIL_LENGTH_LIMIT = 24;
+    let trailFrame = 0;
+    let lastMove = -Infinity;
+    let nextPoint;
 
     // 5. Scale buffer coordinate grids based on monitor hardware display pixel densities
     function resizeTrailCanvas() {
@@ -1015,12 +1054,19 @@ function initConstellationScrollPathing() {
     window.addEventListener('resize', resizeTrailCanvas, { passive: true });
 
     // 6. High frequency animation frame sequencing tick engine
-    function renderTrailFrameSequence() {
+    function renderTrailFrameSequence(now) {
+        trailFrame = 0;
         // 7. Clear the graphics buffer window right before calculating next steps
         ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
         // 8. Capture and append pre-existing global mouse metrics into local tracking cache
-        pathHistoryPoints.push({ x: mouseX, y: mouseY });
+        if (nextPoint) {
+            pathHistoryPoints.push(nextPoint);
+            nextPoint = undefined;
+        } else if (now - lastMove > 45) {
+            pathHistoryPoints.shift();
+        }
+        if (!pathHistoryPoints.length) return;
         
         // 9. Trim excess records to preserve strict memory footprint allocation scales
         if (pathHistoryPoints.length > TRAIL_LENGTH_LIMIT) {
@@ -1075,12 +1121,24 @@ function initConstellationScrollPathing() {
         }
 
         // 18. Queue up calculations cleanly for the next hardware display cycle sweep
-        requestAnimationFrame(renderTrailFrameSequence);
+        trailFrame = requestAnimationFrame(renderTrailFrameSequence);
     }
 
     if (typeof appendLog === 'function') {
         appendLog(`ORBITAL MONITOR: Kinetic ribbon trail engine successfully bound to active rendering canvas viewport.`, "system-line");
     }
 
-    requestAnimationFrame(renderTrailFrameSequence);
+    window.addEventListener('pointermove', event => {
+        nextPoint = { x: event.clientX, y: event.clientY };
+        lastMove = performance.now();
+        if (!trailFrame) trailFrame = requestAnimationFrame(renderTrailFrameSequence);
+    }, { passive: true });
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) return;
+        cancelAnimationFrame(trailFrame);
+        trailFrame = 0;
+        nextPoint = undefined;
+        pathHistoryPoints.length = 0;
+        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    });
 }

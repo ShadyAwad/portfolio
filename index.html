@@ -122,7 +122,7 @@
                                 <label><span data-plan-label="tenants">Tenants</span><input name="tenants" type="number" min="0" max="1000000000" step="1" value="5" inputmode="numeric"></label>
                                 <label><span data-plan-label="users">Active users</span><input name="users" type="number" min="0" max="1000000000" step="1" value="250" inputmode="numeric"></label>
                                 <label><span data-plan-label="requests">Requests per day</span><input name="requests" type="number" min="0" max="1000000000" step="1" value="" inputmode="numeric" aria-describedby="planner-requests-hint" placeholder="Auto"></label>
-                                <small id="planner-requests-hint" data-plan-label="requestHint">Blank estimates 2 sessions × 5 actions per active user daily.</small>
+                                <small id="planner-requests-hint" data-plan-label="requestHint">Leave blank to estimate daily requests from active users and the model assumptions.</small>
                             </fieldset>
                             <fieldset>
                                 <legend data-plan-label="data">Data</legend>
@@ -144,18 +144,6 @@
                                 <label class="planner-check"><input name="rls" type="checkbox"><span data-plan-label="rls">Tenant isolation (RLS)</span></label>
                             </fieldset>
                         </div>
-                        <dl class="planner-results">
-                            <div><dt data-plan-label="score">Complexity score</dt><dd data-plan-result="score"></dd></div>
-                            <div><dt data-plan-label="stack">Recommended stack</dt><dd data-plan-result="stack"></dd></div>
-                            <div><dt data-plan-label="queue">Queue need</dt><dd data-plan-result="queue"></dd></div>
-                            <div><dt data-plan-label="db">Database / indexing risk</dt><dd data-plan-result="db"></dd></div>
-                            <div><dt data-plan-label="growth">Monthly data growth</dt><dd data-plan-result="growth"></dd></div>
-                            <div><dt data-plan-label="delivery">Estimated delivery impact</dt><dd data-plan-result="delivery"></dd></div>
-                        </dl>
-                        <details class="planner-method">
-                            <summary data-plan-label="method">How these estimates are calculated</summary>
-                            <ul><li data-plan-label="formula1"></li><li data-plan-label="formula2"></li><li data-plan-label="formula3"></li><li data-plan-label="formula4"></li><li data-plan-label="formula5"></li></ul>
-                        </details>
                     </details>
                 </div>
             </div>
