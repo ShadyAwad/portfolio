@@ -7,6 +7,7 @@ import { architectureCopy } from './copy.js';
 import { buildArchitectureGraph, resolveNodeSelection } from './graph.js';
 import { layoutArchitecture } from './layout.js';
 import { mountUniverse } from '../universe/view.js';
+import { creationCopy } from '../universe/challenge-copy.js';
 import './explorer.css';
 
 const ns = 'http://www.w3.org/2000/svg';
@@ -38,7 +39,7 @@ export function mountArchitectureExplorer(canvas, preview, store) {
     const universe = mountUniverse(canvas, (id, focus) => {
         selection = id;
         updateSelection(focus);
-    });
+    }, () => switchView('preview', true));
     preview.id = 'studio-preview-panel';
     universe.panel.id = 'studio-universe-panel';
     previewButton.setAttribute('aria-controls', preview.id);
@@ -71,7 +72,7 @@ export function mountArchitectureExplorer(canvas, preview, store) {
     let inspectorSignature = '';
     let activeLayout;
 
-    const label = key => (architectureCopy[key] ?? capacityCopy[key] ?? translations[key])?.[locale === 'ar' ? 1 : 0] ?? key;
+    const label = key => (creationCopy[key] ?? architectureCopy[key] ?? capacityCopy[key] ?? translations[key])?.[locale === 'ar' ? 1 : 0] ?? key;
     const metricLabel = key => label(key === 'audit' ? 'auditStorage' : key);
     const setText = (node, value) => { if (node.textContent !== value) node.textContent = value; };
     function format(metric) {
@@ -193,7 +194,7 @@ export function mountArchitectureExplorer(canvas, preview, store) {
         selection = resolveNodeSelection(graph, selection);
         if (view === 'universe') {
             const focused = document.activeElement?.dataset?.universeNode;
-            universe.render(graph, label, locale);
+            universe.render(graph, state, label, locale, key => translations[key]?.[locale === 'ar' ? 1 : 0] ?? label(key));
             updateSelection(Boolean(focused && focused !== selection));
             return;
         }
@@ -264,7 +265,7 @@ export function mountArchitectureExplorer(canvas, preview, store) {
         }
     }
 
-    function switchView(next) {
+    function switchView(next, focus = false) {
         if (view === next) return;
         if (view === 'universe') universe.hide();
         view = next;
@@ -275,6 +276,7 @@ export function mountArchitectureExplorer(canvas, preview, store) {
         if (next === 'architecture') diagramGrid.append(inspector);
         for (const [button, name] of [[previewButton, 'preview'], [architectureButton, 'architecture'], [universeButton, 'universe']]) {
             button.setAttribute('aria-pressed', String(next === name));
+            if (focus && next === name) button.focus();
         }
         render();
     }

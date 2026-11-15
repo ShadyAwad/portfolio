@@ -144,4 +144,16 @@ System Universe is the third Studio view. The architecture explorer builds the s
 - `universe/view.js` reconciles native node buttons and SVG channels by ID. Changes to workload metrics update the shared inspector without rebuilding the scene. Tab reaches the selected node, arrow keys move selection, and Home or Escape returns to the core.
 - `universe/motion.js` batches mouse parallax updates to one frame at a time. The motion layer stops when the view leaves the viewport, becomes hidden, or reduced motion is enabled. The scene uses CSS and SVG with no additional media assets or runtime packages.
 
-The graph remains a conceptual architecture. The spatial layout conveys neither latency nor physical distance, and the decorative channels do not simulate traffic. Studio phase transitions, stress-test interactions, and more involved camera behavior remain later work.
+The graph remains a conceptual architecture. The spatial layout conveys neither latency nor physical distance, and the decorative channels do not simulate traffic.
+
+## Checkpoint 8: Creation Engine
+
+System Universe now opens in Create. The anchored core uses a glyph and accent for the chosen template, with a summary of enabled preview capabilities and a link to the existing live preview. Architect reveals nodes and then channels on the same coordinates. Challenge keeps those nodes and the shared selection, adding scenario inputs and separate model telemetry below the scene.
+
+Challenge drafts are held in memory per scenario. Unedited values follow the project settings, and “Restore project assumptions” clears the current scenario's overrides. Moving among views, stages, or templates keeps the drafts until the page reloads. The conventional diagram and shared inspector use the project configuration. Changes in Challenge do not write to the configuration store, persistence, or pricing.
+
+- API uses the active-user calculation even when the project has a daily override. Channel brightness is a visual encoding of modeled burst RPS. The scenario has no API throughput limit.
+- Queue uses total arrivals, mean duration, effective slots and target utilization. The rate must correspond to a whole number of daily jobs for the existing queue model. With four slots and 0.5 seconds per job, capacity is 8 jobs/s. At 6 jobs/s, utilization is 75% and above the default 70% target. At 8 jobs/s, utilization is 100% and backlog growth is zero. At 10 jobs/s, utilization is 125% and backlog grows by 172,800 jobs/day under sustained assumptions.
+- Storage uses the project's item sizes and overhead. Audit logging and semantic search enable their respective categories. The model projects growth without assuming a storage quota.
+
+Scenarios remain available when their main component is absent. In that case telemetry stays below the graph without introducing a synthetic node. These are planning calculations. Checkpoint 9 can address final integration and visual polish.
