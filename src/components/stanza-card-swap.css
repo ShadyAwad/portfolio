@@ -429,3 +429,12 @@ html:has(.stanza-lightbox[open]) { overflow: hidden; }
         --slot-y: calc(-1 * var(--stanza-step-y) * min(3, var(--slot)));
     }
 }
+
+.stanza-brand {
+    color: #78e3b3;
+    text-shadow: 0 0 .65em rgb(69 214 156 / .28);
+}
+[data-theme="light"] .stanza-brand {
+    color: #08744f;
+    text-shadow: 0 0 .55em rgb(24 160 108 / .16);
+}

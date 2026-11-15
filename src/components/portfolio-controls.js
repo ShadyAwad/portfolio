@@ -53,5 +53,5 @@ toggle.addEventListener('click', () => {
 export function localizePortfolioControls(copy) {
     dock.setAttribute('aria-label', copy.dockContact ?? 'Contact');
     dock.dir = document.documentElement.dir;
-    document.getElementById('estimator-card').dir = document.documentElement.dir;
+    document.getElementById('profile-card').dir = document.documentElement.dir;
 }

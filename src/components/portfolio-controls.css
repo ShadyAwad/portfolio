@@ -133,10 +133,10 @@ html[dir="rtl"] .profile {
     transition: grid-template-rows 350ms cubic-bezier(.22,.75,.28,1);
 }
 .configurator-clip { min-block-size: 0; overflow: hidden; }
-.configurator:has(.configurator-toggle[aria-expanded="true"]) .configurator-panel {
+.portfolio-hero:has(.configurator-toggle[aria-expanded="true"]) .configurator-panel {
     grid-template-rows: 1fr;
 }
-.configurator .calc-ui {
+.portfolio-hero .calc-ui {
     position: relative;
     margin: 0;
     padding-block-start: 1.5rem;
@@ -145,7 +145,7 @@ html[dir="rtl"] .profile {
     transition: opacity 220ms ease, transform 280ms ease;
     overflow-wrap: anywhere;
 }
-.configurator .calc-ui::before {
+.portfolio-hero .calc-ui::before {
     content: "";
     position: absolute;
     inset: .7rem 0 auto;
@@ -155,14 +155,106 @@ html[dir="rtl"] .profile {
     transform: scaleX(0);
     transition: transform 330ms ease;
 }
-.configurator:dir(rtl) .calc-ui::before { transform-origin: right; }
-.configurator:has(.configurator-toggle[aria-expanded="true"]) .calc-ui {
+.portfolio-hero:dir(rtl) .calc-ui::before { transform-origin: right; }
+.portfolio-hero:has(.configurator-toggle[aria-expanded="true"]) .calc-ui {
     opacity: 1;
     transform: translateY(0);
 }
-.configurator:has(.configurator-toggle[aria-expanded="true"]) .calc-ui::before { transform: scaleX(1); }
+.portfolio-hero:has(.configurator-toggle[aria-expanded="true"]) .calc-ui::before { transform: scaleX(1); }
 @media (prefers-reduced-motion: reduce) {
-    .dock-icon, .configurator-panel, .configurator .calc-ui,
-    .configurator .calc-ui::before, .configurator-toggle svg { transition: none; }
+    .dock-icon, .configurator-panel, .portfolio-hero .calc-ui,
+    .portfolio-hero .calc-ui::before, .configurator-toggle svg { transition: none; }
     .dock-icon { transform: none; }
 }
+
+.portfolio-hero {
+    grid-column: span 12;
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    column-gap: clamp(1.25rem, 4vw, 3.25rem);
+    align-items: center;
+}
+.portfolio-hero .profile {
+    position: relative;
+    grid-column: auto;
+    display: flex;
+    flex-direction: column;
+    min-inline-size: 0;
+}
+.portfolio-hero .profile-actions { inset-inline-end: 0; inset-block-start: 0; }
+.portfolio-hero .configurator {
+    min-inline-size: 0;
+    padding-inline-start: clamp(1.25rem, 3vw, 2.5rem);
+    border-inline-start: 1px solid var(--border);
+}
+.portfolio-hero .configurator-panel { grid-column: 1 / -1; }
+@media (max-width: 850px) {
+    .portfolio-hero { grid-template-columns: minmax(0, 1fr); }
+    .portfolio-hero .configurator {
+        margin-block-start: 1.5rem;
+        padding: 1.25rem 0 0;
+        border-inline-start: 0;
+        border-block-start: 1px solid var(--border);
+    }
+}
+
+.architecture-planner {
+    margin-block-start: 1.15rem;
+    padding: .9rem clamp(.75rem, 2vw, 1.25rem);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--input-bg);
+}
+.architecture-planner > summary, .planner-method > summary {
+    cursor: pointer;
+    color: var(--text);
+    font-weight: 650;
+}
+.architecture-planner > summary::marker, .planner-method > summary::marker { color: var(--accent); }
+.planner-intro {
+    color: var(--muted);
+    font-size: .875rem;
+    margin-block: .55rem 1rem;
+}
+.planner-controls, .planner-results {
+    display: grid;
+    gap: .65rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+}
+.planner-controls fieldset, .planner-results > div {
+    min-inline-size: 0;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: .7rem;
+}
+.planner-controls fieldset { display: grid; align-content: start; gap: .55rem; }
+.planner-controls legend { padding-inline: .25rem; color: var(--accent); font-weight: 650; }
+.planner-controls label { display: grid; gap: .25rem; font-size: .875rem; }
+.planner-controls label.planner-check {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    min-block-size: 28px;
+}
+.planner-controls input[type="checkbox"] { accent-color: var(--accent); }
+.planner-controls input[type="number"] {
+    width: 100%;
+    min-width: 0;
+    padding: .35rem .5rem;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--card-bg-hover);
+    color: var(--text);
+    font: inherit;
+}
+.planner-controls small { color: var(--muted); }
+.planner-results { margin-block: .8rem; }
+@media (min-width: 850px) {
+    .planner-results { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.planner-results > div { background: var(--table-header); }
+.planner-results dt { font-size: .8rem; color: var(--muted); }
+.planner-results dd { margin-block-start: .25rem; color: var(--text); overflow-wrap: anywhere; }
+.planner-method { color: var(--muted); font-size: .84rem; }
+.planner-method ul { padding-inline-start: 1.1rem; margin-block-start: .55rem; }
+.planner-method li + li { margin-block-start: .35rem; }

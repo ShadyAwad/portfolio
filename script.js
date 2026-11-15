@@ -5,6 +5,7 @@ import { bindArchitectureInputs, unbindArchitectureInputs } from './src/studio/a
 
 import { mountStanzaCardSwap } from './src/components/stanza-card-swap.js';
 import { localizePortfolioControls } from './src/components/portfolio-controls.js';
+import { localizeArchitecturePlanner } from './src/components/architecture-planner.js';
 
 // Global Parallax Starfield State
 const bgCanvas = document.getElementById('starfield');
@@ -190,12 +191,23 @@ function renderLanguage(lang) {
 
     i18nElements.forEach(elem => {
         const key = elem.dataset.i18n;
-        if (dict[key]) elem.textContent = dict[key];
+        if (!dict[key]) return;
+        const value = dict[key];
+        if (elem.hasAttribute('data-stanza-brand') && value.includes('Stanza')) {
+            const index = value.indexOf('Stanza');
+            const brand = document.createElement('span');
+            brand.className = 'stanza-brand';
+            brand.textContent = 'Stanza';
+            elem.replaceChildren(value.slice(0, index), brand, value.slice(index + 6));
+        } else {
+            elem.textContent = value;
+        }
     });
 
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
     localizePortfolioControls(dict);
+    localizeArchitecturePlanner(lang);
     if (tierSelect) renderTierCopy(getActiveServiceTier());
 
     if (stanzaShowcaseRoot && dict.stanzaGallery) {
