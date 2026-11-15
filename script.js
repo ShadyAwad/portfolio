@@ -1,3 +1,7 @@
+import { configuration } from './src/studio/configuration.js';
+import { priceProject } from './src/studio/pricing.js';
+import { bindArchitectureInputs, unbindArchitectureInputs } from './src/studio/architecture-inputs.js';
+
 import { mountStanzaCardSwap } from './src/components/stanza-card-swap.js';
 import { localizePortfolioControls } from './src/components/portfolio-controls.js';
 
@@ -246,7 +250,6 @@ const serviceTiers = [
     {
         id: 1,
         name: "Tier 1: Static Blueprint",
-        price: 75,
         subtitle: "High-performance single-page layout or landing page.",
         color: "#38d5ff",
         glow: "0 0 14px rgba(56, 213, 255, 0.28)"
@@ -254,7 +257,6 @@ const serviceTiers = [
     {
         id: 2,
         name: "Tier 2: Dynamic Multi-View",
-        price: 200,
         subtitle: "Multi-page architecture with localized routing and client-side global state.",
         color: "#2dd4bf",
         glow: "0 0 14px rgba(45, 212, 191, 0.28)"
@@ -262,7 +264,6 @@ const serviceTiers = [
     {
         id: 3,
         name: "Tier 3: Full-Stack Core + AI",
-        price: 450,
         subtitle: "Database integrated MVP, user dashboards, and basic AI API integration (automated text/summarization).",
         color: "#39ff88",
         glow: "0 0 18px rgba(57, 255, 136, 0.38)"
@@ -270,7 +271,6 @@ const serviceTiers = [
     {
         id: 4,
         name: "Tier 4: Enterprise Secure & Cognitive",
-        price: 850,
         subtitle: "Scale-ready app featuring multi-tenant isolation, advanced PostgreSQL RLS, and custom AI vector search/embeddings.",
         color: "#9dff6a",
         glow: "0 0 20px rgba(157, 255, 106, 0.36)"
@@ -278,7 +278,6 @@ const serviceTiers = [
     {
         id: 5,
         name: "Tier 5: Bespoke Interactive Canvas",
-        price: 1400,
         subtitle: "Premium mathematically reactive 3D rendering, custom Blender assets, and real-time data streaming.",
         color: "#d6a93a",
         glow: "0 0 24px rgba(214, 169, 58, 0.52)"
@@ -291,9 +290,8 @@ function formatUSD(val) {
     return val.toLocaleString('en-US');
 }
 
-function getActiveServiceTier() {
-    const tierIndex = Math.min(Math.max(Number(tierSelect ? tierSelect.value : 1), 1), serviceTiers.length);
-    return serviceTiers[tierIndex - 1];
+function getActiveServiceTier(state = configuration.getState()) {
+    return serviceTiers[state.pricingTier - 1];
 }
 
 function applyPriceMetricStyle(tier) {
@@ -334,13 +332,17 @@ function renderTierCopy(tier) {
     }
 }
 
-function calculatePrice() {
+let priceTween;
+
+function renderPricing(state) {
     if (!tierSelect || !priceDisplay) return;
-    const tier = getActiveServiceTier();
-    const addonCost = Array.from(addons).reduce((sum, box) => sum + (box.checked ? Number(box.value) : 0), 0);
-    const targetPrice = tier.price + addonCost;
-    const oldPrice = Number(priceDisplay.dataset.price || tier.price);
-    const hasAIAddon = Boolean(document.getElementById('opt-ai')?.checked);
+    const tier = getActiveServiceTier(state);
+    const { base, total: targetPrice } = priceProject(state);
+    const oldPrice = Number(priceDisplay.textContent.replaceAll(',', '')) || base;
+    const hasAIAddon = state.features.ai;
+
+    tierSelect.value = String(state.pricingTier);
+    for (const box of addons) box.checked = state.features[box.id.slice(4)];
 
     renderTierCopy(tier);
 
@@ -351,8 +353,9 @@ function calculatePrice() {
     applyPriceMetricStyle(tier);
     injectEstimatorLogs(tier, hasAIAddon);
 
+    priceTween?.kill();
     if (window.gsap) {
-        gsap.to({ val: oldPrice }, {
+        priceTween = gsap.to({ val: oldPrice }, {
             val: targetPrice,
             duration: 0.16, // Ultra fast ticks
             ease: 'none',
@@ -371,26 +374,42 @@ function calculatePrice() {
     }
 }
 
-// Baseline service tier presets triggers
+const pricingEvents = new AbortController();
+const pricingOptions = { signal: pricingEvents.signal };
+
 baselineLinks.forEach(link => {
-    link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const tierIndex = link.dataset.tierIndex;
-        if (tierSelect && tierIndex) {
-            tierSelect.value = tierIndex;
-            calculatePrice();
-        }
-    });
+    link.addEventListener('click', event => {
+        event.preventDefault();
+        configuration.update({ pricingTier: Number(link.dataset.tierIndex) });
+    }, pricingOptions);
 });
 
-if (tierSelect) {
-    tierSelect.addEventListener('input', calculatePrice);
-    tierSelect.addEventListener('change', calculatePrice);
-}
-
+tierSelect?.addEventListener('input', () => {
+    configuration.update({ pricingTier: Number(tierSelect.value) });
+}, pricingOptions);
 addons.forEach(box => {
-    box.addEventListener('change', calculatePrice);
+    box.addEventListener('change', () => {
+        configuration.update({ features: { [box.id.slice(4)]: box.checked } });
+    }, pricingOptions);
 });
+
+const unsubscribePricing = configuration.subscribe((state, previous) => {
+    if (state.pricingTier !== previous.pricingTier ||
+        Object.keys(state.features).some(key => state.features[key] !== previous.features[key])) {
+        renderPricing(state);
+    }
+});
+const architectureInputs = document.getElementById('architecture-planner');
+bindArchitectureInputs(architectureInputs);
+
+if (import.meta.hot) {
+    import.meta.hot.dispose(() => {
+        pricingEvents.abort();
+        unsubscribePricing();
+        unbindArchitectureInputs(architectureInputs);
+        priceTween?.kill();
+    });
+}
 
 // ==========================================================================
 // 4. SYSTEMS TOPOLOGY SVG INTERACTIVE FLOW ENGINE
@@ -910,13 +929,7 @@ const systemResizeObserver = new ResizeObserver(() => {
 systemResizeObserver.observe(document.body);
 
 function initializeCoreArchitecture() {
-    // Pricing configurations initial triggers
-    if (tierSelect) {
-        tierSelect.value = "1";
-    }
-    if (typeof calculatePrice === 'function') {
-        calculatePrice();
-    }
+    renderPricing(configuration.getState());
 
     // Spawn backdrop stars drift loop
     initStarfield();
