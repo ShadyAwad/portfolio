@@ -6,7 +6,7 @@
     <title>Shady Awad | Software & Web Developer Portfolio</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg">
     <link rel="stylesheet" href="./index.css">
-    <link rel="preload" as="image" href="/images/stanza/performance.webp" type="image/webp">
+    <link rel="preload" as="image" href="/images/stanza/cards/performance.webp" type="image/webp">
     <script type="module" src="./script.js"></script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -49,78 +49,214 @@
             <h1 data-i18n="name">Shady Awad</h1>
             <h3 data-i18n="title" class="subheading">Software & Web Developer</h3>
             
-            <p data-i18n="description" class="lead-bio">
-                I am a self-taught Software & Web Developer focused on building modern full-stack web applications with JavaScript, Node.js, PostgreSQL, and progressive web technologies. I enjoy working across both frontend and backend systems, with a strong interest in database design, application performance, authentication, authorization, and clean user experiences. Through personal projects, I have gained hands-on experience designing relational schemas, writing raw SQL, building responsive interfaces, and improving real-world project structure. I am continuously expanding my skills through personal projects and hands-on development, with a focus on building reliable, performant, and maintainable software solutions.
-            </p>
-            <div class="demographic-specs">
-                <hr class="separator" />
-                <table class="specs-table">
-                    <thead>
-                        <tr>
-                            <th data-i18n="specHeader">Specification</th>
-                            <th data-i18n="specValueHeader">Value</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong data-i18n="specLocation">Location</strong></td>
-                            <td data-i18n="specLocationValue">Cairo, Egypt</td>
-                        </tr>
-                        <tr>
-                            <td><strong data-i18n="specDatabaseFocus">Database Focus</strong></td>
-                            <td data-i18n="specDatabaseFocusValue">PostgreSQL & Raw SQL</td>
-                        </tr>
-                        <tr>
-                            <td><strong data-i18n="specSecurityInterests">Security Interests</strong></td>
-                            <td data-i18n="specSecurityInterestsValue">Authentication, Authorization & RLS</td>
-                        </tr>
-                        <tr>
-                            <td><strong data-i18n="specPreferredStack">Preferred Stack</strong></td>
-                            <td class="ltr-tech" data-i18n="specPreferredStackValue">Node.js, PostgreSQL, React, Next.js & Vanilla JS</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="intro-copy">
+                <p data-i18n="intro1">Self-taught full-stack developer specializing in Node.js, Express, PostgreSQL, and performance-focused web applications.</p>
+                <p data-i18n="intro2">I build secure, scalable systems using raw SQL, multi-tenant architectures, background processing, and modern frontend technologies.</p>
+                <p data-i18n="intro3">Currently developing Stanza HR, a workforce management platform featuring PostgreSQL Row-Level Security, Redis/BullMQ, geofenced attendance, and semantic intelligence.</p>
             </div>
+            <nav class="contact-dock" id="contact-dock" aria-label="Contact">
+                <a href="mailto:shadyawad225@gmail.com"><span class="dock-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h18v14H3zM3 6l9 7 9-7"/></svg></span><span class="dock-label" data-i18n="dockEmail">Email</span></a>
+                <a href="https://github.com/ShadyAwad"><span class="dock-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 19c-4 1.5-4-2-6-2m12 5v-3.8a3.3 3.3 0 0 0-.9-2.6c3-.3 6-1.5 6-6.6a5.2 5.2 0 0 0-1.4-3.6A4.8 4.8 0 0 0 18.6 2S17.5 1.7 15 3.4a13 13 0 0 0-6 0C6.5 1.7 5.4 2 5.4 2a4.8 4.8 0 0 0-.1 3.4A5.2 5.2 0 0 0 4 9c0 5.1 3 6.3 6 6.6a3.4 3.4 0 0 0-1 2.6V22"/></svg></span><span class="dock-label" data-i18n="dockGitHub">GitHub</span></a>
+                <a href="https://wa.me/201026976219"><span class="dock-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 18l-1 3 4-1a9 9 0 1 0-3-2zm5-11c-2 0-2 3 1 6s6 3 6 1l-2-1-1 1c-2-1-3-2-4-4l1-1z"/></svg></span><span class="dock-label" data-i18n="dockWhatsApp">WhatsApp</span></a>
+            </nav>
         </div>
 
-        <div class="bento-item calculator" id="estimator-card">
-            <h3 data-i18n="projectEstimator">Project Scope Estimator</h3>
-            <div class="calc-ui">
-                <label id="solutionTierLabel" for="tier" data-i18n="solutionTier">Freelance Service Tier</label>
-                <div class="range-wrapper">
-                    <input type="range" id="tier" min="1" max="5" step="1" value="1" class="slider-control" />
-                    <div class="range-labels">
-                        <span data-i18n="tierRangeStart">Static</span>
-                        <span id="active-tier-val">Tier 1: Static Blueprint</span>
-                        <span data-i18n="tierRangeEnd">Bespoke</span>
+        <div class="bento-item project-showcase" id="architectural-showcase-card">
+            <h3 data-i18n="featuredProjects">Micro-Architectural Showcase (Flagship Systems)</h3>
+
+            <div class="flagship-dashboard-layout">
+                <ul class="flagship-project-selectors">
+                    <li class="flagship-selector active" data-project="p1" id="project-p1-selector">
+                        <div class="selector-number">01</div>
+                        <div class="selector-meta">
+                            <h4>Stanza HR</h4>
+                            <span data-i18n="stanzaSelector">Workforce management PWA</span>
+                        </div>
+                    </li>
+                    <li class="flagship-selector" data-project="p2" id="project-p2-selector">
+                        <div class="selector-number">02</div>
+                        <div class="selector-meta">
+                            <h4>E2EE Matchmaker IP</h4>
+                            <span>Cryptographic Private Relational Sync</span>
+                        </div>
+                    </li>
+                </ul>
+
+                <div class="flagship-documentation-viewport">
+                    <div class="flagship-pane active" id="pane-p1">
+                        <section class="stanza-showcase" data-stanza-showcase aria-labelledby="stanza-title">
+                            <div class="stanza-gallery" tabindex="0" role="region" aria-label="Stanza HR product screenshots">
+                                <div class="stanza-stage" id="stanza-stage">
+                                    <figure class="stanza-card" data-slot="0">
+                                        <figcaption class="stanza-card-label" dir="auto">Performance</figcaption>
+                                        <div class="stanza-media">
+                                            <img src="/images/stanza/cards/performance.webp" width="1120" height="700"
+                                                fetchpriority="high" draggable="false"
+                                                alt="Stanza Performance in dark mode showing the active review cycle and overview metrics">
+                                            <span class="stanza-fallback" hidden></span>
+                                        </div>
+                                    </figure>
+                                </div>
+                                <template data-stanza-card-template>
+                                    <figure class="stanza-card">
+                                        <figcaption class="stanza-card-label" dir="auto"></figcaption>
+                                        <div class="stanza-media">
+                                            <img width="1120" height="700" loading="lazy" decoding="async" draggable="false" alt="">
+                                            <span class="stanza-fallback" hidden></span>
+                                        </div>
+                                    </figure>
+                                </template>
+                                <template data-stanza-zoom-template>
+                                    <button class="stanza-zoom" type="button" data-stanza-open aria-haspopup="dialog" aria-controls="stanza-lightbox" hidden>
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v5m11-5h5v5m0 6v5h-5m-6 0H4v-5"/></svg>
+                                    </button>
+                                </template>
+                                <div class="stanza-controls" hidden>
+                                    <div class="stanza-navigation">
+                                        <button type="button" data-stanza-prev aria-label="Previous screenshot" aria-controls="stanza-stage">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+                                        </button>
+                                        <span class="stanza-counter" data-stanza-counter aria-hidden="true">01 / 06</span>
+                                        <button type="button" data-stanza-next aria-label="Next screenshot" aria-controls="stanza-stage">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+                                        </button>
+                                    </div>
+                                    <button type="button" class="stanza-autoplay" data-stanza-play aria-label="Pause autoplay">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="stanza-pause-icon" d="M9 5v14m6-14v14"/><path class="stanza-play-icon" d="m9 5 10 7-10 7Z"/></svg>
+                                    </button>
+                                </div>
+                                <span class="stanza-sr-only" data-stanza-status role="status"></span>
+                            </div>
+
+                            <div class="stanza-summary">
+                                <span class="stanza-eyebrow" data-i18n="stanzaEyebrow">Product showcase</span>
+                                <h2 id="stanza-title" data-i18n="stanzaTitle">Stanza HR — Multi-Tenant Workforce Management Platform</h2>
+                                <p class="pane-desc" data-i18n="stanzaDescription">A customizable, multi-tenant workforce management platform built with Node.js, Express, PostgreSQL, React, Redis, and BullMQ. The system combines secure tenant isolation, role-based access control, geofenced attendance, HR workflows, and semantic intelligence in a performance-focused progressive web application.</p>
+                                <div class="stanza-caption">
+                                    <span class="stanza-eyebrow" data-i18n="stanzaCaption">On screen</span>
+                                    <h3 data-stanza-title>Performance</h3>
+                                    <p data-stanza-description>Performance reviews, goals and OKRs, recognition, and review cycles, shown in Stanza’s dark theme.</p>
+                                </div>
+                                <ul class="stanza-highlights" aria-label="Stanza HR">
+                                    <li data-i18n="stanzaAttendance">Geofenced attendance</li>
+                                    <li data-i18n="stanzaAccess">Role-based access</li>
+                                    <li data-i18n="stanzaWorkflows">HR workflows</li>
+                                </ul>
+                            </div>
+
+                            <dialog class="stanza-lightbox" id="stanza-lightbox" aria-labelledby="stanza-lightbox-title">
+                                <header class="stanza-lightbox-bar">
+                                    <h3 id="stanza-lightbox-title" aria-live="polite"></h3>
+                                    <button type="button" data-stanza-close aria-label="Close screenshot viewer" autofocus>
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+                                    </button>
+                                </header>
+                                <div class="stanza-lightbox-media">
+                                    <img width="1586" height="992" decoding="async" alt="" hidden>
+                                    <p class="stanza-fallback" role="status" hidden></p>
+                                </div>
+                                <footer class="stanza-lightbox-bar">
+                                    <p class="stanza-lightbox-caption"></p>
+                                    <div class="stanza-navigation">
+                                        <button type="button" data-stanza-lightbox-prev aria-label="Previous screenshot">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+                                        </button>
+                                        <button type="button" data-stanza-lightbox-next aria-label="Next screenshot">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+                                        </button>
+                                    </div>
+                                </footer>
+                            </dialog>
+                        </section>
+
+                        <a class="view-all stanza-repo" data-project-repository href="https://github.com/ShadyAwad/Horizon-HR-v2"
+                            target="_blank" rel="noopener noreferrer" data-i18n="explore">View Project Repository →</a>
+
+                        <details class="stanza-architecture">
+                            <summary data-i18n="stanzaArchitecture">Architecture notes</summary>
+                            <dl>
+                                <div>
+                                    <dt data-i18n="stanzaArchitectureData">API and data</dt>
+                                    <dd data-i18n="stanzaArchitectureDataDetail">Node.js and Express serve the application API. PostgreSQL stores workforce records within tenant boundaries, and role-based access controls which workflows are available to each user.</dd>
+                                </div>
+                                <div>
+                                    <dt data-i18n="stanzaArchitectureApp">Workspace and jobs</dt>
+                                    <dd data-i18n="stanzaArchitectureAppDetail">The React PWA brings attendance, organisation, performance, and payroll into one workspace. Redis and BullMQ support background job processing.</dd>
+                                </div>
+                                <div>
+                                    <dt data-i18n="stanzaArchitectureSemantic">Semantic routing</dt>
+                                    <dd data-i18n="stanzaArchitectureSemanticDetail">The workspace exposes routing analytics, matching results, approved examples, and privacy settings for administrators to review.</dd>
+                                </div>
+                            </dl>
+                        </details>
+                    </div>
+
+                    <div class="flagship-pane" id="pane-p2">
+                        <div class="pane-header">
+                            <span class="pane-badge">CRYPTOGRAPHIC SECURITY</span>
+                            <h2>Project 02: Cryptographic Matchmaking PWA</h2>
+                        </div>
+                        <p class="pane-desc">
+                            A hyper-secure relational matchmaking platform enforcing rigorous sanitization and zero-leakage security constraints. Employs advanced hardware-adjacent cryptographic matching routines calculating correlation indices over authenticated users, with full user metadata anonymization on storage planes.
+                        </p>
+
+                        <hr class="pane-divider" />
+
+                        <h5 class="pane-subtitle">SECURITY ATTESTATION MATRIX</h5>
+                        <table class="matrix-table">
+                            <thead>
+                                <tr>
+                                    <th>Security Pipeline Vector</th>
+                                    <th>Implementation Protocol</th>
+                                    <th>Transaction Isolation Constraint</th>
+                                    <th>Attestation Hash Output</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Metadata Payload Encryption</strong></td>
+                                    <td>AES-256-GCM / Argon2id</td>
+                                    <td>Direct WebCrypto Client Sandbox</td>
+                                    <td>Validated Salt Bindings</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Concurrency Control</strong></td>
+                                    <td>Serializable Transaction Engine</td>
+                                    <td>Bypasses Repeatable Read Latency</td>
+                                    <td>Null Booking Collision</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Parametric Attack Sandbox</strong></td>
+                                    <td>Optimized Prepared Bindings</td>
+                                    <td>Type-Restricted Argument Sanitizer</td>
+                                    <td>100% SQLi Shield Protection</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <blockquote class="pane-blockquote">
+                            <strong>Architectural Core Integration Architecture:</strong> Cryptographic matching scoring is calculated in-memory inside child node threads. Client payloads are decrypted locally on sandbox frames, maintaining complete isolation of keys from host servers.
+                        </blockquote>
+
+                        <div class="pane-meta">
+                            <strong>Core Stack:</strong> PostgreSQL (Raw SQL), WebCrypto API, Node.js (Express), Vanilla JS.
+                        </div>
                     </div>
                 </div>
-
-                <label id="addonsLabel" style="margin-top: 20px; display: block;" data-i18n="addons">Optional Features</label>
-                <div class="checkbox-group">
-                    <label><input type="checkbox" class="addon" id="opt-pwa" value="75"> <span data-i18n="checkboxPwa">Native Mobile Installation (PWA)</span></label>
-                    <label><input type="checkbox" class="addon" id="opt-l10n" value="50"> <span data-i18n="checkboxL10n">Asynchronous Multi-Language Matrix (l10n)</span></label>
-                    <label><input type="checkbox" class="addon" id="opt-rbac" value="100"> <span data-i18n="checkboxRBAC">Secure RBAC Authentication & Audit Logging</span></label>
-                    <label><input type="checkbox" class="addon" id="opt-ai" value="150"> <span data-i18n="checkboxAI">Smart AI Assistant / Custom LLM Pipelines</span></label>
-                </div>
-
-                <div class="price-box">
-                    <span data-i18n="estInvestment">Estimated Project Price:</span>
-                    <div class="price-row"><small>$</small><strong id="price-display">75</strong> <small>USD</small></div>
-                </div>
-
-                <div class="tier-links">
-                    <h4 data-i18n="tierEstimates">Active Service Blueprint</h4>
-                    <p id="tier-subtitle">High-performance single-page layout or landing page.</p>
-                    <ul>
-                        <li><a href="#" class="baseline-link" data-tier-index="1" data-i18n="tier1">Tier 1: Static Blueprint</a></li>
-                        <li><a href="#" class="baseline-link" data-tier-index="2" data-i18n="tier2">Tier 2: Dynamic Multi-View</a></li>
-                        <li><a href="#" class="baseline-link" data-tier-index="3" data-i18n="tier3">Tier 3: Full-Stack Core + AI</a></li>
-                        <li><a href="#" class="baseline-link" data-tier-index="4" data-i18n="tier4">Tier 4: Enterprise Secure & Cognitive</a></li>
-                        <li><a href="#" class="baseline-link" data-tier-index="5" data-i18n="tier5">Tier 5: Bespoke Interactive Canvas</a></li>
-                    </ul>
-                </div>
             </div>
+
+            <a
+    class="view-all"
+    id="explore-repositories-trigger"
+    data-project-repository
+    hidden
+    href="https://github.com/ShadyAwad"
+    target="_blank"
+    rel="noopener noreferrer"
+    data-i18n="explore"
+>
+    View Project Repository →
+</a>
         </div>
 
         <div class="bento-item systems-topology" id="systems-architecture-card">
@@ -287,175 +423,6 @@
             </div>
         </div>
 
-        <div class="bento-item project-showcase" id="architectural-showcase-card">
-            <h3 data-i18n="featuredProjects">Micro-Architectural Showcase (Flagship Systems)</h3>
-            
-            <div class="flagship-dashboard-layout">
-                <ul class="flagship-project-selectors">
-                    <li class="flagship-selector active" data-project="p1" id="project-p1-selector">
-                        <div class="selector-number">01</div>
-                        <div class="selector-meta">
-                            <h4>Stanza HR</h4>
-                            <span data-i18n="stanzaSelector">Workforce management PWA</span>
-                        </div>
-                    </li>
-                    <li class="flagship-selector" data-project="p2" id="project-p2-selector">
-                        <div class="selector-number">02</div>
-                        <div class="selector-meta">
-                            <h4>E2EE Matchmaker IP</h4>
-                            <span>Cryptographic Private Relational Sync</span>
-                        </div>
-                    </li>
-                </ul>
-
-                <div class="flagship-documentation-viewport">
-                    <div class="flagship-pane active" id="pane-p1">
-                        <section class="stanza-showcase" data-stanza-showcase aria-labelledby="stanza-title">
-                            <div class="stanza-gallery" tabindex="0" role="region" aria-label="Stanza HR product screenshots">
-                                <div class="stanza-stage" id="stanza-stage">
-                                    <figure class="stanza-card" data-slot="0">
-                                        <figcaption class="stanza-card-label" dir="auto">Performance</figcaption>
-                                        <div class="stanza-media">
-                                            <img src="/images/stanza/performance.webp" width="1586" height="992"
-                                                fetchpriority="high" draggable="false"
-                                                alt="Stanza Performance dashboard showing the active review cycle and overview metrics">
-                                            <span class="stanza-fallback" hidden></span>
-                                        </div>
-                                    </figure>
-                                </div>
-                                <template data-stanza-card-template>
-                                    <figure class="stanza-card">
-                                        <figcaption class="stanza-card-label" dir="auto"></figcaption>
-                                        <div class="stanza-media">
-                                            <img width="1586" height="992" loading="lazy" decoding="async" draggable="false" alt="">
-                                            <span class="stanza-fallback" hidden></span>
-                                        </div>
-                                    </figure>
-                                </template>
-                                <div class="stanza-controls" hidden>
-                                    <div class="stanza-navigation">
-                                        <button type="button" data-stanza-prev aria-label="Previous screenshot" aria-controls="stanza-stage">
-                                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
-                                        </button>
-                                        <span class="stanza-counter" data-stanza-counter aria-hidden="true">01 / 06</span>
-                                        <button type="button" data-stanza-next aria-label="Next screenshot" aria-controls="stanza-stage">
-                                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
-                                        </button>
-                                    </div>
-                                    <button type="button" class="stanza-autoplay" data-stanza-play aria-label="Pause autoplay">
-                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="stanza-pause-icon" d="M9 5v14m6-14v14"/><path class="stanza-play-icon" d="m9 5 10 7-10 7Z"/></svg>
-                                    </button>
-                                </div>
-                                <span class="stanza-sr-only" data-stanza-status role="status"></span>
-                            </div>
-
-                            <div class="stanza-summary">
-                                <span class="stanza-eyebrow" data-i18n="stanzaEyebrow">Product showcase</span>
-                                <h2 id="stanza-title" data-i18n="stanzaTitle">Stanza HR — Multi-Tenant Workforce Management Platform</h2>
-                                <p class="pane-desc" data-i18n="stanzaDescription">A customizable, multi-tenant workforce management platform built with Node.js, Express, PostgreSQL, React, Redis, and BullMQ. The system combines secure tenant isolation, role-based access control, geofenced attendance, HR workflows, and semantic intelligence in a performance-focused progressive web application.</p>
-                                <div class="stanza-caption">
-                                    <span class="stanza-eyebrow" data-i18n="stanzaCaption">On screen</span>
-                                    <h3 data-stanza-title>Performance</h3>
-                                    <p data-stanza-description>Performance reviews, goals and OKRs, recognition, and review cycles.</p>
-                                </div>
-                                <ul class="stanza-highlights" aria-label="Stanza HR">
-                                    <li data-i18n="stanzaAttendance">Geofenced attendance</li>
-                                    <li data-i18n="stanzaAccess">Role-based access</li>
-                                    <li data-i18n="stanzaWorkflows">HR workflows</li>
-                                </ul>
-                            </div>
-                        </section>
-
-                        <a class="view-all stanza-repo" data-project-repository href="https://github.com/ShadyAwad/Horizon-HR-v2"
-                            target="_blank" rel="noopener noreferrer" data-i18n="explore">View Project Repository →</a>
-
-                        <details class="stanza-architecture">
-                            <summary data-i18n="stanzaArchitecture">Architecture notes</summary>
-                            <dl>
-                                <div>
-                                    <dt data-i18n="stanzaArchitectureData">API and data</dt>
-                                    <dd data-i18n="stanzaArchitectureDataDetail">Node.js and Express serve the application API. PostgreSQL stores workforce records within tenant boundaries, and role-based access controls which workflows are available to each user.</dd>
-                                </div>
-                                <div>
-                                    <dt data-i18n="stanzaArchitectureApp">Workspace and jobs</dt>
-                                    <dd data-i18n="stanzaArchitectureAppDetail">The React PWA brings attendance, organisation, performance, and payroll into one workspace. Redis and BullMQ support background job processing.</dd>
-                                </div>
-                                <div>
-                                    <dt data-i18n="stanzaArchitectureSemantic">Semantic routing</dt>
-                                    <dd data-i18n="stanzaArchitectureSemanticDetail">The workspace exposes routing analytics, matching results, approved examples, and privacy settings for administrators to review.</dd>
-                                </div>
-                            </dl>
-                        </details>
-                    </div>
-
-                    <div class="flagship-pane" id="pane-p2">
-                        <div class="pane-header">
-                            <span class="pane-badge">CRYPTOGRAPHIC SECURITY</span>
-                            <h2>Project 02: Cryptographic Matchmaking PWA</h2>
-                        </div>
-                        <p class="pane-desc">
-                            A hyper-secure relational matchmaking platform enforcing rigorous sanitization and zero-leakage security constraints. Employs advanced hardware-adjacent cryptographic matching routines calculating correlation indices over authenticated users, with full user metadata anonymization on storage planes.
-                        </p>
-                        
-                        <hr class="pane-divider" />
-                        
-                        <h5 class="pane-subtitle">SECURITY ATTESTATION MATRIX</h5>
-                        <table class="matrix-table">
-                            <thead>
-                                <tr>
-                                    <th>Security Pipeline Vector</th>
-                                    <th>Implementation Protocol</th>
-                                    <th>Transaction Isolation Constraint</th>
-                                    <th>Attestation Hash Output</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><strong>Metadata Payload Encryption</strong></td>
-                                    <td>AES-256-GCM / Argon2id</td>
-                                    <td>Direct WebCrypto Client Sandbox</td>
-                                    <td>Validated Salt Bindings</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Concurrency Control</strong></td>
-                                    <td>Serializable Transaction Engine</td>
-                                    <td>Bypasses Repeatable Read Latency</td>
-                                    <td>Null Booking Collision</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Parametric Attack Sandbox</strong></td>
-                                    <td>Optimized Prepared Bindings</td>
-                                    <td>Type-Restricted Argument Sanitizer</td>
-                                    <td>100% SQLi Shield Protection</td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <blockquote class="pane-blockquote">
-                            <strong>Architectural Core Integration Architecture:</strong> Cryptographic matching scoring is calculated in-memory inside child node threads. Client payloads are decrypted locally on sandbox frames, maintaining complete isolation of keys from host servers.
-                        </blockquote>
-
-                        <div class="pane-meta">
-                            <strong>Core Stack:</strong> PostgreSQL (Raw SQL), WebCrypto API, Node.js (Express), Vanilla JS.
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <a
-    class="view-all"
-    id="explore-repositories-trigger"
-    data-project-repository
-    hidden
-    href="https://github.com/ShadyAwad"
-    target="_blank"
-    rel="noopener noreferrer"
-    data-i18n="explore"
->
-    View Project Repository →
-</a>
-        </div>
-
         <div class="bento-item db-visualizer" id="traversal-visualizer-card">
             <h3 data-i18n="dbVisualizer">Active Index Traversal & Memory Allocator</h3>
             <p class="visualizer-desc" data-i18n="visualizerDesc">Traverse a B+ Tree indexing pathway or compact memory block fragments. Watch low-abstraction systems logic execute at 60fps.</p>
@@ -501,6 +468,61 @@
     </div>
     <p class="ship-hint" data-i18n="shipHint">Interact directly with the local 3D rendering cache using swipe/pinch gestures.</p>
 </div>
+        <section class="bento-item calculator configurator" id="estimator-card" aria-labelledby="configurator-title">
+            <header class="configurator-header">
+                <span class="configurator-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 2h14v20H5zM8 6h8v3H8zM8 13h1m6 0h1m-8 4h1m6 0h1"/></svg></span>
+                <div>
+                    <h3 id="configurator-title" data-i18n="projectEstimator">Freelance Project Configurator</h3>
+                    <p data-i18n="configuratorIntro">Compare five project tiers, choose optional features, and see your estimate update.</p>
+                </div>
+                <button type="button" class="configurator-toggle" aria-controls="configurator-panel" aria-expanded="false">
+                    <span data-i18n="configuratorOpen">Configure a Project</span>
+                    <span data-i18n="configuratorClose" hidden>Collapse configurator</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+            </header>
+            <div class="configurator-panel" id="configurator-panel" inert>
+                <div class="configurator-clip">
+                    <div class="calc-ui">
+                        <label id="solutionTierLabel" for="tier" data-i18n="solutionTier">Freelance Service Tier</label>
+                        <div class="range-wrapper">
+                            <input type="range" id="tier" min="1" max="5" step="1" value="1" class="slider-control" />
+                            <div class="range-labels">
+                                <span data-i18n="tierRangeStart">Static</span>
+                                <span id="active-tier-val">Tier 1: Static Blueprint</span>
+                                <span data-i18n="tierRangeEnd">Bespoke</span>
+                            </div>
+                        </div>
+
+                        <label id="addonsLabel" style="margin-top: 20px; display: block;" data-i18n="addons">Optional Features</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" class="addon" id="opt-pwa" value="75"> <span data-i18n="checkboxPwa">Native Mobile Installation (PWA)</span></label>
+                            <label><input type="checkbox" class="addon" id="opt-l10n" value="50"> <span data-i18n="checkboxL10n">Asynchronous Multi-Language Matrix (l10n)</span></label>
+                            <label><input type="checkbox" class="addon" id="opt-rbac" value="100"> <span data-i18n="checkboxRBAC">Secure RBAC Authentication & Audit Logging</span></label>
+                            <label><input type="checkbox" class="addon" id="opt-ai" value="150"> <span data-i18n="checkboxAI">Smart AI Assistant / Custom LLM Pipelines</span></label>
+                        </div>
+
+                        <div class="price-box">
+                            <span data-i18n="estInvestment">Estimated Project Price:</span>
+                            <div class="price-row"><small>$</small><strong id="price-display">75</strong> <small>USD</small></div>
+                        </div>
+
+                        <div class="tier-links">
+                            <h4 data-i18n="tierEstimates">Active Service Blueprint</h4>
+                            <p id="tier-subtitle">High-performance single-page layout or landing page.</p>
+                            <ul>
+                                <li><a href="#" class="baseline-link" data-tier-index="1" data-i18n="tier1">Tier 1: Static Blueprint</a></li>
+                                <li><a href="#" class="baseline-link" data-tier-index="2" data-i18n="tier2">Tier 2: Dynamic Multi-View</a></li>
+                                <li><a href="#" class="baseline-link" data-tier-index="3" data-i18n="tier3">Tier 3: Full-Stack Core + AI</a></li>
+                                <li><a href="#" class="baseline-link" data-tier-index="4" data-i18n="tier4">Tier 4: Enterprise Secure & Cognitive</a></li>
+                                <li><a href="#" class="baseline-link" data-tier-index="5" data-i18n="tier5">Tier 5: Bespoke Interactive Canvas</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     </main>
 
     <footer class="page-footer" id="portfolio-footer">
@@ -512,7 +534,7 @@
             <div class="footer-links">
                 <a href="#profile-card" data-i18n="about">About</a>
                 <a href="#systems-architecture-card" data-i18n="projects">Projects</a>
-                <a href="#estimator-card" data-i18n="contact">Contact</a>
+                <a href="#contact-dock" data-i18n="contact">Contact</a>
             </div>
             <small data-i18n="copyright">© 2026 Shady Awad. Handcrafted in pure Vanilla JavaScript & CSS. No bloat, no overhead.</small>
         </div>

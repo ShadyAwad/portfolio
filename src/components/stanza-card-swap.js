@@ -4,6 +4,7 @@ const screenshotFiles = [
     'performance.webp', 'settings.webp', 'semantic.webp',
     'company-feed.webp', 'organisation.webp', 'payroll.webp'
 ];
+const screenshotPath = `${import.meta.env.BASE_URL}images/stanza/`;
 const autoplayDelay = 5000;
 const exitDuration = 230;
 const tuckDuration = 390;
@@ -23,6 +24,15 @@ export function mountStanzaCardSwap(root, copy, locale) {
     const status = root.querySelector('[data-stanza-status]');
     const first = stage.firstElementChild;
     const cardTemplate = root.querySelector('[data-stanza-card-template]');
+    const zoomTemplate = root.querySelector('[data-stanza-zoom-template]');
+    const lightbox = root.querySelector('.stanza-lightbox');
+    const viewerTitle = lightbox.querySelector('h3');
+    const viewerCaption = lightbox.querySelector('.stanza-lightbox-caption');
+    const viewerImage = lightbox.querySelector('img');
+    const viewerFallback = lightbox.querySelector('.stanza-fallback');
+    const viewerClose = lightbox.querySelector('[data-stanza-close]');
+    const viewerPrev = lightbox.querySelector('[data-stanza-lightbox-prev]');
+    const viewerNext = lightbox.querySelector('[data-stanza-lightbox-next]');
     const motion = matchMedia('(prefers-reduced-motion: reduce)');
     const listeners = new AbortController();
     const on = (target, event, handler) => target.addEventListener(event, handler, { signal: listeners.signal });
@@ -36,11 +46,17 @@ export function mountStanzaCardSwap(root, copy, locale) {
     let swap = null;
     let autoTimer;
     let phaseTimer;
+    let viewerIndex = 0;
+    let viewerTrigger;
+    let pressedBackdrop = false;
+    let suppressZoomClick = false;
 
-    const cards = screenshotFiles.map((filename, index) => {
+    const cards = screenshotFiles.map((_, index) => {
         const card = index ? cardTemplate.content.firstElementChild.cloneNode(true) : first;
         const image = card.querySelector('img');
         const fallback = card.querySelector('.stanza-fallback');
+        const zoom = zoomTemplate.content.firstElementChild.cloneNode(true);
+        image.parentElement.append(zoom);
         const showFallback = failed => {
             image.hidden = failed;
             fallback.hidden = !failed;
@@ -49,25 +65,31 @@ export function mountStanzaCardSwap(root, copy, locale) {
         on(image, 'error', () => showFallback(true));
         on(image, 'load', () => showFallback(false));
         if (index) {
-            image.src = `${import.meta.env.BASE_URL}images/stanza/${filename}`;
             stage.append(card);
         } else if (image.complete && !image.naturalWidth) {
             // The preloaded Performance image can finish before the carousel mounts.
             showFallback(true);
         }
-        return { card, image, fallback, label: card.querySelector('figcaption') };
+        return { card, image, fallback, zoom, label: card.querySelector('figcaption') };
     });
+
+    function loadCardImage(index) {
+        const { image } = cards[index];
+        if (!image.hasAttribute('src')) image.src = `${screenshotPath}cards/${screenshotFiles[index]}`;
+    }
 
     function render(announce = false) {
         const active = order[0];
-        const activeImage = cards[active].image;
-        if (activeImage.loading === 'lazy') activeImage.loading = 'eager';
+        loadCardImage(active);
+        const zoomHadFocus = stage.contains(document.activeElement) && document.activeElement.matches('[data-stanza-open]');
         order.forEach((index, slot) => {
-            const { card } = cards[index];
+            const { card, zoom } = cards[index];
             card.dataset.slot = String(slot);
+            zoom.hidden = slot !== 0;
             if (slot === 0) card.removeAttribute('aria-hidden');
             else card.setAttribute('aria-hidden', 'true');
         });
+        if (zoomHadFocus) cards[active].zoom.focus({ preventScroll: true });
         const [name, detail] = copy.slides[active];
         const format = new Intl.NumberFormat(locale, { minimumIntegerDigits: 2 });
         const position = `${format.format(active + 1)} / ${format.format(cards.length)}`;
@@ -90,22 +112,82 @@ export function mountStanzaCardSwap(root, copy, locale) {
         prev.setAttribute('aria-label', copy.previous);
         next.setAttribute('aria-label', copy.next);
         updateAutoplayControl();
-        cards.forEach(({ label, image, fallback }, index) => {
+        cards.forEach(({ label, image, fallback, zoom }, index) => {
             const [name, , alt] = copy.slides[index];
             label.textContent = name;
             image.alt = alt;
             fallback.textContent = copy.unavailable;
+            zoom.setAttribute('aria-label', copy.openViewer);
         });
+        viewerClose.setAttribute('aria-label', copy.closeViewer);
+        viewerPrev.setAttribute('aria-label', copy.previous);
+        viewerNext.setAttribute('aria-label', copy.next);
+        viewerFallback.textContent = copy.unavailable;
+        if (lightbox.open) renderViewer();
         status.textContent = '';
         render();
     }
 
     function schedule(delay = autoplayDelay) {
         clearTimeout(autoTimer);
-        if (playing && inView && !hovered && !focused && !drag && !swap && !motion.matches && !document.hidden) {
+        if (playing && inView && !hovered && !focused && !drag && !swap && !lightbox.open && !motion.matches && !document.hidden) {
             autoTimer = setTimeout(() => step(1, false), delay);
         }
     }
+
+    function renderViewer() {
+        const [name, detail, alt] = copy.slides[viewerIndex];
+        const source = screenshotPath + screenshotFiles[viewerIndex];
+        viewerTitle.textContent = name;
+        viewerCaption.textContent = detail;
+        viewerImage.alt = alt;
+        if (viewerImage.getAttribute('src') !== source) {
+            viewerImage.hidden = true;
+            viewerFallback.hidden = true;
+            viewerImage.src = source;
+        }
+    }
+
+    function openViewer(trigger) {
+        viewerIndex = order[0];
+        viewerTrigger = trigger;
+        renderViewer();
+        lightbox.showModal();
+        schedule();
+    }
+
+    function stepViewer(delta) {
+        viewerIndex = (viewerIndex + delta + cards.length) % cards.length;
+        renderViewer();
+    }
+
+    function isBackdrop(event) {
+        if (event.target !== lightbox) return false;
+        const { left, right, top, bottom } = lightbox.getBoundingClientRect();
+        return event.clientX < left || event.clientX > right || event.clientY < top || event.clientY > bottom;
+    }
+
+    on(viewerImage, 'load', () => {
+        viewerImage.hidden = false;
+        viewerFallback.hidden = true;
+    });
+    on(viewerImage, 'error', () => {
+        viewerImage.hidden = true;
+        viewerFallback.hidden = false;
+    });
+    on(viewerPrev, 'click', () => stepViewer(-1));
+    on(viewerNext, 'click', () => stepViewer(1));
+    on(viewerClose, 'click', () => lightbox.close());
+    on(lightbox, 'pointerdown', event => { pressedBackdrop = isBackdrop(event); });
+    on(lightbox, 'click', event => {
+        if (pressedBackdrop && isBackdrop(event)) lightbox.close();
+        pressedBackdrop = false;
+    });
+    on(lightbox, 'close', () => {
+        viewerTrigger?.focus({ preventScroll: true });
+        viewerTrigger = null;
+        schedule();
+    });
 
     function placeThrow(card, x, y, angle, scale) {
         card.style.setProperty('--throw-x', `${x}px`);
@@ -144,7 +226,8 @@ export function mountStanzaCardSwap(root, copy, locale) {
     }
 
     function goTo(destination, announce = true, direction = { x: 0, y: 1 }) {
-        if (swap || drag || destination < 1 || destination >= cards.length) return;
+        if (swap || drag || lightbox.open || destination < 1 || destination >= cards.length) return;
+        loadCardImage(order[destination]);
         clearTimeout(autoTimer);
         const card = cards[order[0]].card;
         swap = { card, destination, announce, committed: false, started: performance.now() };
@@ -167,6 +250,7 @@ export function mountStanzaCardSwap(root, copy, locale) {
     function release(event, cancelled = false) {
         if (!drag || (event && event.pointerId !== drag.id)) return;
         const gesture = drag;
+        suppressZoomClick = gesture.moved;
         drag = null;
         gesture.card.classList.remove('is-dragging');
         stage.classList.remove('is-dragging');
@@ -194,6 +278,7 @@ export function mountStanzaCardSwap(root, copy, locale) {
 
     on(stage, 'pointerdown', event => {
         if (!event.isPrimary || event.button !== 0 || swap || drag) return;
+        suppressZoomClick = false;
         const card = cards[order[0]].card;
         if (!card.contains(event.target)) return;
         drag = {
@@ -230,13 +315,22 @@ export function mountStanzaCardSwap(root, copy, locale) {
 
     on(stage, 'pointerup', event => release(event));
     on(stage, 'pointercancel', event => release(event, true));
-    on(stage, 'lostpointercapture', event => release(event, true));
+    on(stage, 'lostpointercapture', event => {
+        // Touch first captures the zoom button implicitly, then transfers capture to the stage.
+        if (event.target === stage) release(event, true);
+    });
     on(stage, 'pointerleave', event => {
         if (drag && !drag.moved && event.pointerType === 'mouse') release(event, true);
     });
     on(stage, 'click', event => {
-        const target = event.target.closest('.stanza-card');
-        if (target) goTo(order.indexOf(Number(target.dataset.card)));
+        const card = event.target.closest('.stanza-card');
+        if (!card) return;
+        const slot = order.indexOf(Number(card.dataset.card));
+        if (slot > 0) goTo(slot);
+        else if (!swap && (!suppressZoomClick || event.detail === 0)) {
+            const trigger = event.target.closest('[data-stanza-open]');
+            if (trigger) openViewer(trigger);
+        }
     });
 
     on(prev, 'click', () => step(-1));
@@ -246,17 +340,22 @@ export function mountStanzaCardSwap(root, copy, locale) {
         updateAutoplayControl();
         schedule();
     });
-    on(gallery, 'keydown', event => {
-        if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    function arrowStep(event) {
+        if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return 0;
         const rtl = locale === 'ar';
-        if (event.key === 'ArrowDown' || event.key === (rtl ? 'ArrowLeft' : 'ArrowRight')) {
+        if (event.key === 'ArrowDown' || event.key === (rtl ? 'ArrowLeft' : 'ArrowRight')) return 1;
+        if (event.key === 'ArrowUp' || event.key === (rtl ? 'ArrowRight' : 'ArrowLeft')) return -1;
+        return 0;
+    }
+
+    for (const [target, navigate] of [[gallery, step], [lightbox, stepViewer]]) {
+        on(target, 'keydown', event => {
+            const delta = arrowStep(event);
+            if (!delta) return;
             event.preventDefault();
-            step(1);
-        } else if (event.key === 'ArrowUp' || event.key === (rtl ? 'ArrowRight' : 'ArrowLeft')) {
-            event.preventDefault();
-            step(-1);
-        }
-    });
+            navigate(delta);
+        });
+    }
     on(gallery, 'pointerenter', event => {
         if (event.pointerType !== 'touch') {
             hovered = true;
@@ -307,6 +406,7 @@ export function mountStanzaCardSwap(root, copy, locale) {
         clearTimeout(phaseTimer);
         observer.disconnect();
         listeners.abort();
+        if (lightbox.open) lightbox.close();
     }
 
     localize(copy, locale);

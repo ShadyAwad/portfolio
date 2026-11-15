@@ -147,17 +147,27 @@ html[dir="rtl"] #pane-p1 { direction: rtl; }
 .stanza-card:not([data-slot="0"]) .stanza-card-label { opacity: 0; }
 
 .stanza-media {
+    --frame-inset: clamp(4px, 1.15cqw, 9px);
     position: relative;
-    aspect-ratio: 1586 / 992;
+    padding: var(--frame-inset);
     background: var(--input-bg);
     overflow: hidden;
 }
 
-.stanza-media img {
+.stanza-media::before {
+    content: "";
     display: block;
-    inline-size: 100%;
-    block-size: 100%;
+    aspect-ratio: 1120 / 700;
+}
+
+.stanza-media img {
+    position: absolute;
+    inset: var(--frame-inset);
+    display: block;
+    inline-size: calc(100% - 2 * var(--frame-inset));
+    block-size: calc(100% - 2 * var(--frame-inset));
     object-fit: contain;
+    border-radius: clamp(4px, 1cqw, 8px);
     pointer-events: none;
 }
 .stanza-media img[hidden] { display: none; }
@@ -177,6 +187,88 @@ html[dir="rtl"] #pane-p1 { direction: rtl; }
     color: var(--muted);
 }
 
+.stanza-zoom:not([hidden]) {
+    position: absolute;
+    inset-block-end: var(--frame-inset);
+    inset-inline-end: var(--frame-inset);
+    display: grid;
+    place-items: center;
+    inline-size: 36px;
+    block-size: 36px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--input-bg);
+    color: var(--text);
+    cursor: pointer;
+    transform: none;
+}
+.stanza-zoom:hover {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--input-bg) 90%, var(--accent));
+    color: var(--accent);
+}
+.stanza-zoom:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+.stanza-zoom svg {
+    inline-size: 18px;
+    block-size: 18px;
+    pointer-events: none;
+}
+
+html:has(.stanza-lightbox[open]) { overflow: hidden; }
+
+.stanza-lightbox {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    inline-size: min(1200px, calc(100% - 24px));
+    max-inline-size: none;
+    max-block-size: calc(100dvh - 24px);
+    padding: clamp(10px, 2vw, 20px);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--terminal-bg);
+    color: var(--text);
+    overflow: auto;
+    overscroll-behavior: contain;
+}
+.stanza-lightbox::backdrop { background: rgb(2 4 10 / .83); }
+.stanza-lightbox-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+}
+.stanza-lightbox-bar h3 { font-size: clamp(1rem, 2vw, 1.3rem); }
+.stanza-lightbox-caption {
+    color: var(--muted);
+    font-size: .875rem;
+    line-height: 1.5;
+}
+.stanza-lightbox-media {
+    position: relative;
+    inline-size: min(100%, 112dvh);
+    aspect-ratio: 1586 / 992;
+    margin: .6rem auto;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--input-bg);
+}
+.stanza-lightbox-media img:not([hidden]) {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: contain;
+}
+.stanza-lightbox button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
 .stanza-controls:not([hidden]) {
     display: flex;
     align-items: center;
@@ -186,7 +278,8 @@ html[dir="rtl"] #pane-p1 { direction: rtl; }
 }
 .stanza-navigation { display: flex; align-items: center; gap: .65rem; }
 
-.stanza-controls button {
+.stanza-controls button,
+.stanza-lightbox button {
     display: grid;
     place-items: center;
     inline-size: 44px;
@@ -196,22 +289,26 @@ html[dir="rtl"] #pane-p1 { direction: rtl; }
     background: var(--input-bg);
     color: var(--text);
     padding: 0;
+    flex-shrink: 0;
 }
-.stanza-controls button:hover {
+.stanza-controls button:hover,
+.stanza-lightbox button:hover {
     border-color: var(--accent);
     color: var(--accent);
 }
 .stanza-controls button[hidden] { display: none; }
 
-.stanza-controls svg {
-    inline-size: 18px;
-    block-size: 18px;
+.stanza-controls svg,
+.stanza-lightbox svg,
+.stanza-zoom svg {
     stroke: currentColor;
     stroke-width: 1.8;
     fill: none;
     stroke-linecap: round;
     stroke-linejoin: round;
 }
+.stanza-controls svg,
+.stanza-lightbox svg { inline-size: 18px; block-size: 18px; }
 .stanza-navigation:dir(rtl) svg { transform: scaleX(-1); }
 .stanza-play-icon,
 .stanza-autoplay[data-paused] .stanza-pause-icon { display: none; }
@@ -245,11 +342,19 @@ html[dir="rtl"] #pane-p1 { direction: rtl; }
     line-height: 1.65;
 }
 .stanza-caption {
+    --stanza-caption-bg: rgb(20 64 48 / .42);
+    --stanza-caption-border: #285744;
+    --stanza-caption-accent: #4c9676;
     padding: .8rem;
-    background: var(--input-bg);
-    border: 1px solid var(--border);
-    border-inline-start: 2px solid var(--accent);
+    background: var(--stanza-caption-bg);
+    border: 1px solid var(--stanza-caption-border);
+    border-inline-start: 2px solid var(--stanza-caption-accent);
     border-radius: 10px;
+}
+[data-theme="light"] .stanza-caption {
+    --stanza-caption-bg: #edf7f0;
+    --stanza-caption-border: #c4ddce;
+    --stanza-caption-accent: #72a88a;
 }
 .stanza-caption h3 {
     font-size: 1.02rem;

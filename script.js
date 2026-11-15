@@ -1,4 +1,5 @@
 import { mountStanzaCardSwap } from './src/components/stanza-card-swap.js';
+import { localizePortfolioControls } from './src/components/portfolio-controls.js';
 
 // Global Parallax Starfield State
 const bgCanvas = document.getElementById('starfield');
@@ -189,6 +190,8 @@ function renderLanguage(lang) {
 
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    localizePortfolioControls(dict);
+    if (tierSelect) renderTierCopy(getActiveServiceTier());
 
     if (stanzaShowcaseRoot && dict.stanzaGallery) {
         if (stanzaShowcase) stanzaShowcase.localize(dict.stanzaGallery, lang);
@@ -321,6 +324,16 @@ function injectEstimatorLogs(tier, hasAIAddon) {
     }
 }
 
+function renderTierCopy(tier) {
+    if (activeTierVal) {
+        activeTierVal.textContent = activeTranslations[`tier${tier.id}`] ?? tier.name;
+        activeTierVal.style.color = tier.color;
+    }
+    if (tierSubtitle) {
+        tierSubtitle.textContent = activeTranslations.tierDetails?.[tier.id - 1] ?? tier.subtitle;
+    }
+}
+
 function calculatePrice() {
     if (!tierSelect || !priceDisplay) return;
     const tier = getActiveServiceTier();
@@ -329,14 +342,7 @@ function calculatePrice() {
     const oldPrice = Number(priceDisplay.dataset.price || tier.price);
     const hasAIAddon = Boolean(document.getElementById('opt-ai')?.checked);
 
-    if (activeTierVal) {
-        activeTierVal.textContent = tier.name;
-        activeTierVal.style.color = tier.color;
-    }
-
-    if (tierSubtitle) {
-        tierSubtitle.textContent = tier.subtitle;
-    }
+    renderTierCopy(tier);
 
     baselineLinks.forEach(link => {
         link.classList.toggle('active', Number(link.dataset.tierIndex) === tier.id);
