@@ -36,6 +36,7 @@ export function mountChallenge(root, showFeedback) {
     let label;
     let language;
     let graph;
+    let refreshPending = false;
     const setText = (element, value) => { if (element.textContent !== value) element.textContent = value; };
     const setHidden = (element, value) => { if (element.hidden !== value) element.hidden = value; };
 
@@ -109,10 +110,18 @@ export function mountChallenge(root, showFeedback) {
         const present = graph.nodes.some(component => component.id === node);
         setHidden(absent, present);
         setText(absent, label('scenarioAbsent'));
-        showFeedback(present ? { scenario, node, status: stateLabel, metrics: data } : null);
+        showFeedback({ scenario, node, status: stateLabel, metrics: data, present });
     }
 
     const refresh = () => render(snapshot, graph, label, language);
+    function scheduleRefresh() {
+        if (refreshPending) return;
+        refreshPending = true;
+        queueMicrotask(() => {
+            refreshPending = false;
+            if (!events.signal.aborted && !root.closest('[hidden]')) refresh();
+        });
+    }
     function clearErrors() {
         for (const { control, error } of inputs.values()) {
             control.removeAttribute('aria-invalid');
@@ -138,7 +147,7 @@ export function mountChallenge(root, showFeedback) {
         setText(inputs.get(key).error, invalid ? label(key === 'jobRate' ? 'invalidRate' : 'invalidScenario') : '');
         setText(resetStatus, '');
         draft = updateScenario(draft, scenario, key, invalid ? null : value);
-        refresh();
+        scheduleRefresh();
     }, options);
     fieldsets.querySelector('button').addEventListener('click', () => {
         draft = resetScenario(draft, scenario);

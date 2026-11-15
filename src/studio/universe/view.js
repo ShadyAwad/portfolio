@@ -30,9 +30,11 @@ export function mountUniverse(canvas, selectNode, openPreview) {
     panel.hidden = true;
     panel.innerHTML = `<div class="universe-phases" role="group">${stages.map(stage =>
         `<button type="button" data-phase="${stage}" aria-controls="universe-scene"></button>`).join('')}</div>
+        <div class="universe-composition">
         <div class="universe-stage" id="universe-scene">
+            <div class="universe-coordinate-grid" aria-hidden="true"></div>
             <div class="universe-dust" aria-hidden="true"></div>
-            <svg class="universe-space" viewBox="0 0 ${space.width} ${space.height}" aria-hidden="true">
+            <svg class="universe-space" viewBox="0 0 ${space.width} ${space.height}" preserveAspectRatio="none" aria-hidden="true">
                 <g class="universe-orbits" transform="translate(320 260) rotate(-18)">
                     <ellipse rx="142" ry="104"/><ellipse rx="221" ry="161"/>
                     <ellipse rx="280" ry="204"/><ellipse rx="308" ry="230"/>
@@ -41,13 +43,15 @@ export function mountUniverse(canvas, selectNode, openPreview) {
             </svg>
             <div class="universe-nodes" role="group"></div>
         </div>
-        <div class="universe-heading"><p></p><button type="button"></button></div>
-        <div class="universe-summary">
-            <h4></h4><p></p><ul></ul><button type="button"></button>
+        <div class="universe-context">
+            <div class="universe-summary"><h4></h4><p></p><ul></ul><button type="button"></button></div>
+            <div class="universe-brief" hidden><strong></strong><button type="button"></button></div>
+            <div class="universe-details"></div>
+            <p class="universe-project-note" hidden></p>
+            <div class="universe-heading"><p></p><button type="button"></button></div>
         </div>
-        <div class="universe-challenge" hidden></div>
-        <p class="universe-project-note" hidden></p>
-        <div class="universe-details"></div>`;
+        </div>
+        <div class="universe-challenge" hidden></div>`;
     canvas.append(panel);
 
     const stage = panel.querySelector('.universe-stage');
@@ -56,6 +60,7 @@ export function mountUniverse(canvas, selectNode, openPreview) {
     const details = panel.querySelector('.universe-details');
     const challengePanel = panel.querySelector('.universe-challenge');
     const note = panel.querySelector('.universe-project-note');
+    const brief = panel.querySelector('.universe-brief');
     const nodes = panel.querySelector('.universe-nodes');
     const channels = panel.querySelector('.universe-channels');
     const home = panel.querySelector('.universe-heading button');
@@ -83,7 +88,7 @@ export function mountUniverse(canvas, selectNode, openPreview) {
             previous?.removeAttribute('data-simulation');
             previous?.removeAttribute('aria-describedby');
         }
-        feedbackNode = feedback?.node;
+        feedbackNode = feedback?.present ? feedback.node : undefined;
         const node = active.get(feedbackNode);
         if (node && node.dataset.simulation !== feedback.status) {
             node.dataset.simulation = feedback.status;
@@ -94,6 +99,8 @@ export function mountUniverse(canvas, selectNode, openPreview) {
             stage.style.removeProperty('--universe-activity');
             return;
         }
+        if (brief.dataset.status !== feedback.status) brief.dataset.status = feedback.status;
+        setText(brief.querySelector('strong'), current.label(feedback.status));
         if (stage.dataset.scenario !== feedback.scenario) stage.dataset.scenario = feedback.scenario;
         // The glow is a decorative, monotonic scale. The numbers remain model outputs.
         const burst = feedback.metrics.burstRps?.value ?? 0;
@@ -114,11 +121,13 @@ export function mountUniverse(canvas, selectNode, openPreview) {
         details.hidden = !visibility.graph;
         summary.hidden = !visibility.summary;
         challengePanel.hidden = !visibility.controls;
+        brief.hidden = !visibility.controls;
         note.hidden = !visibility.controls;
         if (visibility.controls) {
             setText(note, label('projectInspector'));
+            setText(brief.querySelector('button'), label('editChallenge'));
             challenge.render(state, graph, label, locale);
-        } else if (feedbackNode) showFeedback(null);
+        } else if (stage.hasAttribute('data-scenario')) showFeedback(null);
         const { template, capabilities, roles } = derivePreview(state);
         const enabled = [...Object.keys(capabilities).filter(key => capabilities[key]), ...(roles ? ['roles'] : [])];
         const signature = JSON.stringify([template, enabled, locale]);
@@ -175,7 +184,7 @@ export function mountUniverse(canvas, selectNode, openPreview) {
         retiring.set(id, { element, timer });
     }
 
-    function createNode(node) {
+    function createNode(node, delay) {
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'universe-node';
@@ -184,6 +193,7 @@ export function mountUniverse(canvas, selectNode, openPreview) {
         button.dataset.appearance = node.appearance;
         button.style.left = `${node.x / space.width * 100}%`;
         button.style.top = `${node.y / space.height * 100}%`;
+        button.style.setProperty('--reveal-delay', `${delay}ms`);
         button.innerHTML = `<svg viewBox="-26 -26 52 52" aria-hidden="true">${glyphs[node.appearance] ?? glyphs.satellite}</svg>
             <span aria-hidden="true"></span>`;
         nodes.append(button);
@@ -200,6 +210,11 @@ export function mountUniverse(canvas, selectNode, openPreview) {
         signature = nextSignature;
         rtl = locale === 'ar';
         scene = buildUniverseScene(graph);
+        const depths = new Map();
+        for (const node of scene.nodes) {
+            const parent = scene.channels.find(edge => edge.to === node.id)?.from;
+            depths.set(node.id, parent ? (depths.get(parent) ?? 0) + 1 : 0);
+        }
         hint.textContent = label('universeHint');
         home.textContent = label('universeHome');
         nodes.setAttribute('aria-label', label('universe'));
@@ -221,6 +236,7 @@ export function mountUniverse(canvas, selectNode, openPreview) {
             path.setAttribute('d', edge.path);
             path.dataset.from = edge.from;
             path.dataset.to = edge.to;
+            path.style.setProperty('--reveal-delay', `${Math.max(depths.get(edge.from), depths.get(edge.to)) * 26 + 145}ms`);
             if (phase !== 'create' && motion.canAnimate()) path.classList.add('universe-enter');
             channels.append(path);
             paths.set(edge.id, path);
@@ -232,11 +248,11 @@ export function mountUniverse(canvas, selectNode, openPreview) {
                 previous.element.remove();
                 retiring.delete(node.id);
             }
-            const element = active.get(node.id) ?? createNode(node);
+            const element = active.get(node.id) ?? createNode(node, depths.get(node.id) * 26);
             active.set(node.id, element);
             const name = label(node.id === 'browser' ? 'universeCore' : node.id);
             element.setAttribute('aria-label', name);
-            element.querySelector('span').textContent = name;
+            element.querySelector('span').textContent = label('short-' + node.id);
         }
         renderPhase();
     }
@@ -258,6 +274,9 @@ export function mountUniverse(canvas, selectNode, openPreview) {
         if (button) changePhase(button.dataset.phase);
     }, options);
     summary.querySelector('button').addEventListener('click', openPreview, options);
+    brief.querySelector('button').addEventListener('click', () => {
+        challengePanel.querySelector('select').focus();
+    }, options);
     nodes.addEventListener('click', event => {
         const id = event.target.closest('[data-universe-node]')?.dataset.universeNode;
         if (phase === 'create' && id === 'browser') changePhase('architect', true);

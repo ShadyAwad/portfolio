@@ -6,6 +6,7 @@ import { bindArchitectureInputs, unbindArchitectureInputs } from './src/studio/a
 import { mountStanzaCardSwap } from './src/components/stanza-card-swap.js';
 import { localizePortfolioControls } from './src/components/portfolio-controls.js';
 import { localizeArchitecturePlanner } from './src/components/architecture-planner.js';
+import { mountPlanetViewer } from './src/components/planet-viewer.js';
 
 // Global Parallax Starfield State
 const bgCanvas = document.getElementById('starfield');
@@ -13,6 +14,8 @@ const bgCtx = bgCanvas ? bgCanvas.getContext('2d') : null;
 let starfieldArray = [];
 const STAR_COUNT = 240;
 let lastFrameTime = performance.now();
+let starfieldFrame = 0;
+const starfieldMotion = matchMedia('(prefers-reduced-motion: reduce)');
 let mouseX = window.innerWidth / 2;
 let mouseY = window.innerHeight / 2;
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -101,7 +104,7 @@ function resizeStarfield() {
     bgCanvas.style.width = `${window.innerWidth}px`;
     bgCanvas.style.height = `${window.innerHeight}px`;
     bgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    if (prefersReducedMotion) animateStarfield();
+    if (starfieldMotion.matches) drawStarfield();
 }
 
 function initStarfield() {
@@ -116,12 +119,12 @@ function initStarfield() {
     }
 }
 
-function animateStarfield(currentTime = performance.now()) {
+function drawStarfield(currentTime = performance.now()) {
     if (!bgCanvas || !bgCtx) return;
-    const delta = Math.min(1.5, (currentTime - lastFrameTime) / 16.6);
+    const delta = Math.min(2.5, (currentTime - lastFrameTime) / 16.6);
     lastFrameTime = currentTime;
 
-    const driftCoef = prefersReducedMotion ? 0 : 0.85;
+    const driftCoef = starfieldMotion.matches ? 0 : 0.85;
     const scrollStep = driftCoef * delta;
     
     const displayWidth = bgCanvas.clientWidth;
@@ -154,9 +157,23 @@ function animateStarfield(currentTime = performance.now()) {
         bgCtx.fill();
     });
 
-    if (!prefersReducedMotion) requestAnimationFrame(animateStarfield);
 }
 
+function animateStarfield(currentTime) {
+    if (currentTime - lastFrameTime >= 30) drawStarfield(currentTime);
+    starfieldFrame = requestAnimationFrame(animateStarfield);
+}
+
+function syncStarfieldMotion() {
+    cancelAnimationFrame(starfieldFrame);
+    starfieldFrame = 0;
+    if (document.hidden || !bgCtx) return;
+    if (starfieldMotion.matches) drawStarfield();
+    else {
+        lastFrameTime = performance.now();
+        starfieldFrame = requestAnimationFrame(animateStarfield);
+    }
+}
 // =========================================================================
 // 2. BIDIRECTIONAL SCHEMA L10N & CRYSTAL THEMING
 // =========================================================================
@@ -983,7 +1000,16 @@ function initializeCoreArchitecture() {
     // Spawn backdrop stars drift loop
     initStarfield();
     resizeStarfield();
-    if (!prefersReducedMotion) requestAnimationFrame(animateStarfield);
+    syncStarfieldMotion();
+    document.addEventListener('visibilitychange', syncStarfieldMotion);
+    starfieldMotion.addEventListener('change', syncStarfieldMotion);
+    const stopViewer = mountPlanetViewer(document.getElementById('interstellar-asset-card'));
+    if (import.meta.hot) import.meta.hot.dispose(() => {
+        stopViewer();
+        cancelAnimationFrame(starfieldFrame);
+        document.removeEventListener('visibilitychange', syncStarfieldMotion);
+        starfieldMotion.removeEventListener('change', syncStarfieldMotion);
+    });
 
     // 🚀 ADDED: KICKSTART CELESTIAL PATH-SCROLL TRAILER
     initConstellationScrollPathing();

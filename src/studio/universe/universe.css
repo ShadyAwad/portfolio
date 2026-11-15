@@ -43,6 +43,36 @@
     border-radius: 10px;
     background: var(--card-bg);
 }
+.universe-composition { display: grid; gap: .7rem; align-items: start; }
+.universe-context { min-inline-size: 0; }
+.universe-brief {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .45rem;
+    padding: .55rem .7rem;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    color: var(--accent);
+    background: var(--table-header);
+    font-size: .87rem;
+}
+.universe-brief button {
+    min-block-size: 44px;
+    padding: .3rem .55rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--input-bg);
+    color: var(--text);
+    font: inherit;
+    cursor: pointer;
+}
+.universe-brief button:hover { border-color: var(--accent); }
+.universe-brief[data-status="overloaded"] { color: var(--simulation-red); }
+.universe-brief:is([data-status="elevated"], [data-status="saturated"]) { color: var(--simulation-amber); }
+.universe-brief[data-status="unavailable"] { color: var(--muted); }
+.universe-summary:first-child { margin-block-start: 0; }
 .universe-summary h4 { margin-block-end: .2rem; font-size: 1.12rem; }
 .universe-summary p, .universe-project-note { color: var(--muted); font-size: .83rem; }
 .universe-summary ul { display: flex; flex-wrap: wrap; gap: .35rem; margin: .5rem 0; padding: 0; list-style: none; }
@@ -85,13 +115,24 @@
     --space-star: #a0cded;
     position: relative;
     isolation: isolate;
-    aspect-ratio: 640 / 520;
+    aspect-ratio: 640 / 500;
     overflow: clip;
     border-radius: 14px;
     outline: 1px solid var(--space-border);
     outline-offset: -1px;
-    background: radial-gradient(ellipse at 52% 42%, var(--space-glow), transparent 55%),
-        radial-gradient(ellipse at 80% 78%, var(--space-haze), transparent 45%), var(--space-tone);
+    background: radial-gradient(ellipse at 50% 51%, var(--space-glow), transparent 45%),
+        radial-gradient(ellipse at 84% 87%, var(--space-haze), transparent 52%),
+        radial-gradient(ellipse at 8% 4%, var(--space-glow), transparent 50%), var(--space-tone);
+}
+.universe-coordinate-grid {
+    position: absolute;
+    inset: 0;
+    opacity: .17;
+    pointer-events: none;
+    background-image: linear-gradient(to right, var(--space-border) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--space-border) 1px, transparent 1px);
+    background-size: 32px 32px;
+    mask-image: radial-gradient(ellipse, transparent 32%, #000 98%);
 }
 .universe-dust {
     position: absolute;
@@ -106,11 +147,13 @@
 }
 .universe-space, .universe-nodes { position: absolute; inset: 0; width: 100%; height: 100%; }
 .universe-orbits, .universe-channels { fill: none; }
-.universe-orbits { stroke: var(--space-orbit); stroke-width: 1; opacity: .25; stroke-dasharray: 2 5; }
-.universe-channels { stroke: var(--space-wire); stroke-width: 1.7; opacity: .68; }
+.universe-orbits { stroke: var(--space-orbit); stroke-width: .8; opacity: .3; stroke-dasharray: 1 5; }
+.universe-orbits ellipse:nth-child(2) { stroke-dasharray: 12 5 1 5; opacity: .6; }
+.universe-channels { stroke: var(--space-wire); stroke-width: 1.6; opacity: .78; }
+.universe-channels path { vector-effect: non-scaling-stroke; }
 .universe-node {
     --body-color: #83e5ff;
-    --body-size: clamp(31px, 7vw, 47px);
+    --body-size: clamp(33px, 8vw, 47px);
     --body-ink: #f2fbff;
     position: absolute;
     display: grid;
@@ -141,12 +184,15 @@
     stroke-width: 1.6;
     fill: none;
     border-radius: 50%;
-    background: radial-gradient(circle, color-mix(in srgb, currentColor 25%, var(--space-tone)), var(--space-tone) 72%);
-    box-shadow: 0 0 13px color-mix(in srgb, currentColor 34%, transparent);
+    background: radial-gradient(circle at 35% 25%, color-mix(in srgb, currentColor 35%, var(--space-tone)), var(--space-tone) 72%);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 23%, transparent),
+        0 4px 13px color-mix(in srgb, currentColor 26%, transparent);
 }
 .universe-node[data-appearance="core"] svg {
     fill: color-mix(in srgb, currentColor 30%, transparent);
-    box-shadow: 0 0 28px color-mix(in srgb, currentColor 50%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 53%, transparent),
+        0 0 0 6px color-mix(in srgb, currentColor 10%, transparent),
+        0 0 34px color-mix(in srgb, currentColor 44%, transparent);
 }
 .universe-node[data-appearance="core"] circle { fill: var(--body-ink); }
 .universe-stage[data-template="ecommerce"] { --core-color: #edbcee; }
@@ -175,6 +221,10 @@
 .universe-node[data-simulation="nominal"], .universe-node[data-simulation="growth"] { --body-color: var(--simulation-green); }
 .universe-node:is([data-simulation="elevated"], [data-simulation="saturated"]) { --body-color: var(--simulation-amber); }
 .universe-node[data-simulation="overloaded"] { --body-color: var(--simulation-red); }
+.universe-node:is([data-simulation="saturated"], [data-simulation="overloaded"]) svg {
+    box-shadow: 0 0 0 3px var(--space-tone), 0 0 0 4px currentColor, 0 0 17px currentColor;
+}
+.universe-node[data-simulation="saturated"] svg { outline: 1px dashed currentColor; outline-offset: 5px; }
 .universe-node[data-simulation="unavailable"] svg { stroke-dasharray: 2 3; }
 .universe-node:is(:hover, :focus-visible, [aria-pressed="true"]) {
     outline: 1px solid currentColor;
@@ -193,7 +243,8 @@
     border-radius: 5px;
     color: var(--text);
     background: var(--card-bg);
-    font-size: .71rem;
+    font-size: .72rem;
+    font-weight: 650;
     line-height: 1.25;
     opacity: 0;
     pointer-events: none;
@@ -201,8 +252,8 @@
 .universe-node:is(:hover, :focus-visible) span { opacity: 1; }
 .universe-details { margin-block-start: .7rem; }
 .universe-panel .architecture-metric dd { animation: none; }
-.universe-enter { animation: universe-reveal 180ms ease-out; }
-.universe-channels .universe-enter { animation-delay: 130ms; animation-fill-mode: backwards; }
+.universe-enter { animation: universe-reveal 145ms ease-out var(--reveal-delay, 0ms) backwards; }
+.universe-channels .universe-enter { animation-duration: 140ms; }
 .universe-exit { animation: universe-reveal 180ms ease-in reverse both; pointer-events: none; }
 @keyframes universe-reveal { from { opacity: 0; } to { opacity: 1; } }
 
@@ -277,11 +328,21 @@
 .challenge-grid details { margin-block-start: .45rem; }
 .challenge-grid details summary { cursor: pointer; color: var(--accent); }
 .challenge-grid details p { margin-block-start: .3rem; }
+@media (min-width: 1180px) {
+    .universe-composition { grid-template-columns: minmax(0, 1fr) minmax(12rem, 28%); }
+    .universe-panel[data-phase="create"] .universe-context { align-self: center; }
+    .universe-panel[data-phase="architect"] .universe-details { margin-block-start: 0; }
+    .universe-node span { opacity: 1; inset-block-start: calc(100% + 3px); }
+    .universe-panel[data-phase="create"] .universe-node span { display: none; }
+    .universe-node[aria-pressed="true"] span { border-color: currentColor; }
+}
 @media (max-width: 1050px) {
     .challenge-grid { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 480px) {
     .challenge-inputs { grid-template-columns: minmax(0, 1fr); }
+    .universe-stage { aspect-ratio: 640 / 566; }
+    .universe-panel[data-phase="challenge"] .universe-details { max-block-size: 20rem; overflow: auto; }
 }
 @media (prefers-reduced-motion: reduce) {
     .universe-enter, .universe-exit, .universe-channels .universe-enter { animation: none; }

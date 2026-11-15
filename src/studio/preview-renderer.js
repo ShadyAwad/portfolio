@@ -21,10 +21,11 @@ export function mountDesignStudio(store, reset) {
 
     // All markup originates from the module's static labels and fictional sample templates.
     studio.innerHTML = `<header class="studio-heading">
-        <h3 id="design-studio-title" tabindex="-1" data-studio-copy="title"></h3>
-        ${localized('intro', 'p')}
+        <div><h3 id="design-studio-title" tabindex="-1" data-studio-copy="title"></h3>
+        ${localized('intro', 'p')}</div>
+        <button type="button" class="studio-disclosure" aria-expanded="true" aria-controls="studio-workspace"></button>
     </header>
-    <div class="studio-layout">
+    <div class="studio-layout" id="studio-workspace">
         <form class="studio-settings" aria-label="Preview settings">
             <label>${localized('template')}<select name="applicationType">${options(APPLICATION_TYPES)}</select></label>
             <label>${localized('theme')}<select name="theme">${options(['system', 'light', 'dark'])}</select></label>
@@ -47,6 +48,8 @@ export function mountDesignStudio(store, reset) {
     anchor.before(studio);
 
     const form = studio.querySelector('form');
+    const disclosure = studio.querySelector('.studio-disclosure');
+    const workspace = studio.querySelector('#studio-workspace');
     const status = studio.querySelector('[role="status"]');
     const preview = studio.querySelector('.studio-preview');
     const screen = studio.querySelector('.studio-template');
@@ -69,6 +72,11 @@ export function mountDesignStudio(store, reset) {
 
     const label = pair => pair[language === 'ar' ? 1 : 0];
     const copy = key => label(translations[key]);
+    function setExpanded(expanded) {
+        workspace.hidden = !expanded;
+        disclosure.setAttribute('aria-expanded', String(expanded));
+        disclosure.textContent = copy(expanded ? 'studioCollapse' : 'studioExpand');
+    }
 
     function render() {
         const nextLanguage = document.documentElement.lang.startsWith('ar') ? 'ar' : 'en';
@@ -82,6 +90,7 @@ export function mountDesignStudio(store, reset) {
             studio.querySelectorAll('[data-studio-copy]').forEach(node => {
                 node.textContent = copy(node.dataset.studioCopy);
             });
+            setExpanded(!workspace.hidden);
             workspaces.firstElementChild.innerHTML = `<span>${label(['Workspace','مساحة العمل'])}</span>
                 <strong>Northstar Studio <span aria-hidden="true">⌄</span></strong>`;
         }
@@ -125,6 +134,7 @@ export function mountDesignStudio(store, reset) {
     }
 
     listen(form, 'submit', event => event.preventDefault());
+    listen(disclosure, 'click', () => setExpanded(workspace.hidden));
     listen(form, 'change', ({ target }) => {
         status.textContent = '';
         const { name, value, checked } = target;
@@ -148,6 +158,7 @@ export function mountDesignStudio(store, reset) {
     });
     listen(returnLink, 'click', event => {
         event.preventDefault();
+        setExpanded(true);
         studio.querySelector('h3').focus();
     });
 

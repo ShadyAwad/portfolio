@@ -157,3 +157,15 @@ Challenge drafts are held in memory per scenario. Unedited values follow the pro
 - Storage uses the project's item sizes and overhead. Audit logging and semantic search enable their respective categories. The model projects growth without assuming a storage quota.
 
 Scenarios remain available when their main component is absent. In that case telemetry stays below the graph without introducing a synthetic node. These are planning calculations. Checkpoint 9 can address final integration and visual polish.
+
+## Checkpoint 9: Final Creation Engine integration
+
+Studio can collapse and reopen without replacing its workspace. The application controls, three views, and engineering estimate link continue to use the shared configuration. The side rail places the Create summary, component inspector, and Challenge status next to the scene on desktop. On narrow screens they stack, with an Adjust workload button that focuses the scenario picker. Short celestial labels are shown on wide layouts and appear on hover or keyboard focus on narrow layouts. The technical graph and its linear outline remain available.
+
+The Universe keeps the same scene coordinates across stages. Nodes reveal by graph depth and their channels follow. Queue saturation and overload add distinct outlines and explicit status text. Reduced motion disables the reveal. Numeric input events in the same browser task coalesce into a single telemetry update.
+
+In one 1440px Chromium production-preview sample, Universe idle animations and DOM mutations were zero before and after. A synchronous burst of 20 queue inputs produced 87 Universe mutations before and 4 after coalescing. Synchronous dispatch alone took about 3.1 ms and 0.2 ms, respectively. The deferred render is included in the mutation count. The background starfield still schedules a frame while visible in standard motion, but paints about 30 times per second instead of every frame. It stops scheduling when the page is hidden or reduced motion is active.
+
+The existing Model Viewer runtime now loads when its section enters the viewport. If loading or decoding fails, the section shows a localized static-illustration fallback. The font stack and existing GSAP fallbacks retain the portfolio text, pricing and navigation when network resources are blocked. All three CDN URLs returned HTTP 200 in the host-side probe. The sandbox browser blocked them, so the active 3D renderer was outside that browser run.
+
+Run `npm test` for unit coverage. To include the production workflow test, point `STUDIO_PREVIEW_URL` at Vite preview under `/portfolio/`, and set `STUDIO_CHROME_DEBUG` to a Chrome DevTools HTTP address for a disposable Chromium profile. The test clears local storage for the preview origin.

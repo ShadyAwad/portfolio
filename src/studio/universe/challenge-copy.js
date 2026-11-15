@@ -7,6 +7,7 @@ export const creationCopy = {
     enabledCapabilities: ['Enabled capabilities', 'الإمكانات المفعّلة'],
     noCapabilities: ['No optional capabilities enabled.', 'لا توجد إمكانات اختيارية مفعّلة.'],
     challengeScenario: ['Workload scenario', 'سيناريو الحمل'],
+    editChallenge: ['Adjust workload', 'ضبط الحمل'],
     challengeAssumptions: ['Scenario assumptions', 'افتراضات السيناريو'],
     challengeEstimates: ['Model estimates', 'تقديرات النموذج'],
     challengeFormulas: ['Model formulas', 'معادلات النموذج'],

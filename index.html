@@ -7,10 +7,8 @@
     <link rel="icon" type="image/svg+xml" href="./favicon.svg">
     <link rel="stylesheet" href="./index.css">
     <link rel="preload" as="image" href="/images/stanza/cards/performance.webp" type="image/webp">
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script type="module" src="./script.js"></script>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
 </head>
 <body>
 
@@ -541,11 +539,10 @@
 <div class="bento-item ship-box" id="interstellar-asset-card">
     <div class="tech-tag" data-i18n="interstellar">Interstellar Interface</div>
     <div class="canvas-wrapper">
+        <div class="ship-placeholder" aria-hidden="true"><span></span></div>
         <model-viewer
             id="ship-viewer"
-            src="./assets/Planet.glb" 
             alt="3D planet"
-            auto-rotate
             rotation-per-sec="15deg"
             camera-controls
             touch-action="pan-y"
@@ -555,6 +552,7 @@
         </model-viewer>
     </div>
     <p class="ship-hint" data-i18n="shipHint">Interact directly with the local 3D rendering cache using swipe/pinch gestures.</p>
+    <p class="ship-unavailable ship-hint" role="status" data-i18n="shipUnavailable">The interactive 3D viewer is unavailable. A static planet illustration is shown.</p>
 </div>
     </main>
 

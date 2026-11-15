@@ -1199,7 +1199,36 @@ html[dir="rtl"] .pane-blockquote {
     width: 100%;
     height: 100%;
     display: block;
+    visibility: hidden;
 }
+.ship-box[data-viewer="ready"] #ship-viewer { visibility: visible; }
+.ship-placeholder {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, #142342, #060912 72%);
+}
+.ship-placeholder span {
+    position: relative;
+    width: min(37%, 11rem);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle at 33% 27%, #a9dfff 0%, #587db0 27%, #243853 62%, #0b1221 80%);
+    box-shadow: 0 0 2rem #669ce25f;
+}
+.ship-placeholder span::after {
+    content: "";
+    position: absolute;
+    inset: 33% -26%;
+    border-radius: 50%;
+    border: 1px solid #a3d0ff99;
+    transform: rotate(-20deg);
+}
+.ship-box[data-viewer="ready"] .ship-placeholder,
+.ship-unavailable, .ship-box:not([data-viewer="ready"]) [data-i18n="shipHint"] { display: none; }
+.ship-box[data-viewer="unavailable"] .ship-unavailable { display: block; }
 
 .ship-hint {
     font-size: calc(0.76rem * var(--font-scale));

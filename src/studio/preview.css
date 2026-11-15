@@ -2,10 +2,32 @@
     grid-column: span 12;
     min-inline-size: 0;
 }
-.studio-heading { margin-block-end: 1rem; }
+.studio-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: start;
+    justify-content: space-between;
+    gap: .7rem;
+}
+.studio-heading > div { flex: 1 1 28rem; }
+.studio-heading p { max-inline-size: 70ch; }
+.studio-disclosure {
+    min-block-size: 44px;
+    padding: .45rem .8rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    background: var(--input-bg);
+    font: inherit;
+    font-size: .86rem;
+    cursor: pointer;
+}
+.studio-disclosure:hover, .studio-disclosure:focus-visible { border-color: var(--accent); }
+.studio-layout[hidden] { display: none; }
 .studio-heading h3 { font-size: clamp(1.25rem, 2.5vw, 1.6rem); }
 .studio-heading p, .studio-recommendation { color: var(--muted); font-size: .9rem; }
 .studio-layout {
+    margin-block-start: 1rem;
     display: grid;
     grid-template-columns: minmax(13rem, 15.5rem) minmax(0, 1fr);
     align-items: start;
