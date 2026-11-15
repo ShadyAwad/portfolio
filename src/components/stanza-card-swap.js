@@ -1,6 +1,9 @@
 import './stanza-card-swap.css';
 
-const screenshots = ['performance', 'settings', 'semantic', 'company-feed', 'organisation', 'payroll'];
+const screenshotFiles = [
+    'performance.webp', 'settings.webp', 'semantic.webp',
+    'company-feed.webp', 'organisation.webp', 'payroll.webp'
+];
 const autoplayDelay = 5000;
 const exitDuration = 230;
 const tuckDuration = 390;
@@ -19,11 +22,12 @@ export function mountStanzaCardSwap(root, copy, locale) {
     const counter = root.querySelector('[data-stanza-counter]');
     const status = root.querySelector('[data-stanza-status]');
     const first = stage.firstElementChild;
+    const cardTemplate = root.querySelector('[data-stanza-card-template]');
     const motion = matchMedia('(prefers-reduced-motion: reduce)');
     const listeners = new AbortController();
     const on = (target, event, handler) => target.addEventListener(event, handler, { signal: listeners.signal });
 
-    let order = screenshots.map((_, index) => index);
+    let order = screenshotFiles.map((_, index) => index);
     let hovered = gallery.matches(':hover');
     let focused = gallery.contains(document.activeElement);
     let inView = false;
@@ -33,30 +37,31 @@ export function mountStanzaCardSwap(root, copy, locale) {
     let autoTimer;
     let phaseTimer;
 
-    const cards = screenshots.map((name, index) => {
-        const card = index ? first.cloneNode(true) : first;
+    const cards = screenshotFiles.map((filename, index) => {
+        const card = index ? cardTemplate.content.firstElementChild.cloneNode(true) : first;
         const image = card.querySelector('img');
         const fallback = card.querySelector('.stanza-fallback');
-        const onError = () => {
-            image.hidden = true;
-            fallback.hidden = false;
+        const showFallback = failed => {
+            image.hidden = failed;
+            fallback.hidden = !failed;
         };
         card.dataset.card = String(index);
-        on(image, 'error', onError);
+        on(image, 'error', () => showFallback(true));
+        on(image, 'load', () => showFallback(false));
         if (index) {
-            image.loading = 'lazy';
-            image.decoding = 'async';
-            image.removeAttribute('fetchpriority');
-            image.src = `${import.meta.env.BASE_URL}images/stanza/${name}.webp`;
+            image.src = `${import.meta.env.BASE_URL}images/stanza/${filename}`;
             stage.append(card);
         } else if (image.complete && !image.naturalWidth) {
-            onError();
+            // The preloaded Performance image can finish before the carousel mounts.
+            showFallback(true);
         }
         return { card, image, fallback, label: card.querySelector('figcaption') };
     });
 
     function render(announce = false) {
         const active = order[0];
+        const activeImage = cards[active].image;
+        if (activeImage.loading === 'lazy') activeImage.loading = 'eager';
         order.forEach((index, slot) => {
             const { card } = cards[index];
             card.dataset.slot = String(slot);

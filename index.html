@@ -6,7 +6,7 @@
     <title>Shady Awad | Software & Web Developer Portfolio</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg">
     <link rel="stylesheet" href="./index.css">
-    <link rel="preload" as="image" href="%BASE_URL%images/stanza/performance.webp" type="image/webp">
+    <link rel="preload" as="image" href="/images/stanza/performance.webp" type="image/webp">
     <script type="module" src="./script.js"></script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -316,13 +316,22 @@
                                     <figure class="stanza-card" data-slot="0">
                                         <figcaption class="stanza-card-label" dir="auto">Performance</figcaption>
                                         <div class="stanza-media">
-                                            <img src="%BASE_URL%images/stanza/performance.webp" width="1586" height="992"
+                                            <img src="/images/stanza/performance.webp" width="1586" height="992"
                                                 fetchpriority="high" draggable="false"
                                                 alt="Stanza Performance dashboard showing the active review cycle and overview metrics">
                                             <span class="stanza-fallback" hidden></span>
                                         </div>
                                     </figure>
                                 </div>
+                                <template data-stanza-card-template>
+                                    <figure class="stanza-card">
+                                        <figcaption class="stanza-card-label" dir="auto"></figcaption>
+                                        <div class="stanza-media">
+                                            <img width="1586" height="992" loading="lazy" decoding="async" draggable="false" alt="">
+                                            <span class="stanza-fallback" hidden></span>
+                                        </div>
+                                    </figure>
+                                </template>
                                 <div class="stanza-controls" hidden>
                                     <div class="stanza-navigation">
                                         <button type="button" data-stanza-prev aria-label="Previous screenshot" aria-controls="stanza-stage">

@@ -239,7 +239,11 @@ html[dir="rtl"] #pane-p1 { direction: rtl; }
     line-height: 1.19;
     overflow-wrap: anywhere;
 }
-.stanza-summary .pane-desc { margin-block: 0 .95rem; }
+.stanza-summary .pane-desc {
+    margin-block: 0 .95rem;
+    font-size: .95rem;
+    line-height: 1.65;
+}
 .stanza-caption {
     padding: .8rem;
     background: var(--input-bg);
@@ -252,7 +256,12 @@ html[dir="rtl"] #pane-p1 { direction: rtl; }
     color: var(--text);
     margin-block: .18rem .25rem;
 }
-.stanza-caption p,
+.stanza-caption p {
+    color: var(--text);
+    font-size: .875rem;
+    line-height: 1.6;
+}
+
 .stanza-architecture dd {
     color: var(--muted);
     font-size: .85rem;
