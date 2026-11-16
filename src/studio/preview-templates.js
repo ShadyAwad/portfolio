@@ -1,6 +1,6 @@
 export const translations = {
     title: ['Application Design Studio', 'استوديو تصميم التطبيقات'],
-    intro: ['Choose an application and features, preview the interface, then explore its architecture and test workloads in System Universe.', 'اختر تطبيقًا وميزاته، وعاين الواجهة، ثم استكشف بنيته واختبر الأحمال في كون النظام.'],
+    intro: ['Choose an application and features, preview the interface, then trace what happens behind common actions.', 'اختر تطبيقًا وميزاته، وعاين الواجهة، ثم تتبّع ما يحدث عند تنفيذ الإجراءات الشائعة.'],
     plan: ['Engineering & cost estimates','التقديرات الهندسية والتكلفة'],
     backToStudio: ['Return to Application Design Studio','العودة إلى استوديو تصميم التطبيقات'],
     controls: ['Application settings', 'إعدادات التطبيق'],

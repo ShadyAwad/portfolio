@@ -47,23 +47,20 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
         window.q = selector => document.querySelector(selector);
         window.click = selector => q(selector).click();
         window.view = index => q('.architecture-switch').children[index].click();
-        window.phase = name => click('.universe-phases [data-phase="' + name + '"]');
         window.set = (selector, value, type = 'input') => {
             const element = q(selector);
             element.value = value;
             element.dispatchEvent(new Event(type, { bubbles: true }));
         };
         window.template = value => set('.studio-settings select[name=applicationType]', value, 'change');
-        window.scenario = value => set('.challenge-picker select', value, 'change');
-        window.sim = (key, value) => set('[data-challenge-input="' + key + '"]', value);
-        window.statusIs = name => q('.challenge-status').dataset.status === name;
+        window.scenario = value => set('[data-flow-scenario]', value, 'change');
     `;
     await command('Page.enable');
     await command('Storage.clearDataForOrigin', { origin, storageTypes: 'local_storage' });
     await command('Page.addScriptToEvaluateOnNewDocument', { source: helpers });
     await command('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
     await command('Page.navigate', { url });
-    await waitFor("Boolean(q('.universe-phases'))");
+    await waitFor("Boolean(q('.flow-toolbar'))");
 
     await check("q('[data-studio-host]').hidden && q('.studio-invite').hidden");
     await evaluate("click('.configurator-toggle');set('#tier', '2');set('#tier', '1')");
@@ -88,39 +85,37 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
         await check("!q('[data-studio-preview-panel]').hidden && q('.studio-template').children.length");
         await evaluate("view(1)");
         await check("!q('.architecture-explorer').hidden");
-        await evaluate("view(2);phase('create');phase('architect');phase('challenge')");
-        await check(`q('.universe-stage').dataset.template === '${name}' && !q('.universe-challenge').hidden`);
+        await evaluate("view(2)");
+        await check(`q('[data-flow-scenario]').options.length >= 2 && !q('.flow-panel').hidden && q('.flow-route [aria-current=step]').dataset.flowStep === '0'`);
     }
-    await evaluate(`click('.studio-settings [name=jobs]');phase('architect');
-        window.queue = q('[data-universe-node=queue]');queue.click();
-        view(1);`);
+    await evaluate(`click('.studio-settings [name=jobs]');view(1);
+        q('[data-arch-node=queue]').dispatchEvent(new MouseEvent('click',{bubbles:true}));`);
     await check("q('.architecture-explorer .architecture-inspector h4').textContent === 'Background queue'");
-    await evaluate(`view(2);phase('challenge');scenario('queue');
+    await evaluate(`view(2);scenario('report');
         window.saved = localStorage.getItem('awad-portfolio-studio');
         window.price = q('#price-display').dataset.price;
-        sim('jobRate',8);`);
-    await check("statusIs('saturated')");
-    await evaluate("sim('jobRate',10)");
-    await check("statusIs('overloaded')");
-    await evaluate("sim('jobRate','')");
-    await check("statusIs('unavailable')");
-    await evaluate(`sim('jobRate',10);
-        for (let i = 0; i < 16; i++) {phase('create');phase('architect');phase('challenge');}
+        set('[data-flow-load]','saturated','change');`);
+    await check("q('.flow-panel').dataset.loadStatus === 'saturated'");
+    await evaluate("set('[data-flow-load]','overloaded','change');click('[data-playback=step]')");
+    await check("q('.flow-panel').dataset.loadStatus === 'overloaded' && q('.flow-load dd:last-child') && q('.flow-route [aria-current=step]').dataset.flowStep === '1' && q('.flow-packet').getAnimations().length === 0");
+    await evaluate(`window.routeStart=q('[data-flow-step="0"]');
+        for (let i = 0; i < 16; i++) {view(1);view(2);}
         click('#configurator-studio > summary');`);
     await waitFor("q('[data-studio-host]').hidden");
     await evaluate("click('.configurator-toggle');click('.configurator-toggle');click('#configurator-studio > summary')");
     await waitFor("!q('[data-studio-host]').hidden");
-    await check("statusIs('overloaded') && queue === q('[data-universe-node=queue]') && queue.getAttribute('aria-pressed') === 'true'");
-    await evaluate("click('.challenge-grid fieldset button')");
-    await check("statusIs('nominal') && price === q('#price-display').dataset.price && saved === localStorage.getItem('awad-portfolio-studio')");
+    await check("q('.flow-panel').dataset.loadStatus === 'overloaded' && routeStart === q('[data-flow-step=\"0\"]') && q('.flow-route [aria-current=step]').dataset.flowStep === '1'");
+    await evaluate("click('[data-playback=reset]');set('[data-flow-load]','normal','change')");
+    await check("q('.flow-panel').dataset.loadStatus === 'nominal' && q('.flow-route [aria-current=step]').dataset.flowStep === '0' && price === q('#price-display').dataset.price && saved === localStorage.getItem('awad-portfolio-studio')");
+
     await evaluate("click('#theme-toggle');click('#lang-toggle')");
     await waitFor("document.documentElement.dir === 'rtl' && document.documentElement.dataset.theme === 'light'");
-    await check("q('.universe-phases [data-phase=create]').textContent === 'إنشاء'");
+    await waitFor("q('.architecture-switch button:last-child').textContent === 'كيف يعمل'");
     await command('Page.reload');
-    await waitFor("Boolean(q('.universe-phases'))");
+    await waitFor("Boolean(q('.flow-toolbar'))");
     await evaluate("click('.configurator-toggle');click('#configurator-studio > summary')");
     await waitFor("q('.studio-settings select[name=applicationType]')?.value === 'internal-tool'");
-    await check("q('.studio-settings [name=jobs]').checked && q('.universe-panel').hidden");
+    await check("q('.studio-settings [name=jobs]').checked && q('.flow-panel').hidden");
     await evaluate("click('[data-studio-reset]')");
     await check("q('.studio-settings select[name=applicationType]').value === 'saas' && !q('.studio-settings [name=jobs]').checked && localStorage.getItem('awad-portfolio-studio') === null");
 

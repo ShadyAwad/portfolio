@@ -1,0 +1,21 @@
+export const flowCopy = {
+    flow: ['How It Works','كيف يعمل'],
+    pick: ['Scenario','السيناريو'],
+    sequence: ['Request sequence','تسلسل الطلب'],
+    play: ['Play','تشغيل'],
+    pause: ['Pause','إيقاف مؤقت'],
+    reset: ['Reset','إعادة البدء'],
+    back: ['Previous step','الخطوة السابقة'],
+    next: ['Next step','الخطوة التالية'],
+    detail: ['Engineering note','ملاحظة هندسية'],
+    illustrative: ['Scenario component','مكوّن للسيناريو'],
+    reference: ['Scenario components illustrate an implementation for this action. Your project settings stay the same.','توضّح مكوّنات السيناريو تنفيذًا ممكنًا لهذا الإجراء. تبقى إعدادات مشروعك كما هي.'],
+    stress: ['Queue workload','حمل قائمة المهام'],
+    normal: ['Normal','طبيعي'],
+    elevated: ['Elevated','مرتفع'],
+    saturated: ['Saturated','مشبع'],
+    overloaded: ['Overloaded','حمل زائد'],
+    nominal: ['Within target','ضمن الهدف'],
+    workloadNote: ['Illustrative model · 4 worker slots · 0.5 s per job · 70% target utilization','نموذج توضيحي · 4 فتحات معالجة · 0.5 ثانية لكل مهمة · استخدام مستهدف 70%'],
+    backgroundNote: ['Playback shows the order of events. Queue figures model sustained arrivals.','يعرض التشغيل ترتيب الأحداث، وتمثل أرقام قائمة المهام وصولًا مستمرًا.']
+};

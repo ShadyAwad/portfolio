@@ -169,3 +169,9 @@ In one 1440px Chromium production-preview sample, Universe idle animations and D
 The existing Model Viewer runtime now loads when its section enters the viewport. If loading or decoding fails, the section shows a localized static-illustration fallback. The font stack and existing GSAP fallbacks retain the portfolio text, pricing and navigation when network resources are blocked. All three CDN URLs returned HTTP 200 in the host-side probe. The sandbox browser blocked them, so the active 3D renderer was outside that browser run.
 
 Run `npm test` for unit coverage. To include the production workflow test, point `STUDIO_PREVIEW_URL` at Vite preview under `/portfolio/`, and set `STUDIO_CHROME_DEBUG` to a Chrome DevTools HTTP address for a disposable Chromium profile. The test clears local storage for the preview origin.
+
+## How It Works
+
+How It Works replaces the System Universe interface with ordered, template-specific request journeys. Scenario definitions live in `flow/scenarios.js`. The flow model uses the configured architecture graph for component roles and engineering notes. When a scenario needs an absent component, it uses the same builder to produce a read-only reference and labels the step as a scenario component. Playback and workload selection stay local to the view.
+
+Queue presets use the existing capacity model at 4, 6, 8, and 10 arrivals per second with four slots, 0.5 seconds per job, and a 70% target. The view shows computed utilization, throughput capacity, and net backlog. The playback speed illustrates event order and is independent of the modeled throughput. No capacity thresholds are inferred for API or database steps.
