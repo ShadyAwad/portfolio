@@ -53,6 +53,14 @@ const account = (label, initials, name, subtitle) => `<details class="mock-accou
     <summary><span class="mock-avatar" aria-hidden="true">${initials}</span><span>${name}</span></summary>
     <div><strong>${name}</strong><p>${label(subtitle)}</p></div></details>`;
 
+function traceAction(label, action, title, disabled = false) {
+    return `<div class="mock-trace">
+        <div class="mock-trace-controls"><button class="mock-action" type="button" data-preview-action="${action}"${disabled ? ' disabled' : ''}>${label(title)}</button>
+        <button type="button" class="mock-trace-link" data-preview-trace aria-controls="studio-flow-panel" hidden>${label(['Trace this action','تتبّع هذا الإجراء'])} <span aria-hidden="true">↗</span></button></div>
+        <p role="status" class="mock-trace-status"></p>
+    </div>`;
+}
+
 function saas(label) {
     return `<div class="mock-saas">
         <aside class="mock-sidebar"><strong><span class="mock-brand-mark" aria-hidden="true">◈</span> Pulse</strong>
@@ -69,6 +77,7 @@ function saas(label) {
                     <div><h4>${label(['Workspace overview','نظرة عامة على مساحة العمل'])}</h4>
                     <p>${label(['Here’s how your workspace performed this week.','إليك أداء مساحة عملك هذا الأسبوع.'])}</p></div>
                     ${badge(label(['Last 7 days','آخر 7 أيام']))}</header>
+                ${traceAction(label, 'workspace', ['Load workspace','تحميل مساحة العمل'])}
                 ${metrics([[['Active users','المستخدمون النشطون'],'1,284'],[['New accounts','الحسابات الجديدة'],'208'],[['Retention','الاحتفاظ'],'91%']],label)}
                 <section class="mock-card mock-activity" data-preview-section="activity" tabindex="-1">
                     <div class="mock-section-title"><strong>${label(['Weekly activity','النشاط الأسبوعي'])}</strong>
@@ -128,6 +137,7 @@ function ecommerce(label) {
             <strong>${label(['Your bag','سلتك'])}</strong>
             <span role="status"><b data-cart-total dir="ltr">$0</b></span>
             <button type="button" data-cart-clear disabled>${label(['Empty bag','إفراغ السلة'])}</button>
+            ${traceAction(label, 'checkout', ['Mock checkout','إتمام طلب تجريبي'], true)}
         </section>
     </div>`;
 }
@@ -195,6 +205,7 @@ function internalTool(label) {
                     ${records.map(([status,id,title,owner,text]) => `<tr data-record-status="${status}"><td><strong>${label(title)}</strong>
                         <small dir="ltr">${id}</small></td><td>${owner}</td><td>${badge(label(text))}</td></tr>`).join('')}
                 </tbody></table>
+                ${traceAction(label, 'export', ['Prepare export','إعداد التصدير'])}
             </section>
             <section class="mock-workflow" data-preview-section="workflow" tabindex="-1">
                 <div><strong>${label(['Approval workflow','مسار الموافقة'])}</strong><p>${label(['Requests move from intake to review before approval.','تنتقل الطلبات من الاستلام إلى المراجعة قبل الموافقة.'])}</p></div>

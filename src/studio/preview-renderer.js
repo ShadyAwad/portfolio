@@ -3,9 +3,15 @@ import { derivePreview } from './preview-model.js';
 import { featureModules, templates, translations } from './preview-templates.js';
 import { mountArchitectureExplorer } from './architecture/explorer.js';
 import { bindPreviewInteractions } from './preview-interactions.js';
+import { createPreviewTrace, previewTraceContext } from './preview-trace.js';
 
 const displayFeatures = [...PREVIEW_FEATURE_KEYS, 'roles'];
 const viewports = ['desktop', 'tablet', 'mobile'];
+const feedback = {
+    workspace: ['Demo workspace ready.', 'مساحة العمل التجريبية جاهزة.'],
+    checkout: ['Demo order confirmed. No purchase was made.', 'تأكّد الطلب التجريبي دون إجراء عملية شراء.'],
+    export: ['Demo records.csv ready. No file was created.', 'ملف records.csv التجريبي جاهز دون إنشاء ملف فعلي.']
+};
 
 export function mountDesignStudio(store, reset) {
     const host = document.querySelector('[data-studio-host]');
@@ -83,6 +89,33 @@ export function mountDesignStudio(store, reset) {
 
     const label = pair => pair[language === 'ar' ? 1 : 0];
     const copy = key => label(translations[key]);
+    const trace = createPreviewTrace((action, completed) => {
+        const rail = screen.querySelector('.mock-trace');
+        if (!rail) return;
+        rail.toggleAttribute('data-trace-ready', Boolean(action));
+        rail.toggleAttribute('data-trace-complete', completed);
+        rail.querySelector('[data-preview-trace]').hidden = !action;
+        const status = rail.querySelector('[role="status"]');
+        const context = action && previewTraceContext(action, language);
+        const message = action && label(completed ? feedback[action.action] :
+            ['See how this demo request is processed.', 'اطّلع على كيفية معالجة هذا الطلب التجريبي.']);
+        status.textContent = [message, context].filter(Boolean).join(' · ');
+    });
+    const architecture = mountArchitectureExplorer(studio.querySelector('.studio-canvas'),
+        studio.querySelector('[data-studio-preview-panel]'), store);
+
+    function clearTrace() {
+        trace.clear();
+        architecture.cancelTrace();
+    }
+
+    function traceAction() {
+        const action = trace.action;
+        if (!action) return;
+        architecture.openTrace(action, completed => trace.reflect(action, completed),
+            screen.querySelector('[data-preview-action]'));
+    }
+
     function renderTheme() {
         const theme = store.getState().visual.theme;
         const dark = theme === 'system' ? systemTheme.matches : theme === 'dark';
@@ -114,6 +147,7 @@ export function mountDesignStudio(store, reset) {
         const model = derivePreview(state);
         const templateChanged = localeChanged || model.template !== previous?.template;
         if (templateChanged) {
+            clearTrace();
             current.textContent = copy(model.template);
             frame.querySelector('.studio-frame-chrome strong').textContent = {
                 saas: 'app.pulse.example', ecommerce: 'formandfield.example',
@@ -159,7 +193,9 @@ export function mountDesignStudio(store, reset) {
     }
 
     listen(form, 'submit', event => event.preventDefault());
-    bindPreviewInteractions(preview, events.signal, () => copy('demoSaved'));
+    bindPreviewInteractions(preview, events.signal, () => copy('demoSaved'), {
+        template: () => store.getState().applicationType, offer: trace.offer, clear: clearTrace, trace: traceAction
+    });
     listen(systemTheme, 'change', () => {
         if (!host.hidden && store.getState().visual.theme === 'system') renderTheme();
     });
@@ -181,6 +217,7 @@ export function mountDesignStudio(store, reset) {
         else if (PREVIEW_FEATURE_KEYS.includes(name)) store.update({ previewFeatures: { [name]: checked } });
     });
     listen(form.querySelector('[data-studio-reset]'), 'click', () => {
+        clearTrace();
         reset();
         status.textContent = copy('resetDone');
     });
@@ -206,10 +243,8 @@ export function mountDesignStudio(store, reset) {
             PREVIEW_FEATURE_KEYS.some(key => next.previewFeatures[key] !== last.previewFeatures[key])) render();
     });
     render();
-    const unmountArchitecture = mountArchitectureExplorer(studio.querySelector('.studio-canvas'),
-        studio.querySelector('[data-studio-preview-panel]'), store);
     return () => {
-        unmountArchitecture();
+        architecture.destroy();
         returnLink.remove();
         events.abort();
         observer.disconnect();

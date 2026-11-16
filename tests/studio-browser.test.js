@@ -9,6 +9,7 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     const tab = await (await fetch(new URL('/json/new?about:blank', debug), { method: 'PUT' })).json();
     const socket = new WebSocket(tab.webSocketDebuggerUrl);
     const pending = new Map();
+    const runtimeErrors = [];
     let id = 0;
     await new Promise((resolve, reject) => {
         socket.addEventListener('open', resolve, { once: true });
@@ -20,6 +21,7 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     });
     socket.addEventListener('message', ({ data }) => {
         const message = JSON.parse(data);
+        if (message.method === 'Runtime.exceptionThrown') runtimeErrors.push(message.params.exceptionDetails.text);
         if (!message.id) return;
         const { resolve, reject } = pending.get(message.id);
         pending.delete(message.id);
@@ -56,6 +58,7 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
         window.scenario = value => set('[data-flow-scenario]', value, 'change');
     `;
     await command('Page.enable');
+    await command('Runtime.enable');
     await command('Storage.clearDataForOrigin', { origin, storageTypes: 'local_storage' });
     await command('Page.addScriptToEvaluateOnNewDocument', { source: helpers });
     await command('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
@@ -178,4 +181,73 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await check("q('.workspace-field').hasAttribute('data-artifact') && q('.workspace-field').hasAttribute('data-delivered') && q('.workspace-outcome').textContent.includes('records.csv')");
     await evaluate("for (let i=0;i<8;i++){scenario('filter');scenario('report')}");
     await check("!q('.workspace-field').hasAttribute('data-artifact') && q('#workspace-scrubber').value==='0' && document.querySelectorAll('.workspace-token').length===1");
+
+    await evaluate("click('#lang-toggle')");
+    await waitFor("document.documentElement.lang === 'en' && q('.architecture-switch button:last-child').textContent === 'How It Works'");
+    await evaluate(`view(0);template('saas');
+        window.traceAction = () => click('[data-preview-action]');
+        window.openTrace = () => click('[data-preview-trace]');
+        window.returnToPreview = () => click('.studio-trace-bar button');
+        window.completeTrace = () => set('#workspace-scrubber',q('#workspace-scrubber').max);
+        window.traceSaved = localStorage.getItem('awad-portfolio-studio');
+        window.tracePrice = q('#price-display').dataset.price;
+        window.traceCommercial = q('.commercial-summary').textContent;
+        traceAction();`);
+    await check("q('.flow-panel').hidden && !q('[data-preview-trace]').hidden && !q('.mock-trace').hasAttribute('data-trace-complete')");
+    await evaluate("q('[data-preview-trace]').focus()");
+    await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, text: '\r' });
+    await command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
+    await check("!q('.flow-panel').hidden && q('[data-flow-scenario]').value==='workspace' && document.activeElement===q('[data-flow-scenario]') && q('#workspace-scrubber').value==='0' && q('[data-socket=access]')");
+    await evaluate("click('[data-playback=play]')");
+    await check("q('[data-playback=play]').getAttribute('aria-pressed')==='true' && !q('.mock-trace').hasAttribute('data-trace-complete')");
+    await evaluate("returnToPreview()");
+    await check("q('.flow-panel').hidden && q('[data-playback=play]').getAttribute('aria-pressed')==='false' && document.activeElement===q('[data-preview-action]')");
+    await evaluate("openTrace();completeTrace()");
+    await check("q('.mock-trace').hasAttribute('data-trace-complete')");
+    await evaluate("click('[data-playback=reset]');returnToPreview()");
+    await check("!q('.mock-trace').hasAttribute('data-trace-complete') && !q('[data-preview-trace]').hidden");
+    await evaluate("openTrace();completeTrace();returnToPreview()");
+    await check("q('.mock-trace-status').textContent.includes('workspace ready') && traceSaved===localStorage.getItem('awad-portfolio-studio') && tracePrice===q('#price-display').dataset.price && traceCommercial===q('.commercial-summary').textContent");
+
+    await evaluate("template('ecommerce')");
+    await check("q('[data-preview-action]').disabled && q('[data-preview-trace]').hidden");
+    await evaluate("click('[data-cart-add]');traceAction();openTrace()");
+    await check("q('[data-flow-scenario]').value==='checkout' && q('.studio-trace-bar p').textContent.includes('Quantity: 1') && q('[data-socket=queue]')");
+    await evaluate("set('#workspace-scrubber',String(Number(q('#workspace-scrubber').max)-3))");
+    await check("!q('.mock-trace').hasAttribute('data-trace-complete')");
+    await evaluate("set('#workspace-scrubber',String(Number(q('#workspace-scrubber').max)-2));returnToPreview()");
+    await check("q('.mock-trace-status').textContent.includes('order confirmed') && q('[data-cart-count]').textContent==='1'");
+    await evaluate("click('[data-cart-clear]')");
+    await check("q('[data-preview-trace]').hidden && !q('.mock-trace').hasAttribute('data-trace-complete')");
+    await evaluate("click('[data-cart-add]');traceAction();openTrace();click('[data-playback=play]');template('internal-tool');scenario('report');completeTrace();returnToPreview()");
+    await check("q('[data-preview-trace]').hidden && !q('.mock-trace').hasAttribute('data-trace-complete')");
+
+    await evaluate("set('[data-record-filter]','review','change');traceAction();openTrace()");
+    await check("q('[data-flow-scenario]').value==='report' && q('.studio-trace-bar p').textContent.includes('In review')");
+    await evaluate("completeTrace();scenario('filter');scenario('report');completeTrace();returnToPreview()");
+    await check("!q('.mock-trace').hasAttribute('data-trace-complete')");
+    await evaluate("openTrace();completeTrace();returnToPreview()");
+    await check("q('.mock-trace-status').textContent.includes('records.csv ready') && q('[data-record-filter]').value==='review'");
+    await evaluate("click('[data-studio-reset]');template('landing')");
+    await check("!q('[data-preview-action]') && q('.flow-panel').hidden");
+
+    await command('Emulation.setDeviceMetricsOverride', { width: 320, height: 760, deviceScaleFactor: 1, mobile: true });
+    await command('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
+    await evaluate("click('#lang-toggle');click('#theme-toggle');template('saas')");
+    await waitFor("document.documentElement.dir==='rtl' && q('[data-preview-action]').textContent.includes('تحميل')");
+    for (const selector of ['[data-preview-action]', '[data-preview-trace]']) {
+        const point = await evaluate(`(() => {
+            const button = q('${selector}');
+            button.scrollIntoView({ block: 'center', behavior: 'instant' });
+            const r = button.getBoundingClientRect();
+            return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+        })()`);
+        await command('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [point] });
+        await command('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    }
+    await waitFor("!q('.flow-panel').hidden");
+    await check("q('.studio-trace-bar button').textContent.includes('العودة') && q('.flow-panel').scrollWidth <= q('.flow-panel').clientWidth");
+    await evaluate("completeTrace();returnToPreview()");
+    await check("q('.mock-trace-status').textContent.includes('جاهزة') && q('.studio-preview-frame').scrollWidth <= q('.studio-preview-frame').clientWidth");
+    assert.deepEqual(runtimeErrors, []);
 });

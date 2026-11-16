@@ -1,6 +1,7 @@
 import { flowCopy } from './copy.js';
 import { flowQueue, initialPlayback, playback, resolveFlow } from './model.js';
 import { mountWorkspace } from './workspace.js';
+import { journeyOutcomes } from './request-layout.js';
 import './flow.css';
 
 const labels = ['play', 'back', 'step', 'reset'];
@@ -51,6 +52,7 @@ export function mountFlow(canvas) {
     let progress = initialPlayback();
     let track = [];
     let workspace, interactive = false;
+    let outcomeListener;
     const text = (element, value) => { if (element.textContent !== value) element.textContent = value; };
     const local = pair => pair[language === 'ar' ? 1 : 0];
     const copy = key => flowCopy[key] ? local(flowCopy[key]) : label(key);
@@ -85,6 +87,7 @@ export function mountFlow(canvas) {
                 button.setAttribute('aria-pressed', String(progress.playing));
             }
         }
+        outcomeListener?.(journeyOutcomes(journey.steps, progress.index));
     }
 
     function renderLoad() {
@@ -176,6 +179,10 @@ export function mountFlow(canvas) {
         const structure = JSON.stringify([state.applicationType, next.id, next.steps.map(step => step.node)]);
         const changed = signature !== structure;
         const rebuild = changed || panel.lang !== locale;
+        if (changed && outcomeListener) {
+            outcomeListener(null);
+            outcomeListener = undefined;
+        }
         signature = structure;
         journey = next;
         panel.lang = locale;
@@ -261,5 +268,21 @@ export function mountFlow(canvas) {
         if (interactive) hide();
         else animation?.cancel();
     });
-    return { panel, render, hide, destroy() { hide(); workspace?.destroy(); observer.disconnect(); events.abort(); panel.remove(); } };
+    return {
+        panel, render, hide,
+        prepare(listener) {
+            outcomeListener = listener;
+            change('reset');
+        },
+        detach() { outcomeListener = undefined; },
+        focus() { scenarioInput.focus(); },
+        destroy() {
+            outcomeListener = undefined;
+            hide();
+            workspace?.destroy();
+            observer.disconnect();
+            events.abort();
+            panel.remove();
+        }
+    };
 }

@@ -26,6 +26,39 @@
 .flow-controls [aria-disabled="true"] { opacity: .6; cursor: default; }
 .flow-controls button:hover:not([aria-disabled="true"]) { border-color: var(--accent); }
 .flow-panel :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.studio-trace-bar:not([hidden]) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .4rem .8rem;
+    margin-block-end: .65rem;
+    padding: .45rem .65rem;
+    border: 1px solid var(--border);
+    border-inline-start: 2px solid var(--accent);
+    border-radius: 8px;
+    background: var(--table-header);
+    overflow-wrap: anywhere;
+}
+.studio-trace-bar p { margin: 0; font-size: .82rem; }
+.studio-trace-bar button {
+    min-block-size: 36px;
+    padding-inline: .6rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--accent);
+    font: inherit;
+    font-size: .82rem;
+    cursor: pointer;
+}
+.studio-trace-bar button:hover { border-color: var(--accent); }
+@media (prefers-reduced-motion: no-preference) {
+    .studio-trace-bar:not([hidden]) { animation: studio-trace-enter .2s ease-out; }
+    @keyframes studio-trace-enter {
+        from { opacity: .45; transform: translateY(4px); }
+    }
+}
 .flow-composition {
     display: grid;
     grid-template-columns: minmax(0, 1.42fr) minmax(0, 1fr);

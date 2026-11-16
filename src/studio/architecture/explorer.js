@@ -8,6 +8,7 @@ import { buildArchitectureGraph, resolveNodeSelection } from './graph.js';
 import { layoutArchitecture } from './layout.js';
 import { mountFlow } from '../flow/view.js';
 import { flowCopy } from '../flow/copy.js';
+import { previewTraceContext, resolvePreviewTrace } from '../preview-trace.js';
 import './explorer.css';
 
 const ns = 'http://www.w3.org/2000/svg';
@@ -36,6 +37,13 @@ export function mountArchitectureExplorer(canvas, preview, store) {
     const hint = explorer.querySelector('.architecture-hint');
     const inspector = explorer.querySelector('.architecture-inspector');
     const flow = mountFlow(canvas);
+    const traceBar = document.createElement('div');
+    traceBar.className = 'studio-trace-bar';
+    traceBar.hidden = true;
+    traceBar.innerHTML = '<p></p><button type="button"></button>';
+    flow.panel.prepend(traceBar);
+    const traceNote = traceBar.querySelector('p');
+    const traceReturn = traceBar.querySelector('button');
     preview.id = 'studio-preview-panel';
     previewButton.setAttribute('aria-controls', preview.id);
     architectureButton.setAttribute('aria-controls', explorer.id);
@@ -66,6 +74,8 @@ export function mountArchitectureExplorer(canvas, preview, store) {
     let outlineSignature = '';
     let inspectorSignature = '';
     let activeLayout;
+    let activeTrace;
+    let traceOrigin;
 
     const label = key => (flowCopy[key] ?? architectureCopy[key] ?? capacityCopy[key] ?? translations[key])?.[locale === 'ar' ? 1 : 0] ?? key;
     const metricLabel = key => label(key === 'audit' ? 'auditStorage' : key);
@@ -164,7 +174,7 @@ export function mountArchitectureExplorer(canvas, preview, store) {
         if (focus) nodeMap.get(selection)?.element.focus();
     }
 
-    function render() {
+    function render(scenario) {
         if (canvas.closest('[data-studio-host][hidden]')) return;
         locale = document.documentElement.lang.startsWith('ar') ? 'ar' : 'en';
         setText(previewButton, label('preview'));
@@ -184,7 +194,8 @@ export function mountArchitectureExplorer(canvas, preview, store) {
         }
         selection = resolveNodeSelection(graph, selection);
         if (view === 'flow') {
-            flow.render(graph, state, label, locale);
+            flow.render(graph, state, label, locale, scenario);
+            renderTraceBar();
             return;
         }
         const focusedNode = document.activeElement?.dataset?.archNode;
@@ -254,21 +265,66 @@ export function mountArchitectureExplorer(canvas, preview, store) {
         }
     }
 
-    function switchView(next, focus = false) {
+    function renderTraceBar() {
+        traceBar.hidden = !traceOrigin;
+        if (!traceOrigin) return;
+        const demo = locale === 'ar' ? 'تتبّع تجريبي' : 'Demo trace';
+        const parts = activeTrace
+            ? [demo, activeTrace.title[locale === 'ar' ? 1 : 0], previewTraceContext(activeTrace.event, locale)]
+            : [demo];
+        setText(traceNote, parts.filter(Boolean).join(' · '));
+        setText(traceReturn, locale === 'ar' ? 'العودة إلى المعاينة' : 'Back to preview');
+    }
+
+    function switchView(next, scenario) {
         if (view === next) return;
-        if (view === 'flow') flow.hide();
+        if (view === 'flow') {
+            flow.hide();
+            flow.detach();
+            activeTrace = undefined;
+            traceOrigin = undefined;
+        }
         view = next;
         preview.hidden = next !== 'preview';
         explorer.hidden = next !== 'architecture';
         flow.panel.hidden = next !== 'flow';
         for (const [button, name] of [[previewButton, 'preview'], [architectureButton, 'architecture'], [flowButton, 'flow']]) {
             button.setAttribute('aria-pressed', String(next === name));
-            if (focus && next === name) button.focus();
         }
-        render();
+        render(scenario);
+    }
+
+    function cancelTrace() {
+        if (!activeTrace) return;
+        flow.detach();
+        flow.hide();
+        activeTrace = undefined;
+        renderTraceBar();
+    }
+
+    function openTrace(action, reflect, origin) {
+        if (view !== 'preview' || canvas.closest('[hidden]')) return;
+        const trace = resolvePreviewTrace(action, store.getState());
+        if (!trace) return;
+        traceOrigin = origin;
+        activeTrace = trace;
+        switchView('flow', trace.event.scenario);
+        flow.prepare(outcomes => {
+            reflect(Boolean(outcomes?.has(trace.outcome)));
+            if (!outcomes) {
+                activeTrace = undefined;
+                renderTraceBar();
+            }
+        });
+        flow.focus();
     }
 
     listen(previewButton, 'click', () => switchView('preview'));
+    listen(traceReturn, 'click', () => {
+        const origin = traceOrigin;
+        switchView('preview');
+        (origin?.isConnected && !origin.disabled ? origin : previewButton).focus();
+    });
     listen(canvas.closest('[data-studio-host]'), 'studio-visibility', () => {
         if (canvas.closest('[data-studio-host][hidden]')) flow.hide();
         else render();
@@ -305,10 +361,10 @@ export function mountArchitectureExplorer(canvas, preview, store) {
             changed('previewFeatures') || changed('engineering') || changed('usage') || changed('capacity') ||
             changed('features', ['ai']))) render();
     });
-    const observer = new MutationObserver(render);
+    const observer = new MutationObserver(() => render());
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
     render();
-    return () => {
+    function destroy() {
         unsubscribe();
         observer.disconnect();
         events.abort();
@@ -316,5 +372,6 @@ export function mountArchitectureExplorer(canvas, preview, store) {
         flow.destroy();
         switcher.remove();
         explorer.remove();
-    };
+    }
+    return { openTrace, cancelTrace, destroy };
 }

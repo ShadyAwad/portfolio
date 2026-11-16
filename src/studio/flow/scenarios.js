@@ -17,7 +17,7 @@ export const scenarios = {
             step('tenant', 'Resolve the tenant scope used to restrict the query.', 'حدّد نطاق المستأجر الذي يقيّد الاستعلام.', 'tenant'),
             step('postgres', 'Read the rows needed to build the workspace dashboard.', 'اقرأ الصفوف اللازمة لبناء لوحة تحكم مساحة العمل.'),
             { ...step('api', 'Prepare a response from the database results.', 'جهّز الاستجابة من نتائج قاعدة البيانات.'), channel: 'response' },
-            { ...browser('Update the dashboard with the returned workspace data.', 'حدّث لوحة التحكم ببيانات مساحة العمل المستلمة.'), channel: 'response' }
+            { ...browser('Update the dashboard with the returned workspace data.', 'حدّث لوحة التحكم ببيانات مساحة العمل المستلمة.'), channel: 'response', outcome: 'workspaceReady' }
         ] },
         signIn: { title: ['Sign in', 'تسجيل الدخول'], auth: true, steps: [
             browser('Submit sign-in credentials over HTTPS.', 'أرسل بيانات تسجيل الدخول عبر HTTPS.'),
