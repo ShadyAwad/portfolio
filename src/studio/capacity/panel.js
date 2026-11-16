@@ -64,6 +64,7 @@ export function mountCapacityPanel(store) {
     const label = key => capacityCopy[key]?.[locale === 'ar' ? 1 : 0] ?? key;
 
     function render(state) {
+        if (!planner.open || planner.closest('[data-studio-host][hidden]')) return;
         const nextLocale = document.documentElement.lang.startsWith('ar') ? 'ar' : 'en';
         if (locale !== nextLocale) {
             locale = nextLocale;
@@ -158,6 +159,9 @@ export function mountCapacityPanel(store) {
     const observer = new MutationObserver(() => render(store.getState()));
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
     const unsubscribe = store.subscribe(render);
+    const refresh = () => render(store.getState());
+    planner.addEventListener('toggle', refresh, { signal: events.signal });
+    planner.closest('[data-studio-host]')?.addEventListener('studio-visibility', refresh, { signal: events.signal });
     render(store.getState());
     return () => {
         unsubscribe();

@@ -1,11 +1,11 @@
 import './portfolio-controls.css';
+import { bindContactComposer } from './contact-composer.js';
 
 const dock = document.getElementById('contact-dock');
-const links = [...dock.querySelectorAll('a')];
-const emailLink = dock.querySelector('a[href^="mailto:"]');
-const copyEmail = dock.querySelector('[data-copy-email]');
-const copyStatus = document.querySelector('.dock-status');
-let contactCopy = {};
+const links = [...dock.children];
+const events = new AbortController();
+const composer = document.getElementById('contact-composer');
+const localizeContact = bindContactComposer(dock.querySelector('[data-contact-open]'), composer, events.signal);
 const pointerEffects = matchMedia('(any-hover: hover) and (any-pointer: fine) and (prefers-reduced-motion: no-preference)');
 let centers = [];
 let frame = 0;
@@ -23,7 +23,7 @@ dock.addEventListener('pointerenter', event => {
         const bounds = link.getBoundingClientRect();
         return bounds.left + bounds.width / 2;
     });
-});
+}, { signal: events.signal });
 
 dock.addEventListener('pointermove', event => {
     if (event.pointerType !== 'mouse' || !pointerEffects.matches || !centers.length) return;
@@ -36,55 +36,58 @@ dock.addEventListener('pointermove', event => {
             link.style.setProperty('--dock-scale', 1 + .34 * proximity ** 2);
         });
     });
-});
+}, { signal: events.signal });
 
-dock.addEventListener('pointerleave', resetDock);
-pointerEffects.addEventListener('change', resetDock);
-
-function copyWithSelection(address) {
-    const field = document.createElement('textarea');
-    field.value = address;
-    field.readOnly = true;
-    field.className = 'dock-copy-field';
-    document.body.append(field);
-    const previousFocus = document.activeElement;
-    try {
-        field.focus({ preventScroll: true });
-        field.select();
-        return document.execCommand('copy');
-    } catch {
-        return false;
-    } finally {
-        field.remove();
-        previousFocus?.focus({ preventScroll: true });
-    }
-}
-
-copyEmail.addEventListener('click', async () => {
-    const address = emailLink.getAttribute('href').slice('mailto:'.length);
-    copyStatus.textContent = '';
-    let copied = false;
-    try {
-        if (navigator.clipboard?.writeText) {
-            await navigator.clipboard.writeText(address);
-            copied = true;
-        }
-    } catch {
-        // Some browser contexts deny the clipboard API but allow a selection copy.
-    }
-    if (!copied) copied = copyWithSelection(address);
-    if (copied) copyStatus.textContent = contactCopy.dockCopied ?? 'Email address copied.';
-    else {
-        const value = document.createElement('bdi');
-        value.textContent = address;
-        copyStatus.replaceChildren((contactCopy.dockCopyFailed ?? 'Copy this address manually.') + ' ', value);
-    }
-});
+dock.addEventListener('pointerleave', resetDock, { signal: events.signal });
+pointerEffects.addEventListener('change', resetDock, { signal: events.signal });
 
 const toggle = document.querySelector('.configurator-toggle');
 const panel = document.getElementById(toggle.getAttribute('aria-controls'));
 const openLabel = toggle.querySelector('[data-i18n="configuratorOpen"]');
 const closeLabel = toggle.querySelector('[data-i18n="configuratorClose"]');
+const studio = document.getElementById('configurator-studio');
+const studioHost = studio.querySelector('[data-studio-host]');
+const summary = studio.querySelector('summary');
+const invite = panel.querySelector('.studio-invite');
+const dismiss = invite.querySelector('[data-studio-invite-dismiss]');
+const invitationKey = 'portfolio-studio-invite-dismissed';
+let suppressed = false;
+let studioCopy = {};
+try { suppressed = sessionStorage.getItem(invitationKey) === '1'; } catch {}
+
+function dismissInvite() {
+    suppressed = true;
+    invite.hidden = true;
+    try { sessionStorage.setItem(invitationKey, '1'); } catch {}
+}
+
+export function offerDesignStudio(event) {
+    if (event.isTrusted && !suppressed && !studio.open && !panel.inert) invite.hidden = false;
+}
+
+function syncStudio() {
+    const hidden = panel.inert || !studio.open;
+    if (studioHost.hidden !== hidden) {
+        studioHost.hidden = hidden;
+        studioHost.dispatchEvent(new Event('studio-visibility'));
+    }
+    summary.textContent = studio.open ? studioCopy.studioClose ?? 'Collapse Design Studio' : studioCopy.studioOpen ?? 'Open Design Studio';
+}
+
+studio.addEventListener('toggle', () => {
+    if (studio.open) dismissInvite();
+    syncStudio();
+}, { signal: events.signal });
+dismiss.addEventListener('click', () => {
+    dismissInvite();
+    summary.focus({ preventScroll: true });
+}, { signal: events.signal });
+invite.querySelector('[data-studio-invite-open]').addEventListener('click', () => {
+    studio.open = true;
+    dismissInvite();
+    syncStudio();
+    summary.focus({ preventScroll: true });
+}, { signal: events.signal });
 
 toggle.addEventListener('click', () => {
     const expanded = toggle.getAttribute('aria-expanded') === 'false';
@@ -92,12 +95,21 @@ toggle.addEventListener('click', () => {
     panel.inert = !expanded;
     openLabel.hidden = expanded;
     closeLabel.hidden = !expanded;
-});
+    syncStudio();
+}, { signal: events.signal });
 
 export function localizePortfolioControls(copy) {
-    contactCopy = copy;
-    copyStatus.textContent = '';
+    localizeContact(copy);
+    studioCopy = copy;
+    dismiss.setAttribute('aria-label', copy.studioDismiss);
+    syncStudio();
     dock.setAttribute('aria-label', copy.dockContact ?? 'Contact');
     dock.dir = document.documentElement.dir;
     document.getElementById('profile-card').dir = document.documentElement.dir;
 }
+
+if (import.meta.hot) import.meta.hot.dispose(() => {
+    composer.close();
+    resetDock();
+    events.abort();
+});

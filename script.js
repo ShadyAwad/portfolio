@@ -4,7 +4,7 @@ import { priceProject } from './src/studio/pricing.js';
 import { bindArchitectureInputs, unbindArchitectureInputs } from './src/studio/architecture-inputs.js';
 
 import { mountStanzaCardSwap } from './src/components/stanza-card-swap.js';
-import { localizePortfolioControls } from './src/components/portfolio-controls.js';
+import { localizePortfolioControls, offerDesignStudio } from './src/components/portfolio-controls.js';
 import { localizeArchitecturePlanner } from './src/components/architecture-planner.js';
 import { mountPlanetViewer } from './src/components/planet-viewer.js';
 
@@ -414,15 +414,18 @@ const pricingOptions = { signal: pricingEvents.signal };
 baselineLinks.forEach(link => {
     link.addEventListener('click', event => {
         event.preventDefault();
+        if (configuration.getState().pricingTier !== Number(link.dataset.tierIndex)) offerDesignStudio(event);
         configuration.update({ pricingTier: Number(link.dataset.tierIndex) });
     }, pricingOptions);
 });
 
-tierSelect?.addEventListener('input', () => {
+tierSelect?.addEventListener('input', event => {
+    if (configuration.getState().pricingTier !== Number(tierSelect.value)) offerDesignStudio(event);
     configuration.update({ pricingTier: Number(tierSelect.value) });
 }, pricingOptions);
 addons.forEach(box => {
-    box.addEventListener('change', () => {
+    box.addEventListener('change', event => {
+        if (configuration.getState().features[box.id.slice(4)] !== box.checked) offerDesignStudio(event);
         configuration.update({ features: { [box.id.slice(4)]: box.checked } });
     }, pricingOptions);
 });

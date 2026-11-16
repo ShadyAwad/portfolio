@@ -46,6 +46,7 @@ export function mountCommercialEstimate(store) {
     };
 
     function render(state) {
+        if (!planner.open || planner.closest('[data-studio-host][hidden]')) return;
         const language = document.documentElement.lang.startsWith('ar') ? 'ar' : 'en';
         if (locale !== language) {
             locale = language;
@@ -112,6 +113,9 @@ export function mountCommercialEstimate(store) {
     }, { signal: events.signal });
 
     const unsubscribe = store.subscribe(render);
+    const refresh = () => render(store.getState());
+    planner.addEventListener('toggle', refresh, { signal: events.signal });
+    planner.closest('[data-studio-host]')?.addEventListener('studio-visibility', refresh, { signal: events.signal });
     const observer = new MutationObserver(() => render(store.getState()));
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
     render(store.getState());

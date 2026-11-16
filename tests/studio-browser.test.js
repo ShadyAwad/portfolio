@@ -65,8 +65,24 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await command('Page.navigate', { url });
     await waitFor("Boolean(q('.universe-phases'))");
 
-    await evaluate("click('.configurator-toggle');click('#architecture-planner > summary')");
+    await check("q('[data-studio-host]').hidden && q('.studio-invite').hidden");
+    await evaluate("click('.configurator-toggle');set('#tier', '2');set('#tier', '1')");
+    await check("q('[data-studio-host]').hidden && q('.studio-invite').hidden");
+    await evaluate("q('#tier').focus()");
+    await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'ArrowRight', code: 'ArrowRight', windowsVirtualKeyCode: 39 });
+    await command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'ArrowRight', code: 'ArrowRight', windowsVirtualKeyCode: 39 });
+    await waitFor("!q('.studio-invite').hidden");
+    await evaluate("click('[data-studio-invite-dismiss]');q('#tier').focus()");
+    await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'ArrowRight', code: 'ArrowRight', windowsVirtualKeyCode: 39 });
+    await command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'ArrowRight', code: 'ArrowRight', windowsVirtualKeyCode: 39 });
+    await check("q('.studio-invite').hidden && sessionStorage.getItem('portfolio-studio-invite-dismissed') === '1'");
+    await evaluate("click('#configurator-studio > summary')");
+    await waitFor("!q('[data-studio-host]').hidden");
+    await evaluate("click('#architecture-planner > summary')");
     await check("q('#architecture-planner').open && q('.capacity-panel') && q('.commercial-panel')");
+    await waitFor("q('.commercial-summary').textContent.length > 0");
+    await evaluate("window.advancedPrice = q('.commercial-summary').textContent;set('#tier','4')");
+    await check("q('.commercial-summary').textContent === advancedPrice && q('.studio-invite').hidden");
     for (const name of ['saas', 'ecommerce', 'landing', 'internal-tool']) {
         await evaluate(`template('${name}');view(0)`);
         await check("!q('[data-studio-preview-panel]').hidden && q('.studio-template').children.length");
@@ -90,9 +106,10 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await check("statusIs('unavailable')");
     await evaluate(`sim('jobRate',10);
         for (let i = 0; i < 16; i++) {phase('create');phase('architect');phase('challenge');}
-        click('.studio-disclosure');`);
-    await check("q('#studio-workspace').hidden");
-    await evaluate("click('.studio-disclosure')");
+        click('#configurator-studio > summary');`);
+    await waitFor("q('[data-studio-host]').hidden");
+    await evaluate("click('.configurator-toggle');click('.configurator-toggle');click('#configurator-studio > summary')");
+    await waitFor("!q('[data-studio-host]').hidden");
     await check("statusIs('overloaded') && queue === q('[data-universe-node=queue]') && queue.getAttribute('aria-pressed') === 'true'");
     await evaluate("click('.challenge-grid fieldset button')");
     await check("statusIs('nominal') && price === q('#price-display').dataset.price && saved === localStorage.getItem('awad-portfolio-studio')");
@@ -100,6 +117,8 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await waitFor("document.documentElement.dir === 'rtl' && document.documentElement.dataset.theme === 'light'");
     await check("q('.universe-phases [data-phase=create]').textContent === 'إنشاء'");
     await command('Page.reload');
+    await waitFor("Boolean(q('.universe-phases'))");
+    await evaluate("click('.configurator-toggle');click('#configurator-studio > summary')");
     await waitFor("q('.studio-settings select[name=applicationType]')?.value === 'internal-tool'");
     await check("q('.studio-settings [name=jobs]').checked && q('.universe-panel').hidden");
     await evaluate("click('[data-studio-reset]')");
@@ -115,4 +134,8 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await check("document.activeElement.type === 'email' && q('[data-preview-demo]').closest('.mock-landing')");
     await evaluate("template('internal-tool');set('[data-record-filter]', 'review', 'change')");
     await check("document.querySelectorAll('[data-record-status]:not([hidden])').length === 2");
+    await evaluate("click('[data-contact-open]')");
+    await check("q('#contact-composer').open && document.activeElement.name === 'subject'");
+    await evaluate("click('[data-contact-close]')");
+    await waitFor("!q('#contact-composer').open && document.activeElement === q('[data-contact-open]')");
 });

@@ -4,8 +4,6 @@ export const translations = {
     plan: ['Engineering & cost estimates','التقديرات الهندسية والتكلفة'],
     backToStudio: ['Return to Application Design Studio','العودة إلى استوديو تصميم التطبيقات'],
     controls: ['Application settings', 'إعدادات التطبيق'],
-    studioCollapse: ['Collapse Studio','طي الاستوديو'],
-    studioExpand: ['Open Studio','فتح الاستوديو'],
     template: ['Application type', 'نوع التطبيق'],
     theme: ['Preview theme', 'مظهر المعاينة'],
     system: ['System', 'حسب الجهاز'],

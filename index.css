@@ -328,13 +328,9 @@ html[dir="rtl"] blockquote {
 
 /* Logical profile alignment toggles */
 .profile-actions {
-    position: absolute;
-    top: 14px;
-    inset-inline-end: 20px;
     display: flex;
     gap: 10px;
     align-items: center;
-    z-index: 10;
 }
 
 .profile-actions button {
@@ -1342,13 +1338,6 @@ html[dir="rtl"] .pane-blockquote {
     }
     .flagship-documentation-viewport {
         padding: 16px;
-    }
-    .profile-actions {
-        position: relative;
-        top: 0;
-        inset-inline-end: 0;
-        justify-content: flex-start;
-        margin-bottom: 15px;
     }
 }
 

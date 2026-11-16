@@ -8,10 +8,10 @@ const displayFeatures = [...PREVIEW_FEATURE_KEYS, 'roles'];
 const viewports = ['desktop', 'tablet', 'mobile'];
 
 export function mountDesignStudio(store, reset) {
-    const anchor = document.getElementById('architectural-showcase-card');
+    const host = document.querySelector('[data-studio-host]');
     const studio = document.createElement('section');
     studio.id = 'application-design-studio';
-    studio.className = 'bento-item design-studio';
+    studio.className = 'design-studio';
     studio.setAttribute('aria-labelledby', 'design-studio-title');
     const localized = (key, tag = 'span') => `<${tag} data-studio-copy="${key}"></${tag}>`;
     const options = choices => choices.map(key => `<option value="${key}" data-studio-copy="${key}"></option>`).join('');
@@ -25,7 +25,6 @@ export function mountDesignStudio(store, reset) {
     studio.innerHTML = `<header class="studio-heading">
         <div><h3 id="design-studio-title" tabindex="-1" data-studio-copy="title"></h3>
         ${localized('intro', 'p')}</div>
-        <button type="button" class="studio-disclosure" aria-expanded="true" aria-controls="studio-workspace"></button>
     </header>
     <div class="studio-layout" id="studio-workspace">
         <form class="studio-settings" aria-label="Preview settings">
@@ -55,11 +54,9 @@ export function mountDesignStudio(store, reset) {
             </div>
         </div>
     </div>`;
-    anchor.before(studio);
+    host.prepend(studio);
 
     const form = studio.querySelector('form');
-    const disclosure = studio.querySelector('.studio-disclosure');
-    const workspace = studio.querySelector('#studio-workspace');
     const status = studio.querySelector('[role="status"]');
     const preview = studio.querySelector('.studio-preview');
     const frame = studio.querySelector('.studio-preview-frame');
@@ -95,13 +92,8 @@ export function mountDesignStudio(store, reset) {
         themeButton.title = action;
         themeButton.firstElementChild.textContent = dark ? '☀' : '☾';
     }
-    function setExpanded(expanded) {
-        workspace.hidden = !expanded;
-        disclosure.setAttribute('aria-expanded', String(expanded));
-        disclosure.textContent = copy(expanded ? 'studioCollapse' : 'studioExpand');
-    }
-
     function render() {
+        if (host.hidden) return;
         const nextLanguage = document.documentElement.lang.startsWith('ar') ? 'ar' : 'en';
         const localeChanged = language !== nextLanguage;
         language = nextLanguage;
@@ -114,7 +106,6 @@ export function mountDesignStudio(store, reset) {
             studio.querySelectorAll('[data-studio-copy]').forEach(node => {
                 node.textContent = copy(node.dataset.studioCopy);
             });
-            setExpanded(!workspace.hidden);
             workspaces.firstElementChild.innerHTML = `<label>${label(['Workspace','مساحة العمل'])}
                 <select data-preview-workspace-select><option>Northstar Studio</option><option>Harbor Design</option></select></label>`;
         }
@@ -148,7 +139,7 @@ export function mountDesignStudio(store, reset) {
                 return section;
             }));
         }
-        if (localeChanged || model.theme !== previous?.theme) renderTheme();
+        if (localeChanged || model.theme !== previous?.theme || model.theme === 'system') renderTheme();
         if (model.density !== previous?.density) preview.dataset.density = model.density;
         if (templateChanged) form.elements.applicationType.value = model.template;
         for (const key of displayFeatures) {
@@ -170,7 +161,7 @@ export function mountDesignStudio(store, reset) {
     listen(form, 'submit', event => event.preventDefault());
     bindPreviewInteractions(preview, events.signal, () => copy('demoSaved'));
     listen(systemTheme, 'change', () => {
-        if (store.getState().visual.theme === 'system') renderTheme();
+        if (!host.hidden && store.getState().visual.theme === 'system') renderTheme();
     });
     listen(themeButton, 'click', () => store.update({ visual: { theme: preview.dataset.previewTheme === 'dark' ? 'light' : 'dark' } }));
     listen(viewportControls, 'click', event => {
@@ -181,7 +172,7 @@ export function mountDesignStudio(store, reset) {
             button.setAttribute('aria-pressed', String(button.dataset.previewViewport === mode));
         }
     });
-    listen(disclosure, 'click', () => setExpanded(workspace.hidden));
+    listen(host, 'studio-visibility', render);
     listen(form, 'change', ({ target }) => {
         status.textContent = '';
         const { name, value, checked } = target;
@@ -204,7 +195,6 @@ export function mountDesignStudio(store, reset) {
     });
     listen(returnLink, 'click', event => {
         event.preventDefault();
-        setExpanded(true);
         studio.querySelector('h3').focus();
     });
 

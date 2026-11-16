@@ -175,6 +175,7 @@ export function mountArchitectureExplorer(canvas, preview, store) {
     }
 
     function render() {
+        if (canvas.closest('[data-studio-host][hidden]')) return;
         locale = document.documentElement.lang.startsWith('ar') ? 'ar' : 'en';
         setText(previewButton, label('preview'));
         setText(architectureButton, label('architecture'));
@@ -282,6 +283,10 @@ export function mountArchitectureExplorer(canvas, preview, store) {
     }
 
     listen(previewButton, 'click', () => switchView('preview'));
+    listen(canvas.closest('[data-studio-host]'), 'studio-visibility', () => {
+        if (canvas.closest('[data-studio-host][hidden]')) universe.hide();
+        else render();
+    });
     listen(architectureButton, 'click', () => switchView('architecture'));
     listen(universeButton, 'click', () => switchView('universe'));
     listen(compact, 'change', () => { if (view === 'architecture') render(); });

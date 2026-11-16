@@ -11,19 +11,6 @@
 }
 .studio-heading > div { flex: 1 1 28rem; }
 .studio-heading p { max-inline-size: 70ch; }
-.studio-disclosure {
-    min-block-size: 44px;
-    padding: .45rem .8rem;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    background: var(--input-bg);
-    font: inherit;
-    font-size: .86rem;
-    cursor: pointer;
-}
-.studio-disclosure:hover, .studio-disclosure:focus-visible { border-color: var(--accent); }
-.studio-layout[hidden] { display: none; }
 .studio-heading h3 { font-size: clamp(1.25rem, 2.5vw, 1.6rem); }
 .studio-heading p, .studio-recommendation { color: var(--muted); font-size: .9rem; }
 .studio-layout {

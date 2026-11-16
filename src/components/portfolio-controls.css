@@ -29,23 +29,7 @@ html[dir="rtl"] .profile {
     scroll-margin-block-start: 3.5rem;
 }
 
-.dock-copy {
-    align-self: center;
-    min-block-size: 44px;
-    padding: .4rem .65rem;
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    color: var(--text);
-    background: var(--input-bg);
-    font: inherit;
-    font-size: .78rem;
-    cursor: pointer;
-}
-.dock-copy:hover, .dock-copy:focus-visible { border-color: var(--accent); color: var(--accent); }
-.dock-status { color: var(--muted); font-size: .8rem; overflow-wrap: anywhere; }
-.dock-status:not(:empty) { margin-block-start: .45rem; }
-.dock-copy-field { position: fixed; inset-block-start: 0; inset-inline-start: 0; opacity: 0; pointer-events: none; }
-.contact-dock a {
+.contact-dock :is(a, button) {
     position: relative;
     display: grid;
     place-items: center;
@@ -55,7 +39,7 @@ html[dir="rtl"] .profile {
     color: var(--text);
     text-decoration: none;
 }
-.contact-dock a::after {
+.contact-dock :is(a, button)::after {
     content: "";
     position: absolute;
     inset-block-end: 0;
@@ -98,17 +82,17 @@ html[dir="rtl"] .profile {
     pointer-events: none;
     z-index: 1;
 }
-.contact-dock a:focus-visible::after,
-.contact-dock a:focus-visible .dock-label { opacity: 1; }
-.contact-dock a:focus-visible .dock-icon { color: var(--accent); border-color: var(--accent); }
+.contact-dock :is(a, button):focus-visible::after,
+.contact-dock :is(a, button):focus-visible .dock-label { opacity: 1; }
+.contact-dock :is(a, button):focus-visible .dock-icon { color: var(--accent); border-color: var(--accent); }
 @media (hover: hover) {
-    .contact-dock a:hover::after,
-    .contact-dock a:hover .dock-label { opacity: 1; }
-    .contact-dock a:hover .dock-icon { color: var(--accent); border-color: var(--accent); }
+    .contact-dock :is(a, button):hover::after,
+    .contact-dock :is(a, button):hover .dock-label { opacity: 1; }
+    .contact-dock :is(a, button):hover .dock-icon { color: var(--accent); border-color: var(--accent); }
 }
 @media (max-width: 480px) {
     .contact-dock { gap: 5px; padding-inline: 7px; }
-    .contact-dock a { inline-size: 44px; }
+    .contact-dock :is(a, button) { inline-size: 44px; }
 }
 
 .configurator-header {
@@ -202,7 +186,7 @@ html[dir="rtl"] .profile {
     flex-direction: column;
     min-inline-size: 0;
 }
-.portfolio-hero .profile-actions { inset-inline-end: 0; inset-block-start: 0; }
+
 .portfolio-hero .configurator {
     min-inline-size: 0;
     padding-inline-start: clamp(1.25rem, 3vw, 2.5rem);
@@ -269,3 +253,106 @@ html[dir="rtl"] .profile {
     font: inherit;
 }
 .planner-controls small { color: var(--muted); }
+
+.hero-top {
+    grid-column: 1 / -1;
+    direction: ltr;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: .45rem;
+    margin-block-end: .5rem;
+}
+.hero-top .badge { margin: 0; max-inline-size: 100%; }
+.hero-top #theme-toggle { width: 44px; height: 44px; }
+.contact-dock button {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    font: inherit;
+}
+.contact-dock :is(a, button):active .dock-icon { background: var(--table-header); border-color: var(--accent); }
+.configurator-studio, .studio-invite {
+    margin-block-start: 1rem;
+    padding: .75rem clamp(.55rem, 2vw, 1rem);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--input-bg);
+}
+.configurator-studio > summary {
+    color: var(--accent);
+    font-weight: 650;
+    cursor: pointer;
+    padding-block: .55rem;
+}
+.design-studio { padding-block-start: .65rem; }
+.studio-invite {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+    border-color: color-mix(in srgb, var(--accent) 36%, var(--border));
+    animation: contact-entry 180ms ease-out;
+}
+.studio-invite[hidden] { display: none; }
+.studio-invite > div { flex: 1 1 20rem; }
+.studio-invite p, #contact-hint, .contact-status { color: var(--muted); font-size: .875rem; }
+.studio-invite button, .contact-composer button {
+    min-block-size: 44px;
+    padding: .35rem .65rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--table-header);
+    color: var(--text);
+    cursor: pointer;
+    font: inherit;
+}
+.studio-invite button:hover, .contact-composer button:hover { border-color: var(--accent); }
+[data-studio-invite-dismiss], .contact-close { min-inline-size: 44px; }
+html:has(.contact-composer[open]) { overflow: hidden; }
+.contact-composer {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    padding: 0;
+    inline-size: min(35rem, calc(100% - 1.5rem));
+    max-block-size: calc(100dvh - 1.5rem);
+    overflow: auto;
+    overscroll-behavior: contain;
+    border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--border));
+    border-radius: 18px;
+    color: var(--text);
+    background: color-mix(in srgb, var(--card-bg) 96%, var(--accent));
+    box-shadow: 0 18px 65px #0006, 0 0 22px var(--accent-glow);
+}
+.contact-composer[open] { animation: contact-entry 200ms ease-out; }
+.contact-composer::backdrop { background: #030817a8; backdrop-filter: blur(5px); }
+.contact-content { padding: clamp(.8rem, 4vw, 1.45rem); }
+.contact-content header { display: flex; justify-content: space-between; align-items: center; gap: .5rem; }
+.contact-content h2 { font-size: 1.45rem; }
+.contact-content form { display: grid; gap: .65rem; margin-block-start: .85rem; }
+.contact-content label { display: grid; gap: .25rem; font-size: .875rem; }
+.contact-content :is(input, textarea) {
+    min-inline-size: 0;
+    inline-size: 100%;
+    min-block-size: 44px;
+    padding: .45rem .6rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--input-bg);
+    color: var(--text);
+    font: inherit;
+}
+.contact-content textarea { resize: vertical; }
+.contact-actions { display: flex; flex-wrap: wrap; gap: .4rem; }
+.contact-actions button:first-child { border-color: var(--accent); }
+.contact-composer :focus-visible, .configurator-studio > summary:focus-visible, .studio-invite button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+.contact-status:empty { display: none; }
+@keyframes contact-entry { from { opacity: 0; transform: translateY(7px); } }
+@media (prefers-reduced-motion: reduce) {
+    .contact-composer[open], .studio-invite { animation: none; }
+}
