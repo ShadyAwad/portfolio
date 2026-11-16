@@ -14,30 +14,6 @@
 
     <canvas id="starfield" aria-hidden="true"></canvas>
     <div class="space-atmosphere" aria-hidden="true">
-        <div class="space-well">
-            <svg viewBox="0 0 180 144" focusable="false">
-                <defs>
-                    <radialGradient id="space-disk-glow">
-                        <stop offset=".53" stop-color="var(--well-halo)" stop-opacity="0"/>
-                        <stop offset=".76" stop-color="var(--well-halo)"/>
-                        <stop offset="1" stop-color="var(--well-halo)" stop-opacity="0"/>
-                    </radialGradient>
-                </defs>
-                <g transform="rotate(-14 90 72)">
-                    <ellipse cx="90" cy="72" rx="83" ry="17" fill="url(#space-disk-glow)"/>
-                    <ellipse cx="90" cy="72" rx="69" ry="9" fill="none" stroke="var(--well-rim)" stroke-width=".7"/>
-                    <path d="M58 67C59 26 119 24 122 65M58 77c8 34 54 34 64 0" fill="none" stroke="var(--well-rim)" stroke-width=".55"/>
-                    <circle cx="90" cy="72" r="24" fill="var(--well-core)" stroke="var(--well-rim)" stroke-width=".5"/>
-                    <path d="M22 75c21 12 112 12 136-1" fill="none" stroke="var(--well-rim)" stroke-width=".75"/>
-                </g>
-            </svg>
-            <svg class="space-lensing" viewBox="0 0 180 144" focusable="false">
-                <g transform="rotate(-14 90 72)" fill="none" stroke="var(--well-glint)" stroke-linecap="round">
-                    <path d="M66 54a26 26 0 0 1 23-10M101 99a29 29 0 0 0 17-11" stroke-width=".7"/>
-                    <path d="M34 79q21 6 42 5m37-2q16-2 29-6" stroke-width=".8"/>
-                </g>
-            </svg>
-        </div>
         <div class="space-comet"></div>
     </div>
 

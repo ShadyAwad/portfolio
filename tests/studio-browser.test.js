@@ -86,6 +86,12 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
             run();
         };
         window.backgroundAnimations = () => q('.space-atmosphere').getAnimations({ subtree:true });
+        const translate = CanvasRenderingContext2D.prototype.translate;
+        CanvasRenderingContext2D.prototype.translate = function (x, y) {
+            if (this.canvas.id === 'starfield') window.wellCentre = { x, y };
+            return translate.call(this, x, y);
+        };
+        window.isBare = ({x,y}) => [document.body, document.documentElement, q('#portfolio-grid')].includes(document.elementFromPoint(x,y));
         window.databaseDraws = 0;
         const clear = CanvasRenderingContext2D.prototype.clearRect;
         CanvasRenderingContext2D.prototype.clearRect = function (...args) {
@@ -425,29 +431,73 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
             await check("document.documentElement.scrollWidth===document.documentElement.clientWidth && q('.studio-layout-picker legend').textContent==='التخطيط'");
         }
     }
-    await check("q('.space-atmosphere').getAttribute('aria-hidden')==='true' && getComputedStyle(q('.space-atmosphere')).pointerEvents==='none' && !backgroundAnimations().length && !cometTimers.size");
-    await command('Emulation.setEmulatedMedia', { features: [{ name:'prefers-reduced-motion', value:'no-preference' }] });
-    await waitFor("backgroundAnimations().length===2 && cometTimers.size===1");
+    await waitFor("q('#starfield').getAttribute('aria-hidden')==='true' && getComputedStyle(q('#starfield')).pointerEvents==='none' && !backgroundAnimations().length && !cometTimers.size");
+    await command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 2, mobile: false });
+    await command('Emulation.setTouchEmulationEnabled', { enabled: false });
     await evaluate("scrollTo({top:0,behavior:'instant'})");
-    await new Promise(resolve => setTimeout(resolve, 650));
-    await evaluate("window.idleDraws=starfieldDraws;window.heroBefore=JSON.stringify(q('#profile-card').getBoundingClientRect());releaseComet()");
+    await waitFor("isBare(wellCentre) && q('#starfield').width===1944");
+    await check("q('#starfield').height===1215 && q('#theme-toggle').getBoundingClientRect().width>0");
+    await command('Emulation.setEmulatedMedia', { features: [{ name:'prefers-reduced-motion', value:'no-preference' }] });
+    await waitFor("cometTimers.size===1");
+    await evaluate("window.stellarBefore=starfieldDraws;window.anchorBefore={...wellCentre}");
+    await waitFor("starfieldDraws>=stellarBefore+4 && Math.hypot(wellCentre.x-anchorBefore.x,wellCentre.y-anchorBefore.y)>1");
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const anchor = await evaluate("wellCentre");
+    await check("isBare(wellCentre)");
+    await evaluate("window.heroBefore=JSON.stringify(q('#profile-card').getBoundingClientRect())");
+    await command('Input.dispatchMouseEvent', { type:'mousePressed', ...anchor, button:'left', clickCount:1 });
+    const target = { x: anchor.x + 72, y: anchor.y + 104 };
+    await command('Input.dispatchMouseEvent', { type:'mouseMoved', ...target, buttons:1 });
+    await waitFor("wellCentre.x>90 && wellCentre.y>300");
+    await check("!isBare(wellCentre) && heroBefore===JSON.stringify(q('#profile-card').getBoundingClientRect())");
+    await command('Input.dispatchMouseEvent', { type:'mouseReleased', ...target, button:'left', clickCount:1 });
+    // Press again where the horizon is still behind the hero. Only the foreground may receive this gesture.
+    await command('Input.dispatchMouseEvent', { type:'mousePressed', ...target, button:'left', clickCount:1 });
+    await command('Input.dispatchMouseEvent', { type:'mouseMoved', x:target.x, y:target.y+150, buttons:1 });
+    await new Promise(resolve => setTimeout(resolve, 140));
+    await check("wellCentre.y<415");
+    await command('Input.dispatchMouseEvent', { type:'mouseReleased', x:target.x, y:target.y+150, button:'left', clickCount:1 });
+    await command('Input.dispatchMouseEvent', { type:'mouseMoved', ...anchor });
+    await waitFor("wellCentre.x<60 && wellCentre.y<275");
+    await check("heroBefore===JSON.stringify(q('#profile-card').getBoundingClientRect())");
+    await evaluate("releaseComet()");
     await waitFor("q('.space-comet').getAnimations().length===1");
     await check("cometTimers.size===0 && !document.elementFromPoint(15,15)?.closest('.space-atmosphere')");
     await waitFor("q('.space-comet').getAnimations().length===0 && cometTimers.size===1");
-    await check("idleDraws===starfieldDraws && heroBefore===JSON.stringify(q('#profile-card').getBoundingClientRect()) && document.documentElement.scrollWidth===document.documentElement.clientWidth");
     await evaluate("releaseComet()");
     const backgroundTab = await (await fetch(new URL('/json/new?about:blank', debug), { method: 'PUT' })).json();
     try {
         const activated = await fetch(new URL('/json/activate/' + backgroundTab.id, debug));
         assert(activated.ok);
         await waitFor("document.hidden && !backgroundAnimations().length && !cometTimers.size");
+        await evaluate("window.hiddenDraws=starfieldDraws");
+        await new Promise(resolve => setTimeout(resolve, 180));
+        await check("starfieldDraws===hiddenDraws");
         await command('Page.bringToFront');
-        await waitFor("!document.hidden && backgroundAnimations().length===2 && cometTimers.size===1");
+        await waitFor("!document.hidden && starfieldDraws>hiddenDraws && cometTimers.size===1");
     } finally {
         await fetch(new URL('/json/close/' + backgroundTab.id, debug));
     }
+    await command('Emulation.setDeviceMetricsOverride', { width: 320, height: 760, deviceScaleFactor: 2, mobile: true });
+    await command('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
+    await waitFor("q('#starfield').width===320 && isBare(wellCentre)");
+    const touchOrigin = await evaluate("({x:wellCentre.x,y:wellCentre.y-9})");
+    await evaluate("window.touchHit = '';window.addEventListener('touchstart',event=>touchHit=event.target.outerHTML.slice(0,200),{once:true,capture:true})");
+    await command('Input.dispatchTouchEvent', { type:'touchStart', touchPoints:[touchOrigin] });
+    await waitFor("document.documentElement.hasAttribute('data-gravity-dragging')", 12).catch(async error => {
+        throw new Error("The exposed mobile horizon received " + await evaluate("touchHit"), { cause:error });
+    });
+    for (let step = 1; step <= 4; step++) {
+        await command('Input.dispatchTouchEvent', { type:'touchMove', touchPoints:[{ x:touchOrigin.x-step*9,y:touchOrigin.y+step*14 }] });
+    }
+    await waitFor("wellCentre.y>65");
+    await command('Input.dispatchTouchEvent', { type:'touchEnd', touchPoints:[] });
+    await waitFor("wellCentre.y<40");
     await command('Emulation.setEmulatedMedia', { features: [{ name:'prefers-reduced-motion', value:'reduce' }] });
     await waitFor("!backgroundAnimations().length && !cometTimers.size");
+    await evaluate("window.staticDraws=starfieldDraws;window.staticWell=JSON.stringify(wellCentre)");
+    await new Promise(resolve => setTimeout(resolve, 180));
+    await check("starfieldDraws===staticDraws && JSON.stringify(wellCentre)===staticWell && document.documentElement.scrollWidth===320");
     const production = await (await fetch(url)).text();
     const entry = production.match(/<script type="module"[^>]*src="([^"]+)"/)?.[1];
     assert(entry);

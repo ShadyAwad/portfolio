@@ -1,4 +1,5 @@
 import './space-atmosphere.css';
+import { mountGravityBackground } from './gravity-background.js';
 
 const atmosphere = document.querySelector('.space-atmosphere');
 const comet = atmosphere.querySelector('.space-comet');
@@ -7,6 +8,8 @@ const events = new AbortController();
 const { signal } = events;
 let timer;
 let inPage = true;
+const active = () => inPage && !document.hidden;
+const field = mountGravityBackground(document.getElementById('starfield'), motion, active);
 
 function stop() {
     clearTimeout(timer);
@@ -15,29 +18,31 @@ function stop() {
 
 function schedule() {
     stop();
-    const moving = inPage && !document.hidden && !motion.matches;
-    atmosphere.toggleAttribute('data-moving', moving);
-    if (!moving) return;
+    if (!active() || motion.matches) return;
     timer = setTimeout(() => {
-        if (inPage && !document.hidden && !motion.matches) comet.classList.add('is-flying');
+        if (active() && !motion.matches) comet.classList.add('is-flying');
     }, 48000 + Math.random() * 26000);
 }
 
 comet.addEventListener('animationend', schedule, { signal });
-document.addEventListener('visibilitychange', schedule, { signal });
-motion.addEventListener('change', schedule, { signal });
+function sync() {
+    field.sync();
+    schedule();
+}
+document.addEventListener('visibilitychange', sync, { signal });
+motion.addEventListener('change', sync, { signal });
 window.addEventListener('pagehide', () => {
     inPage = false;
-    schedule();
+    sync();
 }, { signal });
 window.addEventListener('pageshow', () => {
     inPage = true;
-    schedule();
+    sync();
 }, { signal });
-schedule();
+sync();
 
 if (import.meta.hot) import.meta.hot.dispose(() => {
     events.abort();
-    inPage = false;
-    schedule();
+    field.destroy();
+    stop();
 });

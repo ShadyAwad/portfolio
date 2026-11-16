@@ -9,8 +9,6 @@ import { localizePortfolioControls, offerDesignStudio } from './src/components/p
 import { localizeArchitecturePlanner } from './src/components/architecture-planner.js';
 
 // Global Parallax Starfield State
-const bgCanvas = document.getElementById('starfield');
-const bgCtx = bgCanvas ? bgCanvas.getContext('2d') : null;
 const starfieldMotion = matchMedia('(prefers-reduced-motion: reduce)');
 
 // Dynamic L10n & Theme States
@@ -70,66 +68,6 @@ const stanzaShowcaseRoot = document.querySelector('[data-stanza-showcase]');
 let stanzaShowcase;
 if (import.meta.hot) import.meta.hot.dispose(() => stanzaShowcase?.destroy());
 
-// ==========================================================================
-// 1. DYNAMIC SYSTEM PARALLAX STARFIELD
-// ==========================================================================
-function mountStarfield() {
-    if (!bgCtx) return;
-    const events = new AbortController();
-    const { signal } = events;
-    const stars = Array.from({ length: 145 }, () => ({
-        x: Math.random(), y: Math.random(), depth: Math.random(), radius: .35 + Math.random() ** 2 * 1.45
-    }));
-    let width, height, frame, pointer;
-    function draw() {
-        frame = 0;
-        if (document.hidden) return;
-        bgCtx.clearRect(0, 0, width, height);
-        const dx = pointer ? (pointer.x - width / 2) * .016 : 0;
-        const dy = pointer ? (pointer.y - height / 2) * .016 : 0;
-        bgCtx.fillStyle = '#b4d7ff';
-        for (const { x, y, depth, radius } of stars) {
-            bgCtx.globalAlpha = .17 + depth * .48;
-            bgCtx.beginPath();
-            bgCtx.arc(x * width - dx * depth, y * height - dy * depth, radius, 0, Math.PI * 2);
-            bgCtx.fill();
-        }
-        bgCtx.globalAlpha = 1;
-    }
-    function queueDraw() {
-        if (!frame && !document.hidden) frame = requestAnimationFrame(draw);
-    }
-    function resize() {
-        width = window.innerWidth;
-        height = window.innerHeight;
-        const dpr = Math.min(2, window.devicePixelRatio || 1);
-        bgCanvas.width = Math.round(width * dpr);
-        bgCanvas.height = Math.round(height * dpr);
-        bgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        queueDraw();
-    }
-    window.addEventListener('resize', resize, { passive: true, signal });
-    window.addEventListener('pointermove', event => {
-        if (!event.isPrimary || event.pointerType === 'touch' || starfieldMotion.matches || document.hidden) return;
-        pointer = { x: event.clientX, y: event.clientY };
-        queueDraw();
-    }, { passive: true, signal });
-    starfieldMotion.addEventListener('change', () => {
-        pointer = undefined;
-        queueDraw();
-    }, { signal });
-    document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-            cancelAnimationFrame(frame);
-            frame = 0;
-        } else queueDraw();
-    }, { signal });
-    resize();
-    return () => {
-        events.abort();
-        cancelAnimationFrame(frame);
-    };
-}
 // =========================================================================
 // 2. BIDIRECTIONAL SCHEMA L10N & CRYSTAL THEMING
 // =========================================================================
@@ -980,9 +918,6 @@ if (exploreTrigger) {
 function initializeCoreArchitecture() {
     renderPricing(configuration.getState());
 
-    const stopStarfield = mountStarfield();
-    if (import.meta.hot) import.meta.hot.dispose(() => stopStarfield?.());
-
     // 🚀 ADDED: KICKSTART CELESTIAL PATH-SCROLL TRAILER
     const stopTrail = initConstellationScrollPathing();
     if (import.meta.hot) import.meta.hot.dispose(() => stopTrail?.());
@@ -1133,7 +1068,7 @@ function initConstellationScrollPathing() {
     }
 
     window.addEventListener('pointermove', event => {
-        if (event.pointerType !== 'mouse' || starfieldMotion.matches || document.hidden ||
+        if (event.defaultPrevented || event.pointerType !== 'mouse' || starfieldMotion.matches || document.hidden ||
             event.target.closest?.('.design-studio, .stanza-showcase, .contact-composer, #contact-dock')) {
             resetTrail();
             return;
