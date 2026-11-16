@@ -1,4 +1,5 @@
-import { captures, channel, clamp, createFrameLoop, distance, magnet, mix, spring } from './request-motion.js';
+import { captures, channel, clamp, createFrameLoop, distance, easeTravel, handoff,
+    landingFrames, magnet, mix, proximity, spring } from './request-motion.js';
 import './workspace.css';
 
 const socketFor = node => ['auth', 'tenant'].includes(node) ? 'access' : node;
@@ -6,7 +7,7 @@ const velocity = () => ({ x: 0, y: 0 });
 
 export function mountWorkspace(root, { reduced, canDrag, canLaunch, launch }) {
     root.innerHTML = `<div class="workspace-field">
-        <canvas aria-hidden="true"></canvas>
+        <canvas aria-hidden="true"></canvas><canvas aria-hidden="true"></canvas>
         ${[['browser','▱'],['api','⌁'],['access','◇'],['postgres','≋']].map(([id, mark]) =>
             `<div class="workspace-socket" data-socket="${id}"><i aria-hidden="true">${mark}</i><span></span></div>`).join('')}
         <button type="button" class="workspace-token"><span aria-hidden="true"></span></button>
@@ -14,8 +15,9 @@ export function mountWorkspace(root, { reduced, canDrag, canLaunch, launch }) {
     </div><p class="workspace-hint"></p>`;
     const field = root.firstElementChild;
     const packet = field.querySelector('button');
-    const canvas = field.querySelector('canvas');
+    const [canvas, overlay] = field.querySelectorAll('canvas');
     const ctx = canvas.getContext('2d');
+    const glow = overlay.getContext('2d');
     const nodes = new Map([...field.querySelectorAll('[data-socket]')].map(node => [node.dataset.socket, node]));
     const api = nodes.get('api');
     const events = new AbortController();
@@ -26,29 +28,64 @@ export function mountWorkspace(root, { reduced, canDrag, canLaunch, launch }) {
     let body = { position: { x: 0, y: 0 }, velocity: velocity() };
     let frameTime;
 
-    function drawTrack(track, color, width, dash, end = 1) {
-        if (!track || !end) return;
-        ctx.beginPath();
-        const first = track(0);
-        ctx.moveTo(first.x, first.y);
-        for (let i = 1; i <= 22; i++) {
-            const point = track(end * i / 22);
-            ctx.lineTo(point.x, point.y);
+    function drawTrack(context, track, color, width, dash, start = 0, end = 1, segments = 22) {
+        if (!track || end <= start) return;
+        context.beginPath();
+        const first = track(start);
+        context.moveTo(first.x, first.y);
+        for (let i = 1; i <= segments; i++) {
+            const point = track(start + (end - start) * i / segments);
+            context.lineTo(point.x, point.y);
         }
-        ctx.strokeStyle = color;
-        ctx.lineWidth = width;
-        ctx.setLineDash(dash ? [4, 6] : []);
-        ctx.stroke();
+        context.strokeStyle = color;
+        context.lineWidth = width;
+        context.setLineDash(dash ? [4, 6] : []);
+        context.stroke();
     }
 
-    function paint(highlight, end) {
+    function paintRoute() {
         if (!geometry) return;
         const { width, height, tracks, colors } = geometry;
         ctx.clearRect(0, 0, width, height);
-        tracks.forEach(({ path, response }, index) => drawTrack(path,
-            response ? colors.returning : index <= landed ? colors.traversed : colors.track,
-            index <= landed ? 1.65 : 1.2, response));
-        if (highlight) drawTrack(highlight.path, highlight.response ? colors.mint : colors.cyan, 2, false, end);
+        tracks.forEach(({ path, response }) => drawTrack(ctx, path,
+            response ? colors.returning : colors.track, 1.2, response));
+    }
+
+    function clearGlow() {
+        if (geometry) glow.clearRect(0, 0, geometry.width, geometry.height);
+    }
+
+    function paintTrail(track, end, tail) {
+        clearGlow();
+        if (!track.path) return;
+        const color = track.response ? geometry.colors.mint : geometry.colors.cyan;
+        glow.lineCap = 'round';
+        for (let i = 0; i < 4; i++) {
+            glow.globalAlpha = .15 + i * .21;
+            drawTrack(glow, track.path, color, 1.1 + i * .42, false,
+                Math.max(0, end - tail * (4 - i) / 4), Math.max(0, end - tail * (3 - i) / 4), 4);
+        }
+        glow.globalAlpha = 1;
+    }
+
+    function react(index, socket, delivered) {
+        pulse?.cancel();
+        const duration = delivered ? 440 : 365;
+        pulse = socket.querySelector('i').animate(landingFrames(delivered), { duration });
+        const started = performance.now();
+        loop.start(now => {
+            const t = clamp((now - started) / duration, 0, 1);
+            clearGlow();
+            const incoming = geometry.tracks[index];
+            const outgoing = geometry.tracks[index + 1];
+            glow.globalAlpha = (1 - t) ** 1.6 * .62;
+            if (incoming) drawTrack(glow, incoming.path, incoming.response ? geometry.colors.mint : geometry.colors.cyan,
+                1.8, false, .7, 1, 9);
+            if (outgoing) drawTrack(glow, outgoing.path, outgoing.response ? geometry.colors.mint : geometry.colors.cyan,
+                1.6, false, 0, .27, 9);
+            glow.globalAlpha = 1;
+            return t < 1;
+        });
     }
 
     function show() {
@@ -60,15 +97,17 @@ export function mountWorkspace(root, { reduced, canDrag, canLaunch, launch }) {
         const height = field.clientHeight;
         if (!width || !height || !steps.length) return;
         const scale = Math.min(devicePixelRatio || 1, 2);
-        canvas.width = Math.round(width * scale);
-        canvas.height = Math.round(height * scale);
-        ctx.setTransform(scale, 0, 0, scale, 0, 0);
+        for (const context of [ctx, glow]) {
+            context.canvas.width = Math.round(width * scale);
+            context.canvas.height = Math.round(height * scale);
+            context.setTransform(scale, 0, 0, scale, 0, 0);
+        }
         const points = steps.map(step => {
             const node = nodes.get(socketFor(step.node));
             return { x: node.offsetLeft, y: node.offsetTop };
         });
         const style = getComputedStyle(field);
-        const colors = Object.fromEntries(['track', 'traversed', 'returning', 'cyan', 'mint']
+        const colors = Object.fromEntries(['track', 'returning', 'cyan', 'mint']
             .map(key => [key, style.getPropertyValue('--ws-' + key).trim()]));
         const tracks = points.map((to, i) => {
             if (!i || distance(points[i - 1], to) < 1) return {};
@@ -78,7 +117,7 @@ export function mountWorkspace(root, { reduced, canDrag, canLaunch, launch }) {
         });
         geometry = { width, height, points, tracks, colors };
         if (!gesture && !field.hasAttribute('data-travel')) place(landed);
-        paint();
+        paintRoute();
     }
 
     function place(index) {
@@ -100,6 +139,8 @@ export function mountWorkspace(root, { reduced, canDrag, canLaunch, launch }) {
         field.removeAttribute('data-travel');
         field.removeAttribute('data-drag');
         api.removeAttribute('data-magnet');
+        api.style.removeProperty('--ws-proximity');
+        clearGlow();
         body.velocity = velocity();
         frameTime = undefined;
     }
@@ -107,16 +148,18 @@ export function mountWorkspace(root, { reduced, canDrag, canLaunch, launch }) {
     function sync(index, animate = false) {
         landed = index;
         place(index);
-        field.toggleAttribute('data-delivered', index === steps.length - 1);
+        const delivered = index === steps.length - 1;
+        field.toggleAttribute('data-delivered', delivered);
+        field.toggleAttribute('data-response', index >= steps.length - 2);
         const current = socketFor(steps[index].node);
-        nodes.forEach((node, key) => node.toggleAttribute('data-active', key === current));
+        const visited = new Set(steps.slice(0, index).map(step => socketFor(step.node)));
+        nodes.forEach((node, key) => {
+            node.toggleAttribute('data-active', key === current);
+            node.toggleAttribute('data-complete', key !== current && visited.has(key));
+        });
         packet.setAttribute('aria-disabled', String(!canLaunch()));
-        if (animate && !reduced()) {
-            pulse?.cancel();
-            pulse = nodes.get(current).querySelector('i').animate(
-                [{ scale: 1 }, { scale: 1.2, offset: .28 }, { scale: 1 }], { duration: 330, easing: 'ease-out' });
-        }
-        paint();
+        clearGlow();
+        if (animate && !reduced() && geometry) react(index, nodes.get(current), delivered);
     }
 
     function move(from, to, origin, done) {
@@ -126,19 +169,28 @@ export function mountWorkspace(root, { reduced, canDrag, canLaunch, launch }) {
         }
         const initialTime = performance.now();
         field.setAttribute('data-travel', '');
+        field.toggleAttribute('data-response', to >= steps.length - 2);
         packet.setAttribute('aria-disabled', 'true');
         const adjacent = !origin && to === from + 1;
-        const duration = adjacent ? clamp(290 + distance(geometry.points[from], geometry.points[to]), 300, 630) : 305;
+        const length = distance(origin?.position ?? geometry.points[from], geometry.points[to]);
+        const duration = adjacent ? clamp(270 + length, 290, 620) : clamp(205 + length * .65, 230, 390);
+        const tail = clamp(32 / (length || 1), .07, .23);
+        let layout;
+        let track;
         loop.start(now => {
             const elapsed = clamp((now - initialTime) / duration, 0, 1);
-            const t = elapsed * elapsed * (3 - 2 * elapsed);
-            const track = adjacent ? geometry.tracks[to] : {
-                path: channel(origin ?? geometry.points[from], geometry.points[to], -14),
-                response: to >= steps.length - 2
-            };
+            const t = origin ? elapsed : easeTravel(elapsed);
+            if (layout !== geometry) {
+                layout = geometry;
+                track = adjacent ? layout.tracks[to] : {
+                    path: origin ? handoff(origin.position, layout.points[to], origin.velocity, duration / 1000) :
+                        channel(layout.points[from], layout.points[to], -14),
+                    response: to >= steps.length - 2
+                };
+            }
             body.position = track.path?.(t) ?? geometry.points[to];
             show();
-            paint(track, t);
+            paintTrail(track, t, tail);
             if (elapsed < 1) return true;
             field.removeAttribute('data-travel');
             done();
@@ -193,6 +245,7 @@ export function mountWorkspace(root, { reduced, canDrag, canLaunch, launch }) {
         packet.setPointerCapture(event.pointerId);
         field.setAttribute('data-drag', '');
         api.setAttribute('data-magnet', '');
+        api.style.setProperty('--ws-proximity', '.16');
     });
 
     listen('pointermove', event => {
@@ -207,6 +260,7 @@ export function mountWorkspace(root, { reduced, canDrag, canLaunch, launch }) {
         const radius = geometry.width <= 470 ? 77 : 103;
         target = magnet(point, socket, radius, reduced());
         api.toggleAttribute('data-magnet', distance(point, socket) < radius);
+        api.style.setProperty('--ws-proximity', proximity(point, socket, radius).toFixed(3));
         loop.start(follow);
     });
 
@@ -218,8 +272,9 @@ export function mountWorkspace(root, { reduced, canDrag, canLaunch, launch }) {
         gesture = undefined;
         field.removeAttribute('data-drag');
         api.removeAttribute('data-magnet');
+        api.style.removeProperty('--ws-proximity');
         if (!cancelled && (!moved || captures(point, geometry.points[1], speed, event.timeStamp - time < 95))) {
-            launch(moved ? { ...body.position } : undefined);
+            launch(moved ? { position: { ...body.position }, velocity: { ...body.velocity } } : undefined);
         } else {
             target = geometry.points[landed];
             loop.start(follow);

@@ -2,9 +2,34 @@ export const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 export const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 export const mix = (a, b, t) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
 
+export const proximity = (point, socket, radius) => clamp(1 - distance(point, socket) / radius, 0, 1);
+export const easeTravel = t => t ** 3 * (10 + t * (-15 + 6 * t));
+
 export function magnet(point, socket, radius, reduced = false) {
     if (reduced) return point;
-    return mix(point, socket, .82 * Math.max(0, 1 - distance(point, socket) / radius) ** 1.4);
+    const t = proximity(point, socket, radius);
+    return mix(point, socket, .82 * t * t * (3 - 2 * t));
+}
+
+// Carry the spring's actual release tangent, then arrive with zero velocity.
+export function handoff(from, to, velocity, duration) {
+    const limit = distance(from, to) * .75;
+    const speed = Math.hypot(velocity.x, velocity.y) * duration;
+    const carry = speed ? duration * Math.min(1, limit / speed) : 0;
+    const tangent = { x: velocity.x * carry, y: velocity.y * carry };
+    return t => {
+        const point = mix(from, to, easeTravel(t));
+        const weight = t * (1 - t) ** 3;
+        return { x: point.x + tangent.x * weight, y: point.y + tangent.y * weight };
+    };
+}
+
+export function landingFrames(delivered) {
+    const strength = delivered ? .075 : .052;
+    return Array.from({ length: 13 }, (_, frame) => {
+        const t = frame / 12;
+        return { offset: t, scale: frame === 12 ? 1 : 1 + strength * Math.sin(8 * t) * Math.exp(-3.6 * t) };
+    });
 }
 
 export function captures(point, socket, velocity, recent) {

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { captures, channel, createFrameLoop, distance, magnet, spring } from '../src/studio/flow/request-motion.js';
+import { captures, channel, createFrameLoop, distance, easeTravel, handoff,
+    landingFrames, magnet, proximity, spring } from '../src/studio/flow/request-motion.js';
 
 const api = { x: 200, y: 70 };
 const zero = { x: 0, y: 0 };
@@ -17,6 +18,30 @@ test('magnet pulls only in range and preserves exact pointer position with reduc
     assert(distance(magnet(near, api, 90), api) < distance(near, api));
     assert.deepEqual(magnet(zero, api, 90), zero);
     assert.equal(magnet(near, api, 90, true), near);
+    assert.equal(proximity(api, api, 90), 1);
+    assert.equal(proximity(zero, api, 90), 0);
+    assert(proximity(near, api, 90) > proximity({ x: 155, y: 81 }, api, 90));
+});
+
+test('packet handoff carries initial velocity and settles without a velocity jump at arrival', () => {
+    const to = { x: 100, y: 0 };
+    const route = handoff(zero, to, { x: 120, y: -20 }, .3);
+    assert.deepEqual(route(0), zero);
+    assert.deepEqual(route(1), to);
+    assert(Math.abs(route(.0001).x / .0001 - 36) < .02);
+    assert(route(.04).y < 0);
+    assert(distance(route(.9999), to) / .0001 < .002);
+    assert(easeTravel(.001) < .00000002 && 1 - easeTravel(.999) < .00000002);
+});
+
+test('damped socket reactions return to rest and completion stays restrained', () => {
+    const normal = landingFrames(false);
+    const complete = landingFrames(true);
+    assert(normal.some(frame => frame.scale > 1) && normal.some(frame => frame.scale < 1));
+    assert.equal(normal.at(-1).scale, 1);
+    assert.equal(complete.at(-1).scale, 1);
+    assert(Math.max(...complete.map(frame => frame.scale)) > Math.max(...normal.map(frame => frame.scale)));
+    assert(complete.every(frame => frame.scale < 1.08));
 });
 
 test('a missed drop spring settles at the origin and channels preserve both endpoints', () => {

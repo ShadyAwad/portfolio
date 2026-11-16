@@ -154,6 +154,14 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await waitFor("q('[data-playback=play]').getAttribute('aria-pressed') === 'true' && q('[data-flow-step=\"1\"]').hasAttribute('aria-current')");
     await evaluate("click('[data-playback=play]');click('[data-playback=step]')");
     await check("q('[data-flow-step=\"2\"]').hasAttribute('aria-current') && !q('.workspace-field').hasAttribute('data-travel')");
+    await evaluate("click('[data-playback=play]');set('#workspace-scrubber','6')");
+    await check("q('#workspace-scrubber').value==='6' && q('.workspace-field').hasAttribute('data-delivered') && q('[data-socket=browser]').hasAttribute('data-active') && q('[data-playback=play]').getAttribute('aria-pressed')==='false'");
+    await evaluate("set('#workspace-scrubber','3')");
+    await check("q('[data-socket=access]').hasAttribute('data-active') && q('[data-socket=api]').hasAttribute('data-complete') && !q('.workspace-field').hasAttribute('data-response')");
+    await evaluate("click('[data-playback=play]')");
+    await check("q('#workspace-scrubber').value==='4' && q('[data-socket=postgres]').hasAttribute('data-active')");
+    await evaluate("click('[data-playback=reset]')");
+    await check("q('#workspace-scrubber').value==='0' && q('[data-socket=browser]').hasAttribute('data-active') && !q('.workspace-field').hasAttribute('data-delivered')");
     await evaluate("click('[data-playback=reset]');scenario('report')");
     await check("q('.workspace-interaction').hidden && !q('.flow-load').hidden && q('[data-flow-step=\"0\"]').hasAttribute('aria-current')");
 });

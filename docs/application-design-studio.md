@@ -181,3 +181,13 @@ Queue presets use the existing capacity model at 4, 6, 8, and 10 arrivals per se
 The standalone baseline remains at `experiments/workspace-flow/`. Within How It Works, only the SaaS Load Workspace scenario uses the draggable route. `flow/request-motion.js` contains the capture radius, velocity projection, spring, path, and frame scheduling primitives. `flow/workspace.js` handles the browser presentation and emits launch intent. The existing flow reducer owns the active step and playback state. The readout advances on arrival, and pause keeps the last landed step. Reset and visibility changes cancel pending motion. Reduced motion skips automated travel and node pulses.
 
 The workspace renderer consumes the same resolved scenario as the step list. The access socket represents session verification, tenant scope, or both according to the configured graph. It disappears when neither capability is present. All other scenarios keep their sequence and telemetry.
+
+### M2 motion review
+
+M1 used spring stiffness 365 and damping 27, with integration steps of at most 8 ms. Its magnetic radius was 103 px on desktop and 77 px on narrow layouts. Capture accepted a drop within 54 px or a recent velocity projection of 65 ms. The packet used cubic easing across 300–630 ms legs, a 305 ms curved handoff from drag, and 450 ms dwell at each arrival. Reduced motion stepped directly with a 950 ms dwell. Each arrival bounced its socket icon to 120% scale over 330 ms. The canvas repainted the whole route for each animated frame.
+
+The M1 recording shows the route and readout clearly, but the magnet reads as a switch, the dragged packet loses its velocity at release, and each socket gives the same large pulse. The original step buttons seek directly but offer no continuous pointer target for scrubbing. The M2 motion pass starts from those observations.
+
+M2 curves the magnetic falloff and uses distance to drive halo opacity. The drag handoff carries the spring's velocity into a bounded curve. Automated legs ease to rest at each socket, where the explanation advances and a damped reaction lights nearby connections. The static route is cached on a separate canvas from the short packet trail and arrival light. Quiet completed sockets and a mint response show where the request is in its journey.
+
+The timeline is a native range with one stop per resolved scenario step. Scrubbing cancels ongoing travel and restores the packet, active socket, completed sockets, and readout at that stop. Play resumes from it. Previous, Next, Reset, and the timeline use the same reducer. Reduced motion preserves immediate step changes and omits travel and landing effects.

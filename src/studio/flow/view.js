@@ -15,7 +15,9 @@ export function mountFlow(canvas) {
         <div class="flow-controls">${labels.map(key =>
             `<button type="button" data-playback="${key}" data-flow-label="${key === 'step' ? 'next' : key}"></button>`).join('')}</div>
         </div><div class="flow-composition">
-            <div class="flow-scene"><h4 data-flow-label="sequence"></h4><div class="workspace-interaction" hidden></div><div class="flow-route">
+            <div class="flow-scene"><h4 data-flow-label="sequence"></h4><div class="workspace-interaction" hidden></div>
+            <div class="workspace-timeline" hidden><label for="workspace-scrubber" data-flow-label="workspaceTimeline"></label>
+                <input id="workspace-scrubber" type="range" min="0" max="0" value="0" step="1"></div><div class="flow-route">
                 <ol></ol><i class="flow-packet" aria-hidden="true"></i>
             </div><p class="flow-reference" data-flow-label="reference" hidden></p></div>
             <div class="flow-side">
@@ -38,6 +40,7 @@ export function mountFlow(canvas) {
     const loadInput = q('[data-flow-load]');
     const route = q('ol');
     const packet = q('.flow-packet');
+    const scrubber = q('#workspace-scrubber');
     const controls = [...panel.querySelectorAll('[data-playback]')];
     const events = new AbortController();
     const listen = (target, type, handler) => target.addEventListener(type, handler, { signal: events.signal });
@@ -57,7 +60,13 @@ export function mountFlow(canvas) {
         const numbers = new Intl.NumberFormat(language);
         const index = numbers.format(progress.index + 1);
         const count = numbers.format(journey.steps.length);
-        text(q('.flow-progress'), language === 'ar' ? `الخطوة ${index} من ${count}` : `Step ${index} of ${count}`);
+        const current = language === 'ar' ? `الخطوة ${index} من ${count}` : `Step ${index} of ${count}`;
+        text(q('.flow-progress'), current);
+        if (interactive) {
+            scrubber.value = progress.index;
+            scrubber.setAttribute('aria-valuetext', current + ' · ' + label(step.component.label));
+            scrubber.style.setProperty('--timeline-progress', (progress.index / (journey.steps.length - 1) * 100) + '%');
+        }
         text(q('.flow-current h4'), local(journey.scenario.title));
         text(q('.flow-current strong'), label(step.component.label));
         text(q('.flow-explanation'), local(step.text));
@@ -118,7 +127,7 @@ export function mountFlow(canvas) {
         progress = next;
         workspace.sync(progress.index, animate);
         renderPlayback();
-        if (progress.playing) timer = setTimeout(() => change('tick'), motion.matches ? 950 : 450);
+        if (progress.playing) timer = setTimeout(() => change('tick'), motion.matches ? 950 : 480);
     }
 
     function changeWorkspace(action, next, previous, origin) {
@@ -197,8 +206,10 @@ export function mountFlow(canvas) {
         const workspaceRoot = q('.workspace-interaction');
         interactive = state.applicationType === 'saas' && next.id === 'workspace';
         workspaceRoot.hidden = !interactive;
+        q('.workspace-timeline').hidden = !interactive;
         q('.flow-composition').toggleAttribute('data-workspace', interactive);
         if (interactive) {
+            scrubber.max = next.steps.length - 1;
             workspace ??= mountWorkspace(workspaceRoot, {
                 reduced: () => motion.matches,
                 canDrag: () => !progress.playing && progress.index === 0,
@@ -232,6 +243,10 @@ export function mountFlow(canvas) {
 
     listen(scenarioInput, 'change', () => render(latestGraph, state, label, language, scenarioInput.value));
     listen(loadInput, 'change', renderLoad);
+    listen(scrubber, 'pointerdown', hide);
+    listen(scrubber, 'input', () => {
+        if (interactive) change('select', scrubber.valueAsNumber);
+    });
     listen(panel, 'click', event => {
         const button = event.target.closest('button');
         if (!button || button.getAttribute('aria-disabled') === 'true') return;
