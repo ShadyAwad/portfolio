@@ -1,0 +1,191 @@
+.workspace-interaction { container-type: inline-size; }
+.workspace-field {
+    --ws-track: #63a9c083;
+    --ws-traversed: #8dddec9c;
+    --ws-returning: #9ce6bf86;
+    --ws-cyan: #94edff;
+    --ws-mint: #a9f7cd;
+    --ws-ink: #d8ebf2;
+    --ws-chamber: #071726;
+    --ws-atmosphere: #214155;
+    --ws-grid: #507e8b24;
+    --ws-ring: #6195a9;
+    --ws-face: #152a3b;
+    position: relative;
+    isolation: isolate;
+    block-size: clamp(240px, 32cqi, 326px);
+    overflow: hidden;
+    border: 1px solid var(--ws-ring);
+    border-radius: 12px;
+    color: var(--ws-ink);
+    background: radial-gradient(ellipse at 68% 21%, var(--ws-atmosphere), transparent 65%), var(--ws-chamber);
+}
+[data-theme="light"] .workspace-field {
+    --ws-track: #4d8298;
+    --ws-traversed: #2a8197;
+    --ws-returning: #397966;
+    --ws-cyan: #117b96;
+    --ws-mint: #207d61;
+    --ws-ink: #183849;
+    --ws-chamber: #eaf4f9;
+    --ws-atmosphere: #c8e4ec;
+    --ws-grid: #56879924;
+    --ws-ring: #83a9b9;
+    --ws-face: #eff9fb;
+}
+.workspace-field::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(var(--ws-grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--ws-grid) 1px, transparent 1px);
+    background-size: 25px 25px;
+    mask-image: radial-gradient(ellipse, black 40%, transparent 95%);
+}
+.workspace-field canvas {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    pointer-events: none;
+}
+.workspace-socket {
+    --socket: 56px;
+    position: absolute;
+    inset-block-start: var(--y);
+    inset-inline-start: var(--x);
+    inline-size: 0;
+    block-size: 0;
+    pointer-events: none;
+}
+.workspace-socket[data-socket="browser"] { --x: 13%; --y: 51%; }
+.workspace-socket[data-socket="api"] { --x: 38%; --y: 32%; }
+.workspace-socket[data-socket="access"] { --x: 62%; --y: 59%; }
+.workspace-socket[data-socket="postgres"] { --x: 86%; --y: 36%; }
+.workspace-field:not([data-access]) [data-socket="api"] { --x: 49%; --y: 29%; }
+.workspace-field:not([data-access]) [data-socket="postgres"] { --x: 85%; --y: 54%; }
+.workspace-socket i, .workspace-socket span {
+    position: absolute;
+    left: 0;
+    white-space: nowrap;
+}
+.workspace-socket i {
+    inset-block-start: 0;
+    transform: translate(-50%, -50%);
+    display: grid;
+    place-items: center;
+    inline-size: var(--socket);
+    block-size: var(--socket);
+    border: 1px solid var(--ws-ring);
+    border-radius: 50%;
+    background: radial-gradient(circle at 36% 27%, var(--ws-atmosphere), var(--ws-face) 77%);
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--ws-track) 22%, transparent), 0 8px 24px #02172433;
+    font: normal 25px/1 Consolas, monospace;
+    transition: border-color 160ms, box-shadow 180ms;
+}
+.workspace-socket:is([data-active], [data-magnet]) i {
+    border-color: var(--ws-cyan);
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--ws-cyan) 20%, transparent),
+        0 0 23px color-mix(in srgb, var(--ws-cyan) 39%, transparent);
+}
+.workspace-socket span {
+    inset-block-start: calc(var(--socket) / 2 + 8px);
+    transform: translateX(-50%);
+    inline-size: max-content;
+    max-inline-size: 9em;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    text-align: center;
+    font-size: .82rem;
+    font-weight: 650;
+}
+.workspace-token {
+    position: absolute;
+    z-index: 2;
+    top: -22px;
+    left: -22px;
+    inline-size: 44px;
+    block-size: 44px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+}
+.workspace-token span {
+    inline-size: 21px;
+    block-size: 21px;
+    transform: rotate(45deg);
+    border: 1px solid #e6faff;
+    border-radius: 6px;
+    background: linear-gradient(145deg, #e6faff, #65daf9 75%, #3390ad);
+    box-shadow: 0 0 0 4px #7ddfff34, 0 0 16px #7ddfffbc;
+    transition: scale 120ms;
+}
+.workspace-token[aria-disabled="true"] { cursor: default; }
+[data-drag] .workspace-token { cursor: grabbing; }
+[data-drag] .workspace-token span { scale: .86; }
+[data-delivered] .workspace-token span { background: linear-gradient(145deg, #e2fff0, #61d5a1); }
+.workspace-return {
+    position: absolute;
+    inset-inline-end: .65rem;
+    inset-block-end: .55rem;
+    color: var(--ws-ink);
+    font-size: .72rem;
+}
+.workspace-return i {
+    display: inline-block;
+    inline-size: 1.3rem;
+    margin-inline-end: .28rem;
+    vertical-align: middle;
+    border-block-start: 1px dashed var(--ws-returning);
+}
+.workspace-hint { margin-block: .5rem .65rem; color: var(--muted); font-size: .81rem; }
+.flow-composition[data-workspace] { grid-template-columns: minmax(0, 1fr); }
+[data-workspace] .flow-scene { background: var(--card-bg); color: var(--text); border-color: var(--border); }
+[data-workspace] .flow-route ol { display: flex; gap: .35rem; flex-wrap: wrap; }
+[data-workspace] .flow-route ol::before, [data-workspace] .flow-route .flow-packet { display: none; }
+[data-workspace] .flow-route button {
+    display: grid;
+    place-items: center;
+    min-block-size: 44px;
+    min-inline-size: 44px;
+    padding: .26rem;
+    border-color: var(--border);
+    color: var(--text);
+    background: var(--input-bg);
+}
+[data-workspace] .flow-route button[aria-current] { border-color: var(--accent); background: var(--table-header); }
+[data-workspace] .flow-route .flow-number {
+    color: var(--accent);
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+[data-workspace] .flow-copy {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+@container (max-width: 510px) {
+    .workspace-field { block-size: 245px; }
+    .workspace-socket { --socket: 48px; }
+    .workspace-socket[data-socket="browser"] { --x: 24%; --y: 24%; }
+    .workspace-socket[data-socket="api"], .workspace-field:not([data-access]) [data-socket="api"] { --x: 75%; --y: 24%; }
+    .workspace-socket[data-socket="access"] { --x: 75%; --y: 65%; }
+    .workspace-socket[data-socket="postgres"] { --x: 24%; --y: 65%; }
+    .workspace-field:not([data-access]) [data-socket="postgres"] { --x: 30%; --y: 66%; }
+    .workspace-socket i { font-size: 20px; }
+    .workspace-socket span { font-size: .71rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .workspace-socket i, .workspace-token span { transition: none; }
+}

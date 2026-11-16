@@ -175,3 +175,9 @@ Run `npm test` for unit coverage. To include the production workflow test, point
 How It Works replaces the System Universe interface with ordered, template-specific request journeys. Scenario definitions live in `flow/scenarios.js`. The flow model uses the configured architecture graph for component roles and engineering notes. When a scenario needs an absent component, it uses the same builder to produce a read-only reference and labels the step as a scenario component. Playback and workload selection stay local to the view.
 
 Queue presets use the existing capacity model at 4, 6, 8, and 10 arrivals per second with four slots, 0.5 seconds per job, and a 70% target. The view shows computed utilization, throughput capacity, and net backlog. The playback speed illustrates event order and is independent of the modeled throughput. No capacity thresholds are inferred for API or database steps.
+
+### M1: Load Workspace interaction
+
+The standalone baseline remains at `experiments/workspace-flow/`. Within How It Works, only the SaaS Load Workspace scenario uses the draggable route. `flow/request-motion.js` contains the capture radius, velocity projection, spring, path, and frame scheduling primitives. `flow/workspace.js` handles the browser presentation and emits launch intent. The existing flow reducer owns the active step and playback state. The readout advances on arrival, and pause keeps the last landed step. Reset and visibility changes cancel pending motion. Reduced motion skips automated travel and node pulses.
+
+The workspace renderer consumes the same resolved scenario as the step list. The access socket represents session verification, tenant scope, or both according to the configured graph. It disappears when neither capability is present. All other scenarios keep their sequence and telemetry.

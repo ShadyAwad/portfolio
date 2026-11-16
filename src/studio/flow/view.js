@@ -1,5 +1,6 @@
 import { flowCopy } from './copy.js';
 import { flowQueue, initialPlayback, playback, resolveFlow } from './model.js';
+import { mountWorkspace } from './workspace.js';
 import './flow.css';
 
 const labels = ['play', 'back', 'step', 'reset'];
@@ -14,7 +15,7 @@ export function mountFlow(canvas) {
         <div class="flow-controls">${labels.map(key =>
             `<button type="button" data-playback="${key}" data-flow-label="${key === 'step' ? 'next' : key}"></button>`).join('')}</div>
         </div><div class="flow-composition">
-            <div class="flow-scene"><h4 data-flow-label="sequence"></h4><div class="flow-route">
+            <div class="flow-scene"><h4 data-flow-label="sequence"></h4><div class="workspace-interaction" hidden></div><div class="flow-route">
                 <ol></ol><i class="flow-packet" aria-hidden="true"></i>
             </div><p class="flow-reference" data-flow-label="reference" hidden></p></div>
             <div class="flow-side">
@@ -46,6 +47,7 @@ export function mountFlow(canvas) {
     let state, journey, language, label, signature, animation, timer;
     let progress = initialPlayback();
     let track = [];
+    let workspace, interactive = false;
     const text = (element, value) => { if (element.textContent !== value) element.textContent = value; };
     const local = pair => pair[language === 'ar' ? 1 : 0];
     const copy = key => flowCopy[key] ? local(flowCopy[key]) : label(key);
@@ -109,13 +111,39 @@ export function mountFlow(canvas) {
         clearTimeout(timer);
         animation?.cancel();
         animation = undefined;
+        workspace?.stop();
     }
 
-    function change(action, index) {
+    function commitWorkspace(next, animate = false) {
+        progress = next;
+        workspace.sync(progress.index, animate);
+        renderPlayback();
+        if (progress.playing) timer = setTimeout(() => change('tick'), motion.matches ? 950 : 450);
+    }
+
+    function changeWorkspace(action, next, previous, origin) {
+        if (action === 'play') {
+            progress = next;
+            if (!origin) workspace.sync(progress.index);
+            renderPlayback();
+            change('tick', undefined, origin);
+        } else if (['tick', 'step', 'back'].includes(action) && next.index !== previous) {
+            workspace.move(previous, next.index, origin, () => commitWorkspace(next, true));
+        } else {
+            commitWorkspace(next);
+        }
+    }
+
+    function change(action, index, origin) {
         clearEffects();
         const previous = progress.index;
-        progress = action === 'select' ? { index, playing: false } :
+        const next = action === 'select' ? { index, playing: false } :
             playback(progress, action, journey.steps.length);
+        if (interactive) {
+            changeWorkspace(action, next, previous, origin);
+            return;
+        }
+        progress = next;
         renderPlayback();
         if (previous !== progress.index && !motion.matches && !panel.closest('[hidden]') && !document.hidden) {
             const y = node => node.offsetTop + node.offsetHeight / 2;
@@ -166,6 +194,19 @@ export function mountFlow(canvas) {
             });
             route.replaceChildren(...track.map(button => button.parentElement));
         }
+        const workspaceRoot = q('.workspace-interaction');
+        interactive = state.applicationType === 'saas' && next.id === 'workspace';
+        workspaceRoot.hidden = !interactive;
+        q('.flow-composition').toggleAttribute('data-workspace', interactive);
+        if (interactive) {
+            workspace ??= mountWorkspace(workspaceRoot, {
+                reduced: () => motion.matches,
+                canDrag: () => !progress.playing && progress.index === 0,
+                canLaunch: () => !progress.playing && (progress.index === 0 || progress.index === journey.steps.length - 1),
+                launch: origin => change('play', undefined, origin)
+            });
+            workspace.configure(next.steps, label, copy, progress.index, structure + locale + document.documentElement.dir);
+        }
         q('.flow-reference').hidden = !next.steps.some(step => step.illustrative);
         track.forEach((button, index) => {
             const step = next.steps[index];
@@ -183,7 +224,10 @@ export function mountFlow(canvas) {
     function hide() {
         if (!journey) return;
         if (progress.playing) change('pause');
-        else clearEffects();
+        else {
+            clearEffects();
+            if (interactive) workspace.sync(progress.index);
+        }
     }
 
     listen(scenarioInput, 'change', () => render(latestGraph, state, label, language, scenarioInput.value));
@@ -197,6 +241,9 @@ export function mountFlow(canvas) {
         if (flowStep !== undefined) change('select', Number(flowStep));
     });
     listen(document, 'visibilitychange', () => { if (document.hidden) hide(); });
-    listen(motion, 'change', () => animation?.cancel());
-    return { panel, render, hide, destroy() { hide(); observer.disconnect(); events.abort(); panel.remove(); } };
+    listen(motion, 'change', () => {
+        if (interactive) hide();
+        else animation?.cancel();
+    });
+    return { panel, render, hide, destroy() { hide(); workspace?.destroy(); observer.disconnect(); events.abort(); panel.remove(); } };
 }

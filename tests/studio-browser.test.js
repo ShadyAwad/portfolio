@@ -133,4 +133,27 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await check("q('#contact-composer').open && document.activeElement.name === 'subject'");
     await evaluate("click('[data-contact-close]')");
     await waitFor("!q('#contact-composer').open && document.activeElement === q('[data-contact-open]')");
+    await evaluate("template('saas');view(2);scenario('workspace')");
+    await check("!q('.workspace-interaction').hidden && q('[data-socket=access]').hidden");
+    await evaluate("click('.studio-settings [name=auth]');click('.studio-settings [name=tenancy]')");
+    await check("!q('[data-socket=access]').hidden && q('.flow-route ol').children.length === 7");
+    await evaluate("q('.workspace-field').scrollIntoView({block:'center',behavior:'instant'})");
+    const centers = await evaluate(`['.workspace-token','[data-socket=api] i'].map(selector => {
+        const rect = q(selector).getBoundingClientRect();
+        return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
+    })`);
+    await command('Input.dispatchMouseEvent', { type: 'mousePressed', button: 'left', clickCount: 1, ...centers[0] });
+    await command('Input.dispatchMouseEvent', { type: 'mouseMoved', button: 'left', buttons: 1, ...centers[1] });
+    await waitFor(`Math.abs(q('.workspace-token').getBoundingClientRect().x + 22 - ${centers[1].x}) < 2`);
+    await command('Input.dispatchMouseEvent', { type: 'mouseReleased', button: 'left', clickCount: 1, ...centers[1] });
+    await waitFor("q('[data-flow-step=\"1\"]').hasAttribute('aria-current')");
+    await evaluate("click('[data-playback=reset]')");
+    await evaluate("q('.flow-toolbar').scrollIntoView();q('.workspace-token').focus()");
+    await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, text: '\r' });
+    await command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
+    await waitFor("q('[data-playback=play]').getAttribute('aria-pressed') === 'true' && q('[data-flow-step=\"1\"]').hasAttribute('aria-current')");
+    await evaluate("click('[data-playback=play]');click('[data-playback=step]')");
+    await check("q('[data-flow-step=\"2\"]').hasAttribute('aria-current') && !q('.workspace-field').hasAttribute('data-travel')");
+    await evaluate("click('[data-playback=reset]');scenario('report')");
+    await check("q('.workspace-interaction').hidden && !q('.flow-load').hidden && q('[data-flow-step=\"0\"]').hasAttribute('aria-current')");
 });

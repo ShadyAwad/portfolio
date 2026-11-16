@@ -15,7 +15,7 @@ export const scenarios = {
             step('api', 'Read the workspace request and its available context.', 'اقرأ طلب مساحة العمل وسياقه المتاح.'),
             step('auth', 'Verify the session before reading private workspace data.', 'تحقّق من الجلسة قبل قراءة بيانات مساحة العمل الخاصة.', 'auth'),
             step('tenant', 'Resolve the tenant scope used to restrict the query.', 'حدّد نطاق المستأجر الذي يقيّد الاستعلام.', 'tenant'),
-            step('postgres', 'Read the dashboard rows with the request’s access constraints.', 'اقرأ صفوف لوحة التحكم ضمن قيود الوصول الخاصة بالطلب.'),
+            step('postgres', 'Read the rows needed to build the workspace dashboard.', 'اقرأ الصفوف اللازمة لبناء لوحة تحكم مساحة العمل.'),
             step('api', 'Prepare a response from the database results.', 'جهّز الاستجابة من نتائج قاعدة البيانات.'),
             browser('Update the dashboard with the returned workspace data.', 'حدّث لوحة التحكم ببيانات مساحة العمل المستلمة.')
         ] },
