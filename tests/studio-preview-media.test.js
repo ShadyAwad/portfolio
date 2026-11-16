@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { findModelAsset, modelAssets, viewerInteraction } from '../src/components/model-assets.js';
 import { createConfigurationStore } from '../src/studio/configuration.js';
 import { derivePreview } from '../src/studio/preview-model.js';
+import { priceProject } from '../src/studio/pricing.js';
 import { connectPersistence, readSavedConfiguration, STORAGE_KEY } from '../src/studio/persistence.js';
 
 test('every registry entry targets a self-contained local GLB with valid geometry', async () => {
@@ -74,4 +75,19 @@ test('viewer policy distinguishes static, manual, orbit, reduced-motion and hidd
     for (const hidden of [{ visible: false }, { documentHidden: true }, { ready: false }]) {
         assert.deepEqual(viewerInteraction('orbit', { ...viewing, ...hidden }), { controls: false, rotate: false });
     }
+});
+
+test('legacy drafts gain the drag default while saved orbit and paid features survive independently', () => {
+    const configuration = { pricingTier: 5, features: { ai: true }, applicationType: 'landing' };
+    function restore(interactiveMedia) {
+        const saved = JSON.stringify({ version: 1, configuration: { ...configuration, interactiveMedia } });
+        return readSavedConfiguration({ getItem: () => saved });
+    }
+    const legacy = restore();
+    const saved = restore({ enabled: true, asset: 'planet', mode: 'orbit' });
+    assert.deepEqual(legacy.interactiveMedia, { enabled: false, asset: 'planet', mode: 'drag' });
+    assert.deepEqual(saved.interactiveMedia, { enabled: true, asset: 'planet', mode: 'orbit' });
+    assert.deepEqual(priceProject(saved), priceProject(legacy));
+    assert.deepEqual(saved.usage, legacy.usage);
+    assert.deepEqual(saved.engineering, legacy.engineering);
 });

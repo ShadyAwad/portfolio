@@ -6,6 +6,7 @@ export const flowCopy = {
     workspaceLaunch: ['Launch workspace request','إرسال طلب مساحة العمل'],
     workspaceHint: ['Drag the request from Browser to API, or select Play.','اسحب الطلب من المتصفح إلى واجهة البرمجة، أو اختر تشغيل.'],
     workspaceReturn: ['Response path','مسار الاستجابة'],
+    workspaceReady: ['Workspace ready','مساحة العمل جاهزة'],
     workspaceTimeline: ['Request timeline','الخط الزمني للطلب'],
     checkoutHint: ['Drag the order request into the API, or select Play.','اسحب طلب الشراء إلى واجهة البرمجة، أو اختر تشغيل.'],
     checkoutLaunch: ['Launch checkout request','إرسال طلب الشراء'],

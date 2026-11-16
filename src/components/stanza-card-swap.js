@@ -378,7 +378,11 @@ export function mountStanzaCardSwap(root, copy, locale) {
     });
 
     const observer = new IntersectionObserver(([entry]) => {
-        inView = entry.isIntersecting;
+        inView = entry.isIntersecting && entry.intersectionRatio >= .25;
+        if (!inView) {
+            release(null, true);
+            finishSwap();
+        }
         schedule();
     }, { threshold: .25 });
     observer.observe(gallery);

@@ -60,7 +60,21 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
         window.mediaSlot = () => q('[data-preview-media]');
         window.model = () => mediaSlot().querySelector('model-viewer');
         window.showModel = () => q('.studio-media-stage').scrollIntoView({block:'center',behavior:'instant'});
+        window.ensureModelInView = () => {
+            const bounds = q('.studio-media-stage').getBoundingClientRect();
+            if (bounds.top < 0 || bounds.bottom > innerHeight) {
+                scrollBy({ top: bounds.top - (innerHeight - bounds.height) / 2, behavior: 'instant' });
+            }
+            return mediaSlot().dataset.viewer === 'ready' && model()?.modelIsVisible;
+        };
         window.modelRequests = () => performance.getEntriesByType('resource').filter(entry => entry.name.endsWith('/Planet.glb'));
+        window.viewerRequests = () => performance.getEntriesByType('resource').filter(entry => entry.name.includes('model-viewer.min.js'));
+        window.databaseDraws = 0;
+        const clear = CanvasRenderingContext2D.prototype.clearRect;
+        CanvasRenderingContext2D.prototype.clearRect = function (...args) {
+            if (this.canvas.id === 'visualizer-canvas') databaseDraws++;
+            return clear.apply(this, args);
+        };
     `;
     await command('Page.enable');
     await command('Page.bringToFront');
@@ -74,6 +88,8 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await waitFor("Boolean(q('.flow-toolbar'))");
 
     await check("q('[data-studio-host]').hidden && q('.studio-invite').hidden");
+    await evaluate("q('footer').scrollIntoView({block:'center',behavior:'instant'})");
+    await check("!q('#interstellar-asset-card, #ship-viewer, model-viewer') && modelRequests().length===0 && viewerRequests().length===0");
     await evaluate("click('.configurator-toggle');set('#tier', '2');set('#tier', '1')");
     await check("q('[data-studio-host]').hidden && q('.studio-invite').hidden");
     await evaluate("q('#tier').focus()");
@@ -146,6 +162,11 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await check("q('#contact-composer').open && document.activeElement.name === 'subject'");
     await evaluate("click('[data-contact-close]')");
     await waitFor("!q('#contact-composer').open && document.activeElement === q('[data-contact-open]')");
+    await evaluate("window.stanzaOrigin=q('.stanza-card[data-slot=\"0\"] [data-stanza-open]');stanzaOrigin.focus();stanzaOrigin.click()");
+    await check("q('#stanza-lightbox').open && q('#stanza-lightbox [data-stanza-close]')===document.activeElement");
+    await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
+    await command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
+    await waitFor("!q('#stanza-lightbox').open && document.activeElement===stanzaOrigin");
     await evaluate("template('saas');view(2);scenario('workspace')");
     await check("!q('.workspace-interaction').hidden && !q('[data-socket=access]')");
     await evaluate("click('.studio-settings [name=auth]');click('.studio-settings [name=tenancy]')");
@@ -218,6 +239,12 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await check("!q('.mock-trace').hasAttribute('data-trace-complete') && !q('[data-preview-trace]').hidden");
     await evaluate("openTrace();completeTrace();returnToPreview()");
     await check("q('.mock-trace-status').textContent.includes('workspace ready') && traceSaved===localStorage.getItem('awad-portfolio-studio') && tracePrice===q('#price-display').dataset.price && traceCommercial===q('.commercial-summary').textContent");
+    await evaluate("openTrace();completeTrace()");
+    await check("q('.workspace-outcome').textContent==='Workspace ready'");
+    await evaluate("click('[data-playback=reset]');click('[data-playback=play]');click('.configurator-toggle')");
+    await waitFor("q('[data-studio-host]').hidden && document.activeElement===q('.configurator-toggle')");
+    await check("q('[data-playback=play]').getAttribute('aria-pressed')==='false' && !q('.workspace-field').hasAttribute('data-travel')");
+    await evaluate("click('.configurator-toggle');returnToPreview()");
 
     await evaluate("template('ecommerce')");
     await check("q('[data-preview-action]').disabled && q('[data-preview-trace]').hidden");
@@ -259,6 +286,7 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await check("q('.studio-trace-bar button').textContent.includes('العودة') && q('.flow-panel').scrollWidth <= q('.flow-panel').clientWidth");
     await evaluate("completeTrace();returnToPreview()");
     await check("q('.mock-trace-status').textContent.includes('جاهزة') && q('.studio-preview-frame').scrollWidth <= q('.studio-preview-frame').clientWidth");
+    await check("document.documentElement.scrollWidth===document.documentElement.clientWidth");
 
     await evaluate("window.mediaPrice = q('#price-display').dataset.price");
     await check("!mediaSlot().hasAttribute('data-media-enabled') && !model() && modelRequests().length===0");
@@ -270,6 +298,16 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await evaluate("mediaEnabled()");
     await check("mediaSlot().inert && !model()");
 
+    await evaluate("q('#visualizer-canvas').scrollIntoView({block:'center',behavior:'instant'})");
+    await waitFor('databaseDraws>0');
+    await evaluate("window.previousDraws=databaseDraws;click('.search-key-btn')");
+    await waitFor('databaseDraws>previousDraws');
+    await waitFor("q('#terminal-logs').textContent.includes('KEY 15 FOUND') || databaseDraws >= previousDraws+3");
+    await new Promise(resolve => setTimeout(resolve, 200));
+    await evaluate('window.settledDatabaseDraws=databaseDraws');
+    await new Promise(resolve => setTimeout(resolve, 150));
+    await check('settledDatabaseDraws===databaseDraws');
+
     if (process.env.STUDIO_TEST_WEBGL) {
         await command('Network.setBlockedURLs', { urls: [] });
         await command('Emulation.setDeviceMetricsOverride', { width: 1360, height: 900, deviceScaleFactor: 1, mobile: false });
@@ -280,6 +318,7 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
         await waitFor("Boolean(q('.flow-toolbar'))");
         await evaluate("click('.configurator-toggle');click('#configurator-studio > summary');click('#lang-toggle')");
         await waitFor("document.documentElement.dir==='ltr'");
+        await check("!q('.studio-settings [name=enabled]').checked && q('.studio-settings [name=mode]').value==='drag'");
         await evaluate("mediaEnabled()");
         for (const [templateName, viewport, title] of [
             ['landing', 'desktop', 'Explore the launch visual'], ['ecommerce', 'tablet', '3D product showcase'],
@@ -287,8 +326,7 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
         ]) {
             await evaluate(`template('${templateName}');click('[data-preview-viewport=${viewport}]')`);
             await waitFor("mediaSlot().getBoundingClientRect().height > 120");
-            await evaluate("showModel()");
-            await waitFor("mediaSlot().dataset.viewer==='ready' && model()?.modelIsVisible", 300).catch(async error => {
+            await waitFor("ensureModelInView()", 300).catch(async error => {
                 const stage = await evaluate("({state: mediaSlot().dataset.viewer, bounds: q('.studio-media-stage').getBoundingClientRect().toJSON(), hidden: document.hidden})");
                 throw new Error(`The ${templateName} viewer did not appear: ${JSON.stringify(stage)}`, { cause: error });
             });
@@ -312,8 +350,28 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
         await waitFor("!model()?.hasAttribute('auto-rotate') && q('.studio-media-status').textContent.includes('reduced motion')");
         await evaluate("view(2)");
         await waitFor("!model()");
-        await evaluate("view(0);showModel()");
-        await waitFor("model()?.loaded");
+        await check("!mediaInstance.isConnected && !mediaInstance.hasAttribute('auto-rotate')");
+        await evaluate("view(0)");
+        await waitFor("ensureModelInView()");
+        await evaluate("set('.studio-settings [name=mode]','drag','change')");
+        await command('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
+        await command('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
+        await evaluate("mediaEnabled();mediaEnabled()");
+        await evaluate("showModel()");
+        await waitFor("ensureModelInView() && model().cameraControls && !model().inert");
+        await new Promise(resolve => setTimeout(resolve, 180));
+        const { x, y, theta } = await evaluate(`(() => {
+            const rect = model().getBoundingClientRect();
+            return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2, theta: model().getCameraOrbit().theta };
+        })()`);
+        await check(`document.elementFromPoint(${x}, ${y})===model()`);
+        await command('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
+        for (let i = 1; i <= 5; i++) {
+            await command('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: x + i * 10, y }] });
+            await new Promise(resolve => setTimeout(resolve, 20));
+        }
+        await command('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+        await waitFor(`Math.abs(model().getCameraOrbit().theta-(${theta})) > .035`);
         await evaluate("mediaEnabled()");
         await check("!model() && !mediaInstance.isConnected && mediaSlot().inert && modelRequests().length===1");
     }

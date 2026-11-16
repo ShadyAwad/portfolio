@@ -215,3 +215,11 @@ The asset registry currently contains `public/assets/Planet.glb`, a 1,634,372-by
 Studio and the standalone card share the pinned Model Viewer loader and lifecycle. The CDN script and local GLB load only when a viewer comes into view. The viewer disconnects when it leaves the viewport, the preview is hidden, the tab is hidden, or the template changes. Model Viewer unregisters the scene and can reuse the cached GLB when a viewer returns. Reduced motion suppresses auto orbit while retaining explicit camera input. The standalone wrapper also exposes Model Viewer's AR affordance on supported devices.
 
 Additional assets belong in the registry with a verified local GLB path, translated name, category, and camera defaults. Review framing and asset weight at all preview widths. Add an appropriate fallback visual for the new asset type.
+
+### M6 — Motion consolidation
+
+The standalone card and its AR launch were retired. Studio remains the entry point for the shared Model Viewer, local asset registry, and static fallback. The viewer replaces the unused pan marker so a swipe can start at the center of the model. New configurations default to Drag to rotate with 3D disabled. Version 1 drafts retain valid saved preferences, and preview media settings stay separate from the quote.
+
+Trace entry and return focus the destination control before scrolling it into the nearest visible position. The source and destination share an accent and use brief local feedback. The request routes, timing, and controls remain in the existing playback controller. Hidden views release the 3D element and finish pending graph or gallery transitions.
+
+The architecture view coalesces same-task settings updates before redrawing. The request scene measures its geometry before resizing its canvases and avoids hidden measurements. The database visualizer draws once when it comes into view or changes size, then runs only for a search or compaction. The starfield reads its visual dimensions on resize. The cursor trail clears when input moves into a Studio, Stanza, or contact interaction.

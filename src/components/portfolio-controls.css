@@ -61,7 +61,7 @@ html[dir="rtl"] .profile {
     border-radius: 11px;
     transform: scale(var(--dock-scale, 1));
     transform-origin: center bottom;
-    transition: transform 180ms cubic-bezier(.22, 1.25, .42, 1), color 160ms, border-color 160ms;
+    transition: transform 160ms cubic-bezier(.2, .75, .25, 1), color 160ms, border-color 160ms;
 }
 .dock-icon svg, .configurator-icon svg, .configurator-toggle svg {
     inline-size: 21px;

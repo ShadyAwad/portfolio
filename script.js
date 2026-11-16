@@ -6,7 +6,6 @@ import { bindArchitectureInputs, unbindArchitectureInputs } from './src/studio/a
 import { mountStanzaCardSwap } from './src/components/stanza-card-swap.js';
 import { localizePortfolioControls, offerDesignStudio } from './src/components/portfolio-controls.js';
 import { localizeArchitecturePlanner } from './src/components/architecture-planner.js';
-import { mountPlanetViewer } from './src/components/planet-viewer.js';
 
 // Global Parallax Starfield State
 const bgCanvas = document.getElementById('starfield');
@@ -18,7 +17,6 @@ let starfieldFrame = 0;
 const starfieldMotion = matchMedia('(prefers-reduced-motion: reduce)');
 let mouseX = window.innerWidth / 2;
 let mouseY = window.innerHeight / 2;
-const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // Dynamic L10n & Theme States
 const i18nElements = document.querySelectorAll('[data-i18n]');
@@ -61,7 +59,6 @@ let querySearching = false;
 let tracePathNodes = [];
 let activeSearchIndex = 0;
 let progressDelta = 0;
-let tracerPulse = 0;
 let targetQueryKey = null;
 
 // Memory Compaction States
@@ -93,16 +90,21 @@ window.addEventListener('touchmove', (e) => {
     }
 }, { passive: true });
 
+let starfieldWidth = 0;
+let starfieldHeight = 0;
+
 function resizeStarfield() {
     if (!bgCanvas || !bgCtx) return;
     const dpr = Math.max(1, window.devicePixelRatio || 1);
-    const width = Math.floor(window.innerWidth * dpr);
-    const height = Math.floor(window.innerHeight * dpr);
-    if (bgCanvas.width === width && bgCanvas.height === height && bgCanvas.style.width === `${window.innerWidth}px`) return;
+    starfieldWidth = window.innerWidth;
+    starfieldHeight = window.innerHeight;
+    const width = Math.floor(starfieldWidth * dpr);
+    const height = Math.floor(starfieldHeight * dpr);
+    if (bgCanvas.width === width && bgCanvas.height === height && bgCanvas.style.width === `${starfieldWidth}px`) return;
     bgCanvas.width = width;
     bgCanvas.height = height;
-    bgCanvas.style.width = `${window.innerWidth}px`;
-    bgCanvas.style.height = `${window.innerHeight}px`;
+    bgCanvas.style.width = `${starfieldWidth}px`;
+    bgCanvas.style.height = `${starfieldHeight}px`;
     bgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
     if (starfieldMotion.matches) drawStarfield();
 }
@@ -127,8 +129,8 @@ function drawStarfield(currentTime = performance.now()) {
     const driftCoef = starfieldMotion.matches ? 0 : 0.85;
     const scrollStep = driftCoef * delta;
     
-    const displayWidth = bgCanvas.clientWidth;
-    const displayHeight = bgCanvas.clientHeight;
+    const displayWidth = starfieldWidth;
+    const displayHeight = starfieldHeight;
     
     bgCtx.clearRect(0, 0, displayWidth, displayHeight);
     const cx = displayWidth / 2;
@@ -140,16 +142,16 @@ function drawStarfield(currentTime = performance.now()) {
     starfieldArray.forEach(star => {
         star.z -= scrollStep;
         if (star.z <= 2) {
-            star.z = window.innerWidth;
-            star.x = Math.random() * window.innerWidth * 2 - window.innerWidth;
-            star.y = Math.random() * window.innerHeight * 2 - window.innerHeight;
+            star.z = displayWidth;
+            star.x = Math.random() * displayWidth * 2 - displayWidth;
+            star.y = Math.random() * displayHeight * 2 - displayHeight;
         }
 
-        const projectScale = Math.max(0.001, window.innerWidth / star.z);
-        const px = (star.x - scaleX * (1 + star.z / window.innerWidth * 0.25)) * projectScale + cx;
-        const py = (star.y - scaleY * (1 + star.z / window.innerWidth * 0.25)) * projectScale + cy;
+        const projectScale = Math.max(0.001, displayWidth / star.z);
+        const px = (star.x - scaleX * (1 + star.z / displayWidth * 0.25)) * projectScale + cx;
+        const py = (star.y - scaleY * (1 + star.z / displayWidth * 0.25)) * projectScale + cy;
 
-        const opacity = Math.max(0.1, Math.min(0.9, 1 - star.z / window.innerWidth));
+        const opacity = Math.max(0.1, Math.min(0.9, 1 - star.z / displayWidth));
         // Draw starry points
         bgCtx.fillStyle = `rgba(180, 215, 255, ${opacity})`;
         bgCtx.beginPath();
@@ -388,28 +390,33 @@ function renderPricing(state) {
     injectEstimatorLogs(tier, hasAIAddon);
 
     priceTween?.kill();
-    if (window.gsap) {
+    priceDisplay.dataset.price = targetPrice;
+    if (window.gsap && !starfieldMotion.matches && oldPrice !== targetPrice) {
         priceTween = gsap.to({ val: oldPrice }, {
             val: targetPrice,
             duration: 0.16, // Ultra fast ticks
             ease: 'none',
             onUpdate() {
                  const currentTickVal = Math.round(this.targets()[0].val);
-                 priceDisplay.innerText = formatUSD(currentTickVal);
+                 const price = formatUSD(currentTickVal);
+                 if (priceDisplay.textContent !== price) priceDisplay.textContent = price;
             },
             onComplete() {
-                 priceDisplay.dataset.price = targetPrice;
-                 priceDisplay.innerText = formatUSD(targetPrice);
+                 priceDisplay.textContent = formatUSD(targetPrice);
             }
         });
     } else {
-        priceDisplay.innerText = formatUSD(targetPrice);
-        priceDisplay.dataset.price = targetPrice;
+        priceDisplay.textContent = formatUSD(targetPrice);
     }
 }
 
 const pricingEvents = new AbortController();
 const pricingOptions = { signal: pricingEvents.signal };
+starfieldMotion.addEventListener('change', () => {
+    if (!starfieldMotion.matches || !priceDisplay?.dataset.price) return;
+    priceTween?.kill();
+    priceDisplay.textContent = formatUSD(Number(priceDisplay.dataset.price));
+}, pricingOptions);
 
 baselineLinks.forEach(link => {
     link.addEventListener('click', event => {
@@ -452,6 +459,7 @@ if (import.meta.hot) {
 // 4. SYSTEMS TOPOLOGY SVG INTERACTIVE FLOW ENGINE
 // ==========================================================================
 function triggerSvgTracerPulse(startSelector, endSelector) {
+    if (starfieldMotion.matches) return;
     const startNode = document.querySelector(startSelector);
     const endNode = document.querySelector(endSelector);
     if (!startNode || !endNode || !pulsingTracer || !svgElement) return;
@@ -685,7 +693,6 @@ function drawSchemaNode(node, highlight) {
 
 function drawTreeSimulation() {
     visCtx.clearRect(0, 0, visWidth, visHeight);
-    tracerPulse += 0.1;
 
     // Connect node lines
     visCtx.lineWidth = 1;
@@ -729,7 +736,7 @@ function drawTreeSimulation() {
 
     // Tracer simulation ticks pulse
     if (querySearching && tracePathNodes.length > 0) {
-        progressDelta += prefersReducedMotion ? 1 : 0.05;
+        progressDelta += starfieldMotion.matches ? 1 : 0.05;
         if (progressDelta >= 1) {
             progressDelta = 0;
             activeSearchIndex++;
@@ -825,8 +832,8 @@ function drawHeapGrid() {
         const deltaY = targetYCoord - b.y;
 
         if (Math.abs(deltaX) > 0.1 || Math.abs(deltaY) > 0.1) {
-            b.x += deltaX * (prefersReducedMotion ? 1 : 0.14); // Acceleration slide factors
-            b.y += deltaY * (prefersReducedMotion ? 1 : 0.14);
+            b.x += deltaX * (starfieldMotion.matches ? 1 : 0.14);
+            b.y += deltaY * (starfieldMotion.matches ? 1 : 0.14);
             defragmentationComplete = false;
         } else {
             b.x = targetXCoord;
@@ -890,11 +897,14 @@ function systemVisualizerTickLoop() {
     if (!visualizerInView || document.hidden || !visCtx) return;
     if (visualizerLoopMode === "tree") drawTreeSimulation();
     else drawHeapGrid();
-    if (!prefersReducedMotion || querySearching || garbageCollecting) scheduleVisualizer();
+    if (querySearching || garbageCollecting) scheduleVisualizer();
 }
 
 function observeVisualizer() {
     if (!visCanvas) return;
+    const events = new AbortController();
+    const size = new ResizeObserver(resizeVisCanvas);
+    size.observe(visCanvas.parentElement);
     const observer = new IntersectionObserver(([entry]) => {
         visualizerInView = entry.isIntersecting;
         if (visualizerInView) scheduleVisualizer();
@@ -909,7 +919,14 @@ function observeVisualizer() {
             cancelAnimationFrame(visualizerFrame);
             visualizerFrame = 0;
         } else scheduleVisualizer();
-    });
+    }, { signal: events.signal });
+    return () => {
+        events.abort();
+        size.disconnect();
+        observer.disconnect();
+        cancelAnimationFrame(visualizerFrame);
+        visualizerFrame = 0;
+    };
 }
 
 // Setup canvas metrics click listeners triggers
@@ -958,11 +975,11 @@ projectSelectors.forEach(selector => {
             if (pane.id === `pane-${targetProj}`) {
                 pane.classList.add('active');
 
-                if (window.gsap) {
+                if (window.gsap && !starfieldMotion.matches) {
                     gsap.fromTo(
                         pane,
                         { opacity: 0, y: 15 },
-                        { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }
+                        { opacity: 1, y: 0, duration: 0.24, ease: "power2.out", clearProps: 'transform,opacity', overwrite: true }
                     );
                 }
             } else {
@@ -991,12 +1008,6 @@ if (exploreTrigger) {
 // ==========================================================================
 // 7. HARMONIOUS FRAME SYSTEM INITIALIZER
 // ==========================================================================
-const systemResizeObserver = new ResizeObserver(() => {
-    resizeStarfield();
-    resizeVisCanvas();
-});
-systemResizeObserver.observe(document.body);
-
 function initializeCoreArchitecture() {
     renderPricing(configuration.getState());
 
@@ -1004,28 +1015,30 @@ function initializeCoreArchitecture() {
     initStarfield();
     resizeStarfield();
     syncStarfieldMotion();
+    window.addEventListener('resize', resizeStarfield, { passive: true });
     document.addEventListener('visibilitychange', syncStarfieldMotion);
     starfieldMotion.addEventListener('change', syncStarfieldMotion);
-    const stopViewer = mountPlanetViewer(document.getElementById('interstellar-asset-card'));
     if (import.meta.hot) import.meta.hot.dispose(() => {
-        stopViewer();
         cancelAnimationFrame(starfieldFrame);
+        window.removeEventListener('resize', resizeStarfield);
         document.removeEventListener('visibilitychange', syncStarfieldMotion);
         starfieldMotion.removeEventListener('change', syncStarfieldMotion);
     });
 
     // 🚀 ADDED: KICKSTART CELESTIAL PATH-SCROLL TRAILER
-    initConstellationScrollPathing();
+    const stopTrail = initConstellationScrollPathing();
+    if (import.meta.hot) import.meta.hot.dispose(() => stopTrail?.());
 
     // Spawn schematic JVM traversal states
     initMemoryGrid();
     resizeVisCanvas();
-    observeVisualizer();
+    const stopVisualizer = observeVisualizer();
+    if (import.meta.hot) import.meta.hot.dispose(() => stopVisualizer?.());
 
     // Initial load translations, lang mappings and themes settings
     startL10nTheme();
 
-    if (window.gsap && !prefersReducedMotion) {
+    if (window.gsap && !starfieldMotion.matches) {
         // Start the shared top row together and restore the stylesheet after the entrance.
         gsap.fromTo('.bento-item', { y: 30, opacity: 0 }, {
             duration: 0.6,
@@ -1058,15 +1071,10 @@ function initConstellationScrollPathing() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // 3. Gracefully step out if the client OS layer enforces accessibility limits
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        canvas.style.display = 'none';
-        return;
-    }
-    
+    const events = new AbortController();
     // 4. Setup a FIFO history collection array to track prior coordinate positions
     const pathHistoryPoints = [];
-    const TRAIL_LENGTH_LIMIT = 24;
+    const TRAIL_LENGTH_LIMIT = 16;
     let trailFrame = 0;
     let lastMove = -Infinity;
     let nextPoint;
@@ -1080,7 +1088,7 @@ function initConstellationScrollPathing() {
     }
     
     resizeTrailCanvas();
-    window.addEventListener('resize', resizeTrailCanvas, { passive: true });
+    window.addEventListener('resize', resizeTrailCanvas, { passive: true, signal: events.signal });
 
     // 6. High frequency animation frame sequencing tick engine
     function renderTrailFrameSequence(now) {
@@ -1107,7 +1115,7 @@ function initConstellationScrollPathing() {
         // 10. Only compute interpolation physics if we have valid movement tracking chains
         if (activePointsCount > 1) {
             // 11. Activate premium visual blur drop-shadows matching your brand accents
-            ctx.shadowBlur = 12;
+            ctx.shadowBlur = 7;
             ctx.shadowColor = '#4863fb'; // Magenta vector glow trail
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
@@ -1127,7 +1135,7 @@ function initConstellationScrollPathing() {
                 const g = Math.round(72 + (130 - 72) * lifetimeRatio);
                 const b = Math.round(196 + (246 - 196) * lifetimeRatio);
 
-                ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${0.75 * lifetimeRatio})`;
+                ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${0.56 * lifetimeRatio})`;
 
                 // 15. Apply native hardware quadratic curves through coordinate intersections
                 ctx.beginPath();
@@ -1157,17 +1165,28 @@ function initConstellationScrollPathing() {
         appendLog(`ORBITAL MONITOR: Kinetic ribbon trail engine successfully bound to active rendering canvas viewport.`, "system-line");
     }
 
-    window.addEventListener('pointermove', event => {
-        nextPoint = { x: event.clientX, y: event.clientY };
-        lastMove = performance.now();
-        if (!trailFrame) trailFrame = requestAnimationFrame(renderTrailFrameSequence);
-    }, { passive: true });
-    document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) return;
+    function resetTrail() {
+        if (!trailFrame && !nextPoint && pathHistoryPoints.length === 0) return;
         cancelAnimationFrame(trailFrame);
         trailFrame = 0;
         nextPoint = undefined;
         pathHistoryPoints.length = 0;
         ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-    });
+    }
+
+    window.addEventListener('pointermove', event => {
+        if (event.pointerType !== 'mouse' || starfieldMotion.matches || document.hidden ||
+            event.target.closest?.('.design-studio, .stanza-showcase, .contact-composer, #contact-dock')) {
+            resetTrail();
+            return;
+        }
+        nextPoint = { x: event.clientX, y: event.clientY };
+        lastMove = performance.now();
+        if (!trailFrame) trailFrame = requestAnimationFrame(renderTrailFrameSequence);
+    }, { passive: true, signal: events.signal });
+    starfieldMotion.addEventListener('change', resetTrail, { signal: events.signal });
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) resetTrail();
+    }, { signal: events.signal });
+    return () => { resetTrail(); events.abort(); };
 }

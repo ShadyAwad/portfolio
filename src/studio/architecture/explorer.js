@@ -76,6 +76,7 @@ export function mountArchitectureExplorer(canvas, preview, store) {
     let activeLayout;
     let activeTrace;
     let traceOrigin;
+    let pendingGraphRender = false;
 
     const label = key => (flowCopy[key] ?? architectureCopy[key] ?? capacityCopy[key] ?? translations[key])?.[locale === 'ar' ? 1 : 0] ?? key;
     const metricLabel = key => label(key === 'audit' ? 'auditStorage' : key);
@@ -115,6 +116,17 @@ export function mountArchitectureExplorer(canvas, preview, store) {
         const bottom = Math.max(activeLayout.height,
             ...[...nodeMap.values()].filter(record => record.timer).map(record => record.bottom + 14));
         diagram.setAttribute('viewBox', `0 0 ${activeLayout.width} ${bottom}`);
+    }
+
+    function finishRetirements() {
+        for (const records of [nodeMap, edgeMap]) {
+            for (const [id, record] of records) {
+                if (!record.timer) continue;
+                clearTimeout(record.timer);
+                record.element.remove();
+                records.delete(id);
+            }
+        }
     }
 
     function createNode(id, width, height) {
@@ -278,6 +290,7 @@ export function mountArchitectureExplorer(canvas, preview, store) {
 
     function switchView(next, scenario) {
         if (view === next) return;
+        if (view === 'architecture') finishRetirements();
         if (view === 'flow') {
             flow.hide();
             flow.detach();
@@ -323,11 +336,15 @@ export function mountArchitectureExplorer(canvas, preview, store) {
     listen(traceReturn, 'click', () => {
         const origin = traceOrigin;
         switchView('preview');
-        (origin?.isConnected && !origin.disabled ? origin : previewButton).focus();
+        const target = origin?.isConnected && !origin.disabled ? origin : previewButton;
+        target.focus({ preventScroll: true });
+        target.scrollIntoView({ block: 'nearest', behavior: 'instant' });
     });
     listen(canvas.closest('[data-studio-host]'), 'studio-visibility', () => {
-        if (canvas.closest('[data-studio-host][hidden]')) flow.hide();
-        else render();
+        if (canvas.closest('[data-studio-host][hidden]')) {
+            flow.hide();
+            finishRetirements();
+        } else render();
     });
     listen(architectureButton, 'click', () => switchView('architecture'));
     listen(flowButton, 'click', () => switchView('flow'));
@@ -357,9 +374,18 @@ export function mountArchitectureExplorer(canvas, preview, store) {
 
     const unsubscribe = store.subscribe((next, previous) => {
         const changed = (group, keys = Object.keys(next[group])) => keys.some(key => next[group][key] !== previous[group][key]);
-        if (view !== 'preview' && (next.applicationType !== previous.applicationType ||
+        if (view === 'preview' || !(next.applicationType !== previous.applicationType ||
             changed('previewFeatures') || changed('engineering') || changed('usage') || changed('capacity') ||
-            changed('features', ['ai']))) render();
+            changed('features', ['ai']))) return;
+        if (view === 'flow') {
+            render();
+        } else if (!pendingGraphRender && !canvas.closest('[data-studio-host][hidden]')) {
+            pendingGraphRender = true;
+            queueMicrotask(() => {
+                pendingGraphRender = false;
+                if (!events.signal.aborted && view === 'architecture') render();
+            });
+        }
     });
     const observer = new MutationObserver(() => render());
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
@@ -368,7 +394,7 @@ export function mountArchitectureExplorer(canvas, preview, store) {
         unsubscribe();
         observer.disconnect();
         events.abort();
-        for (const record of [...nodeMap.values(), ...edgeMap.values()]) clearTimeout(record.timer);
+        finishRetirements();
         flow.destroy();
         switcher.remove();
         explorer.remove();

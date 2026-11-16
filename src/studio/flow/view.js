@@ -275,7 +275,10 @@ export function mountFlow(canvas) {
             change('reset');
         },
         detach() { outcomeListener = undefined; },
-        focus() { scenarioInput.focus(); },
+        focus() {
+            scenarioInput.focus({ preventScroll: true });
+            scenarioInput.scrollIntoView({ block: 'nearest', behavior: 'instant' });
+        },
         destroy() {
             outcomeListener = undefined;
             hide();

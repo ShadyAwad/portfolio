@@ -97,15 +97,10 @@ export function mountWorkspace(root, { reduced, canDrag, canLaunch, launch }) {
     }
 
     function measure() {
+        if (root.closest('[hidden]')) return;
         const width = field.clientWidth;
         const height = field.clientHeight;
         if (!width || !height || !steps.length) return;
-        const scale = Math.min(devicePixelRatio || 1, 2);
-        for (const context of [ctx, glow]) {
-            context.canvas.width = Math.round(width * scale);
-            context.canvas.height = Math.round(height * scale);
-            context.setTransform(scale, 0, 0, scale, 0, 0);
-        }
         const points = steps.map(step => {
             const node = nodes.get(socketFor(step));
             return { x: node.offsetLeft, y: node.offsetTop };
@@ -113,13 +108,22 @@ export function mountWorkspace(root, { reduced, canDrag, canLaunch, launch }) {
         const style = getComputedStyle(field);
         const colors = Object.fromEntries(['track', 'returning', 'cyan', 'mint', 'branch']
             .map(key => [key, style.getPropertyValue('--ws-' + key).trim()]));
+        const rtl = field.matches(':dir(rtl)');
         const tracks = layout.links.map((link, i) => {
             const from = points[link.from];
             if (!from || distance(from, points[i]) < 1) return link;
             const bend = link.channel === 'response' ? (width <= 470 ? -53 : -85)
                 : link.channel === 'background' ? 30 : (i === 2 ? -29 : -36);
-            return { ...link, path: channel(from, points[i], field.matches(':dir(rtl)') ? -bend : bend) };
+            return { ...link, path: channel(from, points[i], rtl ? -bend : bend) };
         });
+        const scale = Math.min(devicePixelRatio || 1, 2);
+        for (const context of [ctx, glow]) {
+            const pixelWidth = Math.round(width * scale);
+            const pixelHeight = Math.round(height * scale);
+            if (context.canvas.width !== pixelWidth) context.canvas.width = pixelWidth;
+            if (context.canvas.height !== pixelHeight) context.canvas.height = pixelHeight;
+            context.setTransform(scale, 0, 0, scale, 0, 0);
+        }
         geometry = { width, height, points, tracks, colors };
         if (!gesture && !field.hasAttribute('data-travel')) place(landed);
         paintRoute();

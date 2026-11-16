@@ -52,7 +52,7 @@
     --progress-bar-height: 0;
 }
 .studio-media[data-viewer="ready"] model-viewer { visibility: visible; }
-.studio-media-stage model-viewer[camera-controls] { cursor: grab; }
+.studio-media-stage model-viewer[camera-controls] { cursor: grab; touch-action: pan-y; }
 .studio-media-stage model-viewer[camera-controls]:active { cursor: grabbing; }
 .studio-media-stage model-viewer:focus-within { outline: 2px solid var(--mock-accent); outline-offset: -3px; }
 .studio-media-poster { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }

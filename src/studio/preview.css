@@ -231,9 +231,14 @@
 .mock-trace-link:hover { text-decoration: underline; }
 .mock-trace-status { margin-block-start: .35rem; color: var(--mock-muted); font-size: .78rem; }
 .mock-trace-status:empty { margin: 0; }
+.mock-trace[data-trace-ready] .mock-trace-status {
+    padding-inline-start: .6rem;
+    border-inline-start: 2px solid var(--mock-accent);
+}
+.mock-trace [data-preview-action] { scroll-margin-block: 4.5rem 1.25rem; }
 .mock-trace[data-trace-complete] .mock-trace-status { color: var(--mock-ink); font-weight: 650; }
 @media (prefers-reduced-motion: no-preference) {
-    .mock-trace[data-trace-ready] .mock-action { animation: studio-trace-origin .42s ease-out; }
+    .mock-trace[data-trace-ready] .mock-action { animation: studio-trace-origin 240ms ease-out; }
     @keyframes studio-trace-origin {
         from { box-shadow: 0 0 0 3px var(--mock-tint); }
         to { box-shadow: 0 0 0 0 transparent; }
@@ -530,7 +535,7 @@
 .studio-settings button[hidden] { display: none; }
 .studio-return-link { display: inline-flex; align-items: center; min-block-size: 36px; color: var(--accent); font-size: .85rem; }
 .studio-template > div, .architecture-explorer:not([hidden]) { animation: studio-view-entry 170ms ease-out both; }
-@keyframes studio-view-entry { from { opacity: .55; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes studio-view-entry { from { opacity: .78; } }
 @media (prefers-reduced-motion: reduce) {
     .studio-template > div, .architecture-explorer:not([hidden]) { animation: none; }
 }

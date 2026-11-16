@@ -1,4 +1,4 @@
-import { modelAssets, viewerInteraction } from './model-assets.js';
+import { viewerInteraction } from './model-assets.js';
 
 const viewerUrl = 'https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js';
 let runtime;
@@ -26,8 +26,7 @@ function loadViewerRuntime() {
     return runtime;
 }
 
-// The same runtime and lifecycle serve the standalone card and the miniature site.
-export function mountModelViewer(target, { asset, mode, description, standalone = false, onStatus = () => {} }) {
+export function mountModelViewer(target, { asset, mode, description, onStatus }) {
     const events = new AbortController();
     const motion = matchMedia('(prefers-reduced-motion: reduce)');
     let viewer, viewerEvents, visible = false, pending = false, status = 'idle';
@@ -80,21 +79,19 @@ export function mountModelViewer(target, { asset, mode, description, standalone 
             const Viewer = customElements.get('model-viewer');
             viewer = new Viewer();
             viewerEvents = new AbortController();
-            if (standalone) {
-                viewer.id = 'ship-viewer';
-                viewer.setAttribute('ar', '');
-            }
             for (const [name, value] of Object.entries(asset.defaults)) viewer.setAttribute(name, value);
-            if (standalone) viewer.setAttribute('rotation-per-second', '15deg');
             viewer.setAttribute('alt', description);
             viewer.setAttribute('touch-action', 'pan-y');
             viewer.setAttribute('interaction-prompt', 'none');
-            if (!standalone) {
-                viewer.setAttribute('auto-rotate-delay', '650');
-                viewer.setAttribute('disable-zoom', '');
-                viewer.setAttribute('disable-pan', '');
-                viewer.setAttribute('disable-tap', '');
-            }
+            viewer.setAttribute('auto-rotate-delay', '650');
+            viewer.setAttribute('disable-zoom', '');
+            viewer.setAttribute('disable-pan', '');
+            viewer.setAttribute('disable-tap', '');
+            // The default pan marker can still intercept a gesture at the center of the model.
+            const panTarget = document.createElement('span');
+            panTarget.slot = 'pan-target';
+            panTarget.hidden = true;
+            viewer.append(panTarget);
             viewer.addEventListener('load', () => setStatus('ready'), { signal: viewerEvents.signal });
             viewer.addEventListener('error', unavailable, { signal: viewerEvents.signal });
             viewer.inert = true;
@@ -123,12 +120,4 @@ export function mountModelViewer(target, { asset, mode, description, standalone 
             releaseViewer();
         }
     };
-}
-
-export function mountPlanetViewer(card) {
-    const controller = mountModelViewer(card.querySelector('.canvas-wrapper'), {
-        asset: modelAssets.planet, mode: 'orbit', description: '3D planet', standalone: true,
-        onStatus: status => { card.dataset.viewer = status; }
-    });
-    return controller.destroy;
 }

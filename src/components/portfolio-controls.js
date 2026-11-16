@@ -14,19 +14,16 @@ let pointerX = 0;
 function resetDock() {
     cancelAnimationFrame(frame);
     frame = 0;
+    centers = [];
     links.forEach(link => link.style.removeProperty('--dock-scale'));
 }
 
-dock.addEventListener('pointerenter', event => {
+dock.addEventListener('pointermove', event => {
     if (event.pointerType !== 'mouse' || !pointerEffects.matches) return;
-    centers = links.map(link => {
+    if (!centers.length) centers = links.map(link => {
         const bounds = link.getBoundingClientRect();
         return bounds.left + bounds.width / 2;
     });
-}, { signal: events.signal });
-
-dock.addEventListener('pointermove', event => {
-    if (event.pointerType !== 'mouse' || !pointerEffects.matches || !centers.length) return;
     pointerX = event.clientX;
     if (frame) return;
     frame = requestAnimationFrame(() => {
@@ -39,6 +36,11 @@ dock.addEventListener('pointermove', event => {
 }, { signal: events.signal });
 
 dock.addEventListener('pointerleave', resetDock, { signal: events.signal });
+dock.addEventListener('pointercancel', resetDock, { signal: events.signal });
+dock.querySelector('[data-contact-open]').addEventListener('click', resetDock, { signal: events.signal });
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) resetDock();
+}, { signal: events.signal });
 pointerEffects.addEventListener('change', resetDock, { signal: events.signal });
 
 const toggle = document.querySelector('.configurator-toggle');
@@ -68,6 +70,7 @@ export function offerDesignStudio(event) {
 function syncStudio() {
     const hidden = panel.inert || !studio.open;
     if (studioHost.hidden !== hidden) {
+        if (hidden && !panel.inert && studioHost.contains(document.activeElement)) summary.focus({ preventScroll: true });
         studioHost.hidden = hidden;
         studioHost.dispatchEvent(new Event('studio-visibility'));
     }
@@ -91,6 +94,7 @@ invite.querySelector('[data-studio-invite-open]').addEventListener('click', () =
 
 toggle.addEventListener('click', () => {
     const expanded = toggle.getAttribute('aria-expanded') === 'false';
+    if (!expanded && panel.contains(document.activeElement)) toggle.focus({ preventScroll: true });
     toggle.setAttribute('aria-expanded', String(expanded));
     panel.inert = !expanded;
     openLabel.hidden = expanded;

@@ -101,10 +101,6 @@ export const lang = {
         ]
     },
     explore: "Explore Project Repository →",
-    interstellar: "Interactive 3D Web Asset",
-    shipDesc: "This interactive asset was modeled and textured in Blender, exported as a compressed glTF/GLB file, and integrated into the page using a responsive web component. It reflects my interest in combining performance-conscious frontend development with polished visual presentation.",
-    shipHint: "Interact with the 3D asset using swipe, drag, or pinch gestures.",
-    shipUnavailable: "The interactive 3D viewer is unavailable. A static planet illustration is shown.",
     about: "About",
     projects: "Projects",
     contact: "Contact",
