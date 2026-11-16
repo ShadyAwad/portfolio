@@ -224,7 +224,7 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
         window.tracePrice = q('#price-display').dataset.price;
         window.traceCommercial = q('.commercial-summary').textContent;
         traceAction();`);
-    await check("q('.flow-panel').hidden && !q('[data-preview-trace]').hidden && !q('.mock-trace').hasAttribute('data-trace-complete')");
+    await check("q('.flow-panel').hidden && !q('[data-preview-trace]').hidden && q('.mock-trace').hasAttribute('data-trace-complete') && q('.workspace-preview-motion').getAnimations({subtree:true}).length===0");
     await evaluate("q('[data-preview-trace]').focus()");
     await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, text: '\r' });
     await command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
@@ -245,6 +245,20 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await waitFor("q('[data-studio-host]').hidden && document.activeElement===q('.configurator-toggle')");
     await check("q('[data-playback=play]').getAttribute('aria-pressed')==='false' && !q('.workspace-field').hasAttribute('data-travel')");
     await evaluate("click('.configurator-toggle');returnToPreview()");
+
+    await command('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'no-preference' }] });
+    await evaluate("traceAction();window.restartedPulse=q('.workspace-preview-motion').getAnimations({subtree:true});traceAction()");
+    await check("q('.workspace-preview-motion').dataset.pulse==='running' && q('.flow-panel').hidden && restartedPulse.length>0 && restartedPulse.every(effect=>effect.playState==='idle')");
+    await waitFor("q('.workspace-preview-motion').dataset.pulse==='ready' && q('.mock-trace-status').textContent.includes('workspace ready')");
+    await check("q('.workspace-preview-motion').getAnimations({subtree:true}).length===0 && traceSaved===localStorage.getItem('awad-portfolio-studio') && tracePrice===q('#price-display').dataset.price");
+    await evaluate("traceAction();window.oldPulse=q('.workspace-preview-motion');view(1)");
+    await waitFor("oldPulse.dataset.pulse==='idle' && oldPulse.getAnimations({subtree:true}).length===0");
+    await evaluate("view(0);traceAction();template('ecommerce');template('landing');template('saas')");
+    await check("!oldPulse.isConnected && oldPulse.getAnimations({subtree:true}).length===0 && q('[data-preview-trace]').hidden");
+    await evaluate("click('.studio-preview-theme');traceAction()");
+    await check("q('.workspace-preview-motion').dataset.pulse==='running'");
+    await command('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
+    await waitFor("q('.workspace-preview-motion').dataset.pulse==='ready' && q('.workspace-preview-motion').getAnimations({subtree:true}).length===0");
 
     await evaluate("template('ecommerce')");
     await check("q('[data-preview-action]').disabled && q('[data-preview-trace]').hidden");
@@ -283,6 +297,7 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
         await command('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
     }
     await waitFor("!q('.flow-panel').hidden");
+    await check("q('[data-pulse-node=browser]').closest('g[transform]').getAttribute('transform').startsWith('translate(315 ')");
     await check("q('.studio-trace-bar button').textContent.includes('العودة') && q('.flow-panel').scrollWidth <= q('.flow-panel').clientWidth");
     await evaluate("completeTrace();returnToPreview()");
     await check("q('.mock-trace-status').textContent.includes('جاهزة') && q('.studio-preview-frame').scrollWidth <= q('.studio-preview-frame').clientWidth");

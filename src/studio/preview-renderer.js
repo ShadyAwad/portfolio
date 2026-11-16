@@ -4,6 +4,9 @@ import { featureModules, templates, translations } from './preview-templates.js'
 import { mountArchitectureExplorer } from './architecture/explorer.js';
 import { bindPreviewInteractions } from './preview-interactions.js';
 import { createPreviewTrace, previewTraceContext } from './preview-trace.js';
+import { buildArchitectureGraph } from './architecture/graph.js';
+import { mountWorkspacePreview } from './preview-workspace-motion.js';
+import './preview-workspace-motion.css';
 import { modelAssets, modelModes } from '../components/model-assets.js';
 import { mediaCopy, mountPreviewMedia } from './preview-media.js';
 import './preview-media.css';
@@ -75,6 +78,7 @@ export function mountDesignStudio(store, reset) {
     const form = studio.querySelector('form');
     const status = studio.querySelector('[role="status"]');
     const preview = studio.querySelector('.studio-preview');
+    const previewPanel = studio.querySelector('[data-studio-preview-panel]');
     const frame = studio.querySelector('.studio-preview-frame');
     const viewportControls = studio.querySelector('.studio-viewport-controls');
     const themeButton = studio.querySelector('.studio-preview-theme');
@@ -98,6 +102,7 @@ export function mountDesignStudio(store, reset) {
     let previous;
     let moduleElements;
     let media;
+    let workspaceMotion;
 
     const label = pair => pair[language === 'ar' ? 1 : 0];
     const copy = key => label(translations[key] ?? mediaCopy[key] ?? modelAssets[key].name);
@@ -106,6 +111,7 @@ export function mountDesignStudio(store, reset) {
         if (!rail) return;
         rail.toggleAttribute('data-trace-ready', Boolean(action));
         rail.toggleAttribute('data-trace-complete', completed);
+        workspaceMotion?.reflect(completed);
         rail.querySelector('[data-preview-trace]').hidden = !action;
         const status = rail.querySelector('[role="status"]');
         const context = action && previewTraceContext(action, language);
@@ -113,10 +119,10 @@ export function mountDesignStudio(store, reset) {
             ['See how this demo request is processed.', 'اطّلع على كيفية معالجة هذا الطلب التجريبي.']);
         status.textContent = [message, context].filter(Boolean).join(' · ');
     });
-    const architecture = mountArchitectureExplorer(studio.querySelector('.studio-canvas'),
-        studio.querySelector('[data-studio-preview-panel]'), store);
+    const architecture = mountArchitectureExplorer(studio.querySelector('.studio-canvas'), previewPanel, store);
 
     function clearTrace() {
+        workspaceMotion?.cancel();
         trace.clear();
         architecture.cancelTrace();
     }
@@ -124,6 +130,7 @@ export function mountDesignStudio(store, reset) {
     function traceAction() {
         const action = trace.action;
         if (!action) return;
+        workspaceMotion?.cancel();
         architecture.openTrace(action, completed => trace.reflect(action, completed),
             screen.querySelector('[data-preview-action]'));
     }
@@ -161,12 +168,17 @@ export function mountDesignStudio(store, reset) {
         if (templateChanged) {
             clearTrace();
             media?.destroy();
+            workspaceMotion?.destroy();
+            workspaceMotion = undefined;
             current.textContent = copy(model.template);
             frame.querySelector('.studio-frame-chrome strong').textContent = {
                 saas: 'app.pulse.example', ecommerce: 'formandfield.example',
                 landing: 'linearise.example', 'internal-tool': 'ops.relay.example'
             }[model.template];
             screen.innerHTML = templates[model.template](label);
+            const pulse = screen.querySelector('.workspace-preview-motion');
+            if (pulse) workspaceMotion = mountWorkspacePreview(pulse,
+                screen.querySelector('[data-preview-action="workspace"]'), previewPanel, host, buildArchitectureGraph(state), label);
             media = mountPreviewMedia(screen.querySelector('[data-preview-media]'), label);
             screen.querySelector('[data-preview-workspace]').append(workspaces);
             const footer = screen.querySelector('[data-preview-footer]');
@@ -214,7 +226,12 @@ export function mountDesignStudio(store, reset) {
 
     listen(form, 'submit', event => event.preventDefault());
     bindPreviewInteractions(preview, events.signal, () => copy('demoSaved'), {
-        template: () => store.getState().applicationType, offer: trace.offer, clear: clearTrace, trace: traceAction
+        template: () => store.getState().applicationType,
+        offer(action) {
+            trace.offer(action);
+            if (action?.action === 'workspace') workspaceMotion?.play(() => trace.reflect(action, true));
+        },
+        clear: clearTrace, trace: traceAction
     });
     listen(systemTheme, 'change', () => {
         if (!host.hidden && store.getState().visual.theme === 'system') renderTheme();
@@ -269,6 +286,7 @@ export function mountDesignStudio(store, reset) {
     return () => {
         architecture.destroy();
         media?.destroy();
+        workspaceMotion?.destroy();
         returnLink.remove();
         events.abort();
         observer.disconnect();

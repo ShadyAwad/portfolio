@@ -223,3 +223,11 @@ The standalone card and its AR launch were retired. Studio remains the entry poi
 Trace entry and return focus the destination control before scrolling it into the nearest visible position. The source and destination share an accent and use brief local feedback. The request routes, timing, and controls remain in the existing playback controller. Hidden views release the 3D element and finish pending graph or gallery transitions.
 
 The architecture view coalesces same-task settings updates before redrawing. The request scene measures its geometry before resizing its canvases and avoids hidden measurements. The database visualizer draws once when it comes into view or changes size, then runs only for a search or compaction. The starfield reads its visual dimensions on resize. The cursor trail clears when input moves into a Studio, Stanza, or contact interaction.
+
+### V1 — Load Workspace choreography
+
+The SaaS preview keeps a compact request strip immediately below Load Workspace. On activation, the control compresses and releases while a cyan token drops from its lower edge into the UI socket. The token follows curved paths with a short fading tail. The API and database sockets spring briefly on arrival. The return is mint and follows a separate arc back through the API to the UI, which settles into the ready state.
+
+For the default route, the UI receives the token at 240 ms, the API at 710 ms, and the database at 1,200 ms. The return reaches the API at 1,660 ms and the UI at 2,160 ms. The final pulse settles by about 2,400 ms. These are presentation timings for a simulated request. The strip only shows components present in the configured graph and shortens the route if a component is absent.
+
+The existing trace invitation remains available throughout. A second activation cancels the first run and launches a fresh token. Leaving the preview, changing template or workspace, or hiding the tab cancels an unfinished run. Reduced motion resolves the interaction immediately and shows the same ready state. The prototype uses bounded element animations and the current fictional preview feedback, with no ambient animation or changes to pricing or saved state.

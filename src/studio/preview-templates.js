@@ -59,6 +59,7 @@ function traceAction(label, action, title, disabled = false) {
     return `<div class="mock-trace">
         <div class="mock-trace-controls"><button class="mock-action" type="button" data-preview-action="${action}"${disabled ? ' disabled' : ''}>${label(title)}</button>
         <button type="button" class="mock-trace-link" data-preview-trace aria-controls="studio-flow-panel" hidden>${label(['Trace this action','تتبّع هذا الإجراء'])} <span aria-hidden="true">↗</span></button></div>
+        ${action === 'workspace' ? '<div class="workspace-preview-motion"></div>' : ''}
         <p role="status" class="mock-trace-status"></p>
     </div>`;
 }
