@@ -205,3 +205,13 @@ The SaaS workspace button, a populated storefront cart, and the internal tool’
 Opening a trace selects its journey at step zero and focuses the scenario selector. The existing packet and playback controls launch and advance it. The preview reflects the workspace response, order confirmation, or export-ready stage when playback reaches it. Scrubbing back or resetting removes that feedback. Returning pauses playback, detaches the trace, and restores focus to the original control when it still exists. The returned preview retains the outcome from the last simulated step reached.
 
 Each invitation has its own transient identity. A new action, cart or filter edit, template or language change, or Studio reset invalidates the previous invitation. Selecting a different journey or changing the active route’s component structure invalidates its playback callback. The bridge never writes to the configuration store, local storage, engineering models, or pricing.
+
+### M5 — Interactive 3D content
+
+`interactiveMedia` stores an enable flag, a registry asset ID, and a static, drag, or orbit mode. Version 1 drafts without these fields default to disabled. The 3D setting is a preview preference. It does not mutate paid add-ons, priced tiers, or commercial assumptions.
+
+The asset registry currently contains `public/assets/Planet.glb`, a 1,634,372-byte glTF 2.0 binary with an embedded texture. The repo has no smaller variant or dedicated poster image. The preview uses a CSS illustration during loading or when WebGL or the existing Model Viewer CDN is unavailable. The planet appears in the landing hero, storefront product collection, SaaS media card, and internal tool asset inspection panel.
+
+Studio and the standalone card share the pinned Model Viewer loader and lifecycle. The CDN script and local GLB load only when a viewer comes into view. The viewer disconnects when it leaves the viewport, the preview is hidden, the tab is hidden, or the template changes. Model Viewer unregisters the scene and can reuse the cached GLB when a viewer returns. Reduced motion suppresses auto orbit while retaining explicit camera input. The standalone wrapper also exposes Model Viewer's AR affordance on supported devices.
+
+Additional assets belong in the registry with a verified local GLB path, translated name, category, and camera defaults. Review framing and asset weight at all preview widths. Add an appropriate fallback visual for the new asset type.

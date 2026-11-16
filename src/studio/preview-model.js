@@ -11,6 +11,7 @@ export function derivePreview(configuration) {
         template,
         theme: visual.theme,
         density: visual.density,
+        interactiveMedia: configuration.interactiveMedia,
         capabilities,
         roles: engineering.rbac,
         recommendations: Object.freeze({

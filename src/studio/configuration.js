@@ -1,5 +1,6 @@
 import { capacityDefaults, validAssumption } from './capacity/assumptions.js';
 import { commercialDefaults, isCommercialInput } from './commercial/inputs.js';
+import { findModelAsset, modelModes } from '../components/model-assets.js';
 
 export const MAX_USAGE = 1_000_000_000;
 export const FEATURE_KEYS = Object.freeze(['pwa', 'l10n', 'rbac', 'ai']);
@@ -14,6 +15,7 @@ const defaults = freeze({
     previewFeatures: Object.fromEntries(PREVIEW_FEATURE_KEYS.map(key => [key, false])),
     usage: { tenants: 5, users: 250, requests: null, records: 10000, uploads: 100, jobs: 0, notifications: 0 },
     visual: { theme: 'system', density: 'comfortable' },
+    interactiveMedia: { enabled: false, asset: 'planet', mode: 'drag' },
     capacity: capacityDefaults,
     commercial: commercialDefaults,
     engineering: { semantic: false, schedules: false, rbac: false, audit: false, webauthn: false, rls: false }
@@ -43,6 +45,7 @@ function patchGroup(current, patch, validate) {
 function applyPatch(current, patch) {
     const input = object(patch);
     const visual = object(input.visual);
+    const media = object(input.interactiveMedia);
     return freeze({
         applicationType: choice(input.applicationType, APPLICATION_TYPES, current.applicationType),
         pricingTier: choice(input.pricingTier, [1, 2, 3, 4, 5], current.pricingTier),
@@ -53,6 +56,11 @@ function applyPatch(current, patch) {
         visual: {
             theme: choice(visual.theme, ['system', 'light', 'dark'], current.visual.theme),
             density: choice(visual.density, ['comfortable', 'compact'], current.visual.density)
+        },
+        interactiveMedia: {
+            enabled: flag(media.enabled, current.interactiveMedia.enabled),
+            asset: findModelAsset(media.asset)?.id ?? current.interactiveMedia.asset,
+            mode: choice(media.mode, modelModes, current.interactiveMedia.mode)
         },
         engineering: patchGroup(current.engineering, input.engineering, flag),
         capacity: patchGroup(current.capacity, input.capacity, (value, previous, key) =>

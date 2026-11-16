@@ -4,6 +4,9 @@ import { featureModules, templates, translations } from './preview-templates.js'
 import { mountArchitectureExplorer } from './architecture/explorer.js';
 import { bindPreviewInteractions } from './preview-interactions.js';
 import { createPreviewTrace, previewTraceContext } from './preview-trace.js';
+import { modelAssets, modelModes } from '../components/model-assets.js';
+import { mediaCopy, mountPreviewMedia } from './preview-media.js';
+import './preview-media.css';
 
 const displayFeatures = [...PREVIEW_FEATURE_KEYS, 'roles'];
 const viewports = ['desktop', 'tablet', 'mobile'];
@@ -36,6 +39,13 @@ export function mountDesignStudio(store, reset) {
         <form class="studio-settings" aria-label="Preview settings">
             <label>${localized('template')}<select name="applicationType">${options(APPLICATION_TYPES)}</select></label>
             <fieldset><legend data-studio-copy="features"></legend>${displayFeatures.map(featureInput).join('')}</fieldset>
+            <div class="studio-media-settings">
+                ${featureInput('enabled')}
+                <div class="studio-media-options" hidden>
+                    <label>${localized('asset')}<select name="asset">${options(Object.keys(modelAssets))}</select></label>
+                    <label>${localized('mode')}<select name="mode">${options(modelModes)}</select></label>
+                </div>
+            </div>
             <button type="button" class="studio-plan-link" data-studio-plan data-studio-copy="plan"></button>
             <button type="button" data-studio-reset data-studio-copy="reset"></button>
             <p class="studio-announcement" role="status"></p>
@@ -74,6 +84,7 @@ export function mountDesignStudio(store, reset) {
     const workspaces = studio.querySelector('.studio-workspaces');
     const current = studio.querySelector('[data-studio-current]');
     const hint = studio.querySelector('.studio-recommendation');
+    const mediaOptions = studio.querySelector('.studio-media-options');
     const events = new AbortController();
     const listen = (element, type, handler) => element.addEventListener(type, handler, { signal: events.signal });
     const planner = document.getElementById('architecture-planner');
@@ -86,9 +97,10 @@ export function mountDesignStudio(store, reset) {
     let language;
     let previous;
     let moduleElements;
+    let media;
 
     const label = pair => pair[language === 'ar' ? 1 : 0];
-    const copy = key => label(translations[key]);
+    const copy = key => label(translations[key] ?? mediaCopy[key] ?? modelAssets[key].name);
     const trace = createPreviewTrace((action, completed) => {
         const rail = screen.querySelector('.mock-trace');
         if (!rail) return;
@@ -148,12 +160,14 @@ export function mountDesignStudio(store, reset) {
         const templateChanged = localeChanged || model.template !== previous?.template;
         if (templateChanged) {
             clearTrace();
+            media?.destroy();
             current.textContent = copy(model.template);
             frame.querySelector('.studio-frame-chrome strong').textContent = {
                 saas: 'app.pulse.example', ecommerce: 'formandfield.example',
                 landing: 'linearise.example', 'internal-tool': 'ops.relay.example'
             }[model.template];
             screen.innerHTML = templates[model.template](label);
+            media = mountPreviewMedia(screen.querySelector('[data-preview-media]'), label);
             screen.querySelector('[data-preview-workspace]').append(workspaces);
             const footer = screen.querySelector('[data-preview-footer]');
             if (footer) footer.before(modules);
@@ -189,6 +203,12 @@ export function mountDesignStudio(store, reset) {
             if (form.elements[key].checked !== checked) form.elements[key].checked = checked;
         }
         hint.hidden = !(model.recommendations.accountForRoles || model.recommendations.accountForOrganizations);
+        const { enabled, asset, mode } = model.interactiveMedia;
+        mediaOptions.hidden = !enabled;
+        form.elements.enabled.checked = enabled;
+        form.elements.asset.value = asset;
+        form.elements.mode.value = mode;
+        media.render(model.interactiveMedia);
         previous = model;
     }
 
@@ -215,6 +235,8 @@ export function mountDesignStudio(store, reset) {
         if (name === 'applicationType') store.update({ applicationType: value });
         else if (name === 'roles') store.update({ engineering: { rbac: checked } });
         else if (PREVIEW_FEATURE_KEYS.includes(name)) store.update({ previewFeatures: { [name]: checked } });
+        else if (name === 'enabled') store.update({ interactiveMedia: { enabled: checked } });
+        else if (name === 'asset' || name === 'mode') store.update({ interactiveMedia: { [name]: value } });
     });
     listen(form.querySelector('[data-studio-reset]'), 'click', () => {
         clearTrace();
@@ -240,11 +262,13 @@ export function mountDesignStudio(store, reset) {
     const unsubscribe = store.subscribe((next, last) => {
         if (next.applicationType !== last.applicationType || next.visual.theme !== last.visual.theme ||
             next.visual.density !== last.visual.density || next.engineering.rbac !== last.engineering.rbac ||
+            Object.keys(next.interactiveMedia).some(key => next.interactiveMedia[key] !== last.interactiveMedia[key]) ||
             PREVIEW_FEATURE_KEYS.some(key => next.previewFeatures[key] !== last.previewFeatures[key])) render();
     });
     render();
     return () => {
         architecture.destroy();
+        media?.destroy();
         returnLink.remove();
         events.abort();
         observer.disconnect();

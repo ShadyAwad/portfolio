@@ -1,3 +1,5 @@
+import { previewMediaSlot } from './preview-media.js';
+
 export const translations = {
     title: ['Application Design Studio', 'استوديو تصميم التطبيقات'],
     intro: ['Choose an application and features, preview the interface, then trace what happens behind common actions.', 'اختر تطبيقًا وميزاته، وعاين الواجهة، ثم تتبّع ما يحدث عند تنفيذ الإجراءات الشائعة.'],
@@ -79,6 +81,7 @@ function saas(label) {
                     ${badge(label(['Last 7 days','آخر 7 أيام']))}</header>
                 ${traceAction(label, 'workspace', ['Load workspace','تحميل مساحة العمل'])}
                 ${metrics([[['Active users','المستخدمون النشطون'],'1,284'],[['New accounts','الحسابات الجديدة'],'208'],[['Retention','الاحتفاظ'],'91%']],label)}
+                ${previewMediaSlot('saas', label)}
                 <section class="mock-card mock-activity" data-preview-section="activity" tabindex="-1">
                     <div class="mock-section-title"><strong>${label(['Weekly activity','النشاط الأسبوعي'])}</strong>
                     <span class="mock-trend">↑ 12.4%</span></div>
@@ -132,6 +135,7 @@ function ecommerce(label) {
                 <div class="mock-product-info"><strong>${label(name)}</strong><p>${label(material)}</p>
                     <div><bdi>$${price}</bdi><button type="button" class="mock-action" data-cart-add="${price}" aria-label="${label(['Add to bag','أضف إلى السلة'])} · ${label(name)}">${label(['Add','أضف'])}</button></div>
                 </div></article>`).join('')}</div>
+            ${previewMediaSlot('ecommerce', label)}
         </section>
         <section class="mock-store-cart" data-preview-section="cart" tabindex="-1">
             <strong>${label(['Your bag','سلتك'])}</strong>
@@ -158,12 +162,12 @@ function landing(label) {
             <div><h4>${label(['Give every launch a clear path.','امنح كل إطلاق مسارًا واضحًا.'])}</h4>
                 <p>${label(['Plan the work, share progress, and bring your whole team to launch day with one workspace.','خطّط للعمل وشارك التقدم واصطحب فريقك إلى يوم الإطلاق في مساحة عمل واحدة.'])}</p>
                 <button type="button" class="mock-action" data-preview-start>${label(['Explore the workspace','استكشف مساحة العمل'])}</button></div>
-            <div class="mock-launch-art" aria-hidden="true">
+            <div class="mock-hero-visual"><div class="mock-launch-art" aria-hidden="true">
                 <span>${label(['SUMMER LAUNCH','إطلاق الصيف'])}</span>
                 <strong>${label(['Launch plan','خطة الإطلاق'])}</strong>
                 ${[['Brief approved','اعتُمد الموجز'],['Design review','مراجعة التصميم'],['Launch day','يوم الإطلاق']].map((step, index) =>
                     `<div><i>${['✓','◒','○'][index]}</i>${label(step)}</div>`).join('')}
-            </div>
+            </div>${previewMediaSlot('landing', label)}</div>
         </header>
         <section class="mock-feature-section" data-preview-section="features" tabindex="-1">
             <h5>${label(['From first brief to launch day','من أول موجز إلى يوم الإطلاق'])}</h5>
@@ -207,6 +211,7 @@ function internalTool(label) {
                 </tbody></table>
                 ${traceAction(label, 'export', ['Prepare export','إعداد التصدير'])}
             </section>
+            ${previewMediaSlot('internal-tool', label)}
             <section class="mock-workflow" data-preview-section="workflow" tabindex="-1">
                 <div><strong>${label(['Approval workflow','مسار الموافقة'])}</strong><p>${label(['Requests move from intake to review before approval.','تنتقل الطلبات من الاستلام إلى المراجعة قبل الموافقة.'])}</p></div>
                 <div class="mock-workflow-steps">${badge(label(['Intake','الاستلام']))}${badge(label(['Review','المراجعة']))}${badge(label(['Approved','الموافقة']))}</div>

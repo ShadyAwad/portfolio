@@ -38,8 +38,8 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
         return result.result.value;
     };
     const check = async expression => assert(await evaluate(expression), expression);
-    async function waitFor(expression) {
-        for (let attempt = 0; attempt < 100; attempt++) {
+    async function waitFor(expression, attempts = 100) {
+        for (let attempt = 0; attempt < attempts; attempt++) {
             if (await evaluate(expression)) return;
             await new Promise(resolve => setTimeout(resolve, 50));
         }
@@ -56,9 +56,17 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
         };
         window.template = value => set('.studio-settings select[name=applicationType]', value, 'change');
         window.scenario = value => set('[data-flow-scenario]', value, 'change');
+        window.mediaEnabled = () => click('.studio-settings [name=enabled]');
+        window.mediaSlot = () => q('[data-preview-media]');
+        window.model = () => mediaSlot().querySelector('model-viewer');
+        window.showModel = () => q('.studio-media-stage').scrollIntoView({block:'center',behavior:'instant'});
+        window.modelRequests = () => performance.getEntriesByType('resource').filter(entry => entry.name.endsWith('/Planet.glb'));
     `;
     await command('Page.enable');
+    await command('Page.bringToFront');
     await command('Runtime.enable');
+    await command('Network.enable');
+    await command('Network.setBlockedURLs', { urls: ['*model-viewer.min.js*'] });
     await command('Storage.clearDataForOrigin', { origin, storageTypes: 'local_storage' });
     await command('Page.addScriptToEvaluateOnNewDocument', { source: helpers });
     await command('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
@@ -109,7 +117,9 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await waitFor("!q('[data-studio-host]').hidden");
     await check("q('.flow-panel').dataset.loadStatus === 'overloaded' && routeStart === q('[data-flow-step=\"0\"]') && q('.flow-route [aria-current=step]').dataset.flowStep === '1'");
     await evaluate("click('[data-playback=reset]');set('[data-flow-load]','normal','change')");
-    await check("q('.flow-panel').dataset.loadStatus === 'nominal' && q('.flow-route [aria-current=step]').dataset.flowStep === '0' && price === q('#price-display').dataset.price && saved === localStorage.getItem('awad-portfolio-studio')");
+    await check("q('.flow-panel').dataset.loadStatus === 'nominal' && q('.flow-route [aria-current=step]').dataset.flowStep === '0'");
+    await check("price === q('#price-display').dataset.price");
+    await check("saved === localStorage.getItem('awad-portfolio-studio')");
 
     await evaluate("click('#theme-toggle');click('#lang-toggle')");
     await waitFor("document.documentElement.dir === 'rtl' && document.documentElement.dataset.theme === 'light'");
@@ -249,5 +259,63 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await check("q('.studio-trace-bar button').textContent.includes('العودة') && q('.flow-panel').scrollWidth <= q('.flow-panel').clientWidth");
     await evaluate("completeTrace();returnToPreview()");
     await check("q('.mock-trace-status').textContent.includes('جاهزة') && q('.studio-preview-frame').scrollWidth <= q('.studio-preview-frame').clientWidth");
+
+    await evaluate("window.mediaPrice = q('#price-display').dataset.price");
+    await check("!mediaSlot().hasAttribute('data-media-enabled') && !model() && modelRequests().length===0");
+    await evaluate("view(2);mediaEnabled()");
+    await check("mediaSlot().dataset.viewer==='idle' && !model() && modelRequests().length===0");
+    await evaluate("view(0);showModel()");
+    await waitFor("mediaSlot().dataset.viewer==='unavailable'");
+    await check("!model() && modelRequests().length===0 && q('.studio-media-status').textContent.includes('صورة توضيحية') && q('#price-display').dataset.price===mediaPrice");
+    await evaluate("mediaEnabled()");
+    await check("mediaSlot().inert && !model()");
+
+    if (process.env.STUDIO_TEST_WEBGL) {
+        await command('Network.setBlockedURLs', { urls: [] });
+        await command('Emulation.setDeviceMetricsOverride', { width: 1360, height: 900, deviceScaleFactor: 1, mobile: false });
+        await command('Emulation.setTouchEmulationEnabled', { enabled: false });
+        await command('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'no-preference' }] });
+        // Chromium may cache the failed module load from the offline check for the document's lifetime.
+        await command('Page.reload');
+        await waitFor("Boolean(q('.flow-toolbar'))");
+        await evaluate("click('.configurator-toggle');click('#configurator-studio > summary');click('#lang-toggle')");
+        await waitFor("document.documentElement.dir==='ltr'");
+        await evaluate("mediaEnabled()");
+        for (const [templateName, viewport, title] of [
+            ['landing', 'desktop', 'Explore the launch visual'], ['ecommerce', 'tablet', '3D product showcase'],
+            ['saas', 'desktop', 'Interactive media'], ['internal-tool', 'mobile', 'Asset inspection']
+        ]) {
+            await evaluate(`template('${templateName}');click('[data-preview-viewport=${viewport}]')`);
+            await waitFor("mediaSlot().getBoundingClientRect().height > 120");
+            await evaluate("showModel()");
+            await waitFor("mediaSlot().dataset.viewer==='ready' && model()?.modelIsVisible", 300).catch(async error => {
+                const stage = await evaluate("({state: mediaSlot().dataset.viewer, bounds: q('.studio-media-stage').getBoundingClientRect().toJSON(), hidden: document.hidden})");
+                throw new Error(`The ${templateName} viewer did not appear: ${JSON.stringify(stage)}`, { cause: error });
+            });
+            await check(`mediaSlot().dataset.previewMedia==='${templateName}' && mediaSlot().querySelector('h5').textContent==='${title}' &&
+                model().loaded && model().getDimensions().x>0 && document.querySelectorAll('.studio-media-stage model-viewer').length===1`);
+        }
+        await check(`(async () => {
+            const bitmap = await createImageBitmap(await model().toBlob());
+            const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(bitmap, 0, 0);
+            const pixel = ctx.getImageData(bitmap.width >> 1, bitmap.height >> 1, 1, 1).data;
+            bitmap.close();
+            return pixel[3] > 0;
+        })()`);
+        await evaluate("window.mediaInstance = model();click('.studio-preview-theme');set('.studio-settings [name=mode]','static','change')");
+        await check("model()===mediaInstance && !model().hasAttribute('camera-controls') && !model().hasAttribute('auto-rotate')");
+        await evaluate("set('.studio-settings [name=mode]','orbit','change')");
+        await check("model().hasAttribute('camera-controls') && model().hasAttribute('auto-rotate')");
+        await command('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
+        await waitFor("!model()?.hasAttribute('auto-rotate') && q('.studio-media-status').textContent.includes('reduced motion')");
+        await evaluate("view(2)");
+        await waitFor("!model()");
+        await evaluate("view(0);showModel()");
+        await waitFor("model()?.loaded");
+        await evaluate("mediaEnabled()");
+        await check("!model() && !mediaInstance.isConnected && mediaSlot().inert && modelRequests().length===1");
+    }
     assert.deepEqual(runtimeErrors, []);
 });
