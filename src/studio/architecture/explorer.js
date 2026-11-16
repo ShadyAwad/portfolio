@@ -6,7 +6,6 @@ import { translations } from '../preview-templates.js';
 import { architectureCopy } from './copy.js';
 import { buildArchitectureGraph, resolveNodeSelection } from './graph.js';
 import { layoutArchitecture } from './layout.js';
-import { flowCopy } from '../flow/copy.js';
 import './explorer.css';
 
 const ns = 'http://www.w3.org/2000/svg';
@@ -65,7 +64,7 @@ export function mountArchitectureExplorer(canvas, preview, store, onLeavePreview
     let activeLayout;
     let pendingGraphRender = false;
 
-    const label = key => (flowCopy[key] ?? architectureCopy[key] ?? capacityCopy[key] ?? translations[key])?.[locale === 'ar' ? 1 : 0] ?? key;
+    const label = key => (architectureCopy[key] ?? capacityCopy[key] ?? translations[key])?.[locale === 'ar' ? 1 : 0] ?? key;
     const metricLabel = key => label(key === 'audit' ? 'auditStorage' : key);
     const setText = (node, value) => { if (node.textContent !== value) node.textContent = value; };
     function format(metric) {

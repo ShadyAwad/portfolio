@@ -2,7 +2,7 @@ import { previewMediaSlot } from './preview-media.js';
 
 export const translations = {
     title: ['Application Design Studio', 'استوديو تصميم التطبيقات'],
-    intro: ['Choose an application and features, then try common actions in the live preview.', 'اختر تطبيقًا وميزاته، ثم جرّب الإجراءات الشائعة في المعاينة المباشرة.'],
+    intro: ['Choose an application and try its actions in the live preview.', 'اختر تطبيقًا وجرّب إجراءاته في المعاينة المباشرة.'],
     plan: ['Engineering & cost estimates','التقديرات الهندسية والتكلفة'],
     backToStudio: ['Return to Application Design Studio','العودة إلى استوديو تصميم التطبيقات'],
     controls: ['Application settings', 'إعدادات التطبيق'],
@@ -17,6 +17,7 @@ export const translations = {
     viewport: ['Preview viewport', 'حجم نافذة المعاينة'],
     useDark: ['Switch preview to dark mode', 'حوّل المعاينة إلى الوضع الداكن'],
     useLight: ['Switch preview to light mode', 'حوّل المعاينة إلى الوضع الفاتح'],
+    featureSettings: ['Features and 3D', 'الميزات والمحتوى ثلاثي الأبعاد'],
     features: ['Prototype features', 'ميزات النموذج'],
     saas: ['SaaS Dashboard', 'لوحة تحكم SaaS'],
     ecommerce: ['E-commerce', 'متجر إلكتروني'],

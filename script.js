@@ -11,13 +11,7 @@ import { localizeArchitecturePlanner } from './src/components/architecture-plann
 // Global Parallax Starfield State
 const bgCanvas = document.getElementById('starfield');
 const bgCtx = bgCanvas ? bgCanvas.getContext('2d') : null;
-let starfieldArray = [];
-const STAR_COUNT = 240;
-let lastFrameTime = performance.now();
-let starfieldFrame = 0;
 const starfieldMotion = matchMedia('(prefers-reduced-motion: reduce)');
-let mouseX = window.innerWidth / 2;
-let mouseY = window.innerHeight / 2;
 
 // Dynamic L10n & Theme States
 const i18nElements = document.querySelectorAll('[data-i18n]');
@@ -79,103 +73,62 @@ if (import.meta.hot) import.meta.hot.dispose(() => stanzaShowcase?.destroy());
 // ==========================================================================
 // 1. DYNAMIC SYSTEM PARALLAX STARFIELD
 // ==========================================================================
-window.addEventListener('mousemove', (e) => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-});
-
-window.addEventListener('touchmove', (e) => {
-    if (e.touches && e.touches[0]) {
-        mouseX = e.touches[0].clientX;
-        mouseY = e.touches[0].clientY;
-    }
-}, { passive: true });
-
-let starfieldWidth = 0;
-let starfieldHeight = 0;
-
-function resizeStarfield() {
-    if (!bgCanvas || !bgCtx) return;
-    const dpr = Math.max(1, window.devicePixelRatio || 1);
-    starfieldWidth = window.innerWidth;
-    starfieldHeight = window.innerHeight;
-    const width = Math.floor(starfieldWidth * dpr);
-    const height = Math.floor(starfieldHeight * dpr);
-    if (bgCanvas.width === width && bgCanvas.height === height && bgCanvas.style.width === `${starfieldWidth}px`) return;
-    bgCanvas.width = width;
-    bgCanvas.height = height;
-    bgCanvas.style.width = `${starfieldWidth}px`;
-    bgCanvas.style.height = `${starfieldHeight}px`;
-    bgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    if (starfieldMotion.matches) drawStarfield();
-}
-
-function initStarfield() {
-    starfieldArray = [];
-    for (let i = 0; i < STAR_COUNT; i++) {
-        starfieldArray.push({
-            x: Math.random() * window.innerWidth * 2 - window.innerWidth,
-            y: Math.random() * window.innerHeight * 2 - window.innerHeight,
-            z: Math.random() * window.innerWidth + 0.001,
-            baseDim: Math.random() * 1.5 + 0.4
-        });
-    }
-}
-
-function drawStarfield(currentTime = performance.now()) {
-    if (!bgCanvas || !bgCtx) return;
-    const delta = Math.min(2.5, (currentTime - lastFrameTime) / 16.6);
-    lastFrameTime = currentTime;
-
-    const driftCoef = starfieldMotion.matches ? 0 : 0.85;
-    const scrollStep = driftCoef * delta;
-    
-    const displayWidth = starfieldWidth;
-    const displayHeight = starfieldHeight;
-    
-    bgCtx.clearRect(0, 0, displayWidth, displayHeight);
-    const cx = displayWidth / 2;
-    const cy = displayHeight / 2;
-    
-    const scaleX = (mouseX - cx) * 0.015;
-    const scaleY = (mouseY - cy) * 0.015;
-
-    starfieldArray.forEach(star => {
-        star.z -= scrollStep;
-        if (star.z <= 2) {
-            star.z = displayWidth;
-            star.x = Math.random() * displayWidth * 2 - displayWidth;
-            star.y = Math.random() * displayHeight * 2 - displayHeight;
+function mountStarfield() {
+    if (!bgCtx) return;
+    const events = new AbortController();
+    const { signal } = events;
+    const stars = Array.from({ length: 145 }, () => ({
+        x: Math.random(), y: Math.random(), depth: Math.random(), radius: .35 + Math.random() ** 2 * 1.45
+    }));
+    let width, height, frame, pointer;
+    function draw() {
+        frame = 0;
+        if (document.hidden) return;
+        bgCtx.clearRect(0, 0, width, height);
+        const dx = pointer ? (pointer.x - width / 2) * .016 : 0;
+        const dy = pointer ? (pointer.y - height / 2) * .016 : 0;
+        bgCtx.fillStyle = '#b4d7ff';
+        for (const { x, y, depth, radius } of stars) {
+            bgCtx.globalAlpha = .17 + depth * .48;
+            bgCtx.beginPath();
+            bgCtx.arc(x * width - dx * depth, y * height - dy * depth, radius, 0, Math.PI * 2);
+            bgCtx.fill();
         }
-
-        const projectScale = Math.max(0.001, displayWidth / star.z);
-        const px = (star.x - scaleX * (1 + star.z / displayWidth * 0.25)) * projectScale + cx;
-        const py = (star.y - scaleY * (1 + star.z / displayWidth * 0.25)) * projectScale + cy;
-
-        const opacity = Math.max(0.1, Math.min(0.9, 1 - star.z / displayWidth));
-        // Draw starry points
-        bgCtx.fillStyle = `rgba(180, 215, 255, ${opacity})`;
-        bgCtx.beginPath();
-        bgCtx.arc(px, py, Math.max(0.4, star.baseDim * projectScale), 0, Math.PI * 2);
-        bgCtx.fill();
-    });
-
-}
-
-function animateStarfield(currentTime) {
-    if (currentTime - lastFrameTime >= 30) drawStarfield(currentTime);
-    starfieldFrame = requestAnimationFrame(animateStarfield);
-}
-
-function syncStarfieldMotion() {
-    cancelAnimationFrame(starfieldFrame);
-    starfieldFrame = 0;
-    if (document.hidden || !bgCtx) return;
-    if (starfieldMotion.matches) drawStarfield();
-    else {
-        lastFrameTime = performance.now();
-        starfieldFrame = requestAnimationFrame(animateStarfield);
+        bgCtx.globalAlpha = 1;
     }
+    function queueDraw() {
+        if (!frame && !document.hidden) frame = requestAnimationFrame(draw);
+    }
+    function resize() {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        const dpr = Math.min(2, window.devicePixelRatio || 1);
+        bgCanvas.width = Math.round(width * dpr);
+        bgCanvas.height = Math.round(height * dpr);
+        bgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        queueDraw();
+    }
+    window.addEventListener('resize', resize, { passive: true, signal });
+    window.addEventListener('pointermove', event => {
+        if (!event.isPrimary || event.pointerType === 'touch' || starfieldMotion.matches || document.hidden) return;
+        pointer = { x: event.clientX, y: event.clientY };
+        queueDraw();
+    }, { passive: true, signal });
+    starfieldMotion.addEventListener('change', () => {
+        pointer = undefined;
+        queueDraw();
+    }, { signal });
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            cancelAnimationFrame(frame);
+            frame = 0;
+        } else queueDraw();
+    }, { signal });
+    resize();
+    return () => {
+        events.abort();
+        cancelAnimationFrame(frame);
+    };
 }
 // =========================================================================
 // 2. BIDIRECTIONAL SCHEMA L10N & CRYSTAL THEMING
@@ -521,9 +474,16 @@ function triggerSvgTracerPulse(startSelector, endSelector) {
 
 // Mouse click probes triggers log messages inside the console stream
 topologyNodeElements.forEach(node => {
+    node.addEventListener('keydown', event => {
+        if (!['Enter', ' '].includes(event.key) || event.repeat) return;
+        event.preventDefault();
+        node.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
     node.addEventListener('click', () => {
-        topologyNodeElements.forEach(n => n.classList.remove('active-node'));
-        node.classList.add('active-node');
+        topologyNodeElements.forEach(n => {
+            n.classList.toggle('active-node', n === node);
+            n.setAttribute('aria-pressed', String(n === node));
+        });
         
         const nodeId = node.id;
         if (nodeId === 'node-orgs-elem') {
@@ -542,22 +502,30 @@ topologyNodeElements.forEach(node => {
     });
 });
 
-// Systems architecture layout code togglers
-if (tabBtnSql && tabBtnRls) {
-    tabBtnSql.addEventListener('click', () => {
-        tabBtnSql.classList.add('active');
-        tabBtnRls.classList.remove('active');
-        codeBlockSql.classList.add('active');
-        codeBlockRls.classList.remove('active');
-        appendLog(`CODE DISPATCHER: SQL query buffer mapping view refreshed.`, "system-line");
+// PostgreSQL examples
+const examples = [[tabBtnSql, codeBlockSql], [tabBtnRls, codeBlockRls]];
+for (const [tab] of examples) {
+    tab.addEventListener('click', () => {
+        for (const [control, content] of examples) {
+            const selected = control === tab;
+            control.setAttribute('aria-selected', String(selected));
+            control.tabIndex = selected ? 0 : -1;
+            control.classList.toggle('active', selected);
+            content.hidden = !selected;
+            content.classList.toggle('active', selected);
+        }
     });
-    
-    tabBtnRls.addEventListener('click', () => {
-        tabBtnRls.classList.add('active');
-        tabBtnSql.classList.remove('active');
-        codeBlockRls.classList.add('active');
-        codeBlockSql.classList.remove('active');
-        appendLog(`CODE DISPATCHER: PostgreSQL engine active RLS rule parameters loaded.`, "system-line");
+    tab.addEventListener('keydown', event => {
+        const target = {
+            ArrowLeft: tab === tabBtnSql ? tabBtnRls : tabBtnSql,
+            ArrowRight: tab === tabBtnSql ? tabBtnRls : tabBtnSql,
+            Home: tabBtnSql,
+            End: tabBtnRls
+        }[event.key];
+        if (!target) return;
+        event.preventDefault();
+        target.focus();
+        target.click();
     });
 }
 
@@ -1012,19 +980,8 @@ if (exploreTrigger) {
 function initializeCoreArchitecture() {
     renderPricing(configuration.getState());
 
-    // Spawn backdrop stars drift loop
-    initStarfield();
-    resizeStarfield();
-    syncStarfieldMotion();
-    window.addEventListener('resize', resizeStarfield, { passive: true });
-    document.addEventListener('visibilitychange', syncStarfieldMotion);
-    starfieldMotion.addEventListener('change', syncStarfieldMotion);
-    if (import.meta.hot) import.meta.hot.dispose(() => {
-        cancelAnimationFrame(starfieldFrame);
-        window.removeEventListener('resize', resizeStarfield);
-        document.removeEventListener('visibilitychange', syncStarfieldMotion);
-        starfieldMotion.removeEventListener('change', syncStarfieldMotion);
-    });
+    const stopStarfield = mountStarfield();
+    if (import.meta.hot) import.meta.hot.dispose(() => stopStarfield?.());
 
     // 🚀 ADDED: KICKSTART CELESTIAL PATH-SCROLL TRAILER
     const stopTrail = initConstellationScrollPathing();

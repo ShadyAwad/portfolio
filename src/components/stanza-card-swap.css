@@ -370,21 +370,6 @@ html:has(.stanza-lightbox[open]) { overflow: hidden; }
     font-size: .85rem;
     line-height: 1.55;
 }
-.stanza-highlights {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .38rem;
-    margin-block-start: .85rem;
-    list-style: none;
-}
-.stanza-highlights li {
-    padding: .32em .62em;
-    border: 1px solid var(--border);
-    border-radius: 99px;
-    color: var(--muted);
-    font-size: .72rem;
-}
-
 #explore-repositories-trigger[hidden] { display: none; }
 .stanza-repo {
     display: inline-block;

@@ -69,10 +69,28 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
         };
         window.modelRequests = () => performance.getEntriesByType('resource').filter(entry => entry.name.endsWith('/Planet.glb'));
         window.viewerRequests = () => performance.getEntriesByType('resource').filter(entry => entry.name.includes('model-viewer.min.js'));
+        window.cometTimers = new Map();
+        window.starfieldDraws = 0;
+        const schedule = window.setTimeout, cancel = window.clearTimeout;
+        window.setTimeout = (callback, delay, ...args) => {
+            if (delay < 48000 || delay > 74000 || !Number.isFinite(delay)) return schedule(callback, delay, ...args);
+            const run = () => { cometTimers.delete(timer); callback(...args); };
+            const timer = schedule(run, delay);
+            cometTimers.set(timer, run);
+            return timer;
+        };
+        window.clearTimeout = timer => { cometTimers.delete(timer); cancel(timer); };
+        window.releaseComet = () => {
+            const [timer, run] = cometTimers.entries().next().value;
+            clearTimeout(timer);
+            run();
+        };
+        window.backgroundAnimations = () => q('.space-atmosphere').getAnimations({ subtree:true });
         window.databaseDraws = 0;
         const clear = CanvasRenderingContext2D.prototype.clearRect;
         CanvasRenderingContext2D.prototype.clearRect = function (...args) {
             if (this.canvas.id === 'visualizer-canvas') databaseDraws++;
+            if (this.canvas.id === 'starfield') starfieldDraws++;
             return clear.apply(this, args);
         };
     `;
@@ -102,6 +120,12 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await check("q('.studio-invite').hidden && sessionStorage.getItem('portfolio-studio-invite-dismissed') === '1'");
     await evaluate("click('#configurator-studio > summary')");
     await waitFor("!q('[data-studio-host]').hidden");
+    await check("!q('.studio-feature-settings').open && q('.studio-feature-settings summary').textContent==='Features and 3D'");
+    await evaluate("q('.studio-feature-settings summary').focus()");
+    await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, text: '\r' });
+    await command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
+    await check("q('.studio-feature-settings').open && document.activeElement===q('.studio-feature-settings summary')");
+    await evaluate("click('.studio-feature-settings summary')");
     await evaluate("click('#architecture-planner > summary')");
     await check("q('#architecture-planner').open && q('.capacity-panel') && q('.commercial-panel')");
     await waitFor("q('.commercial-summary').textContent.length > 0");
@@ -148,6 +172,20 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
     await command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
     await waitFor("!q('#stanza-lightbox').open && document.activeElement===stanzaOrigin");
+    const slideFiles = ['performance', 'settings', 'semantic', 'company-feed', 'organisation', 'payroll'];
+    for (const file of slideFiles) {
+        await waitFor("q('.stanza-card[data-slot=\"0\"] img').naturalWidth>0");
+        await check("q('.stanza-card[data-slot=\"0\"] img').currentSrc.endsWith('/images/stanza/cards/" + file + ".webp') && !q('.stanza-card[data-slot=\"0\"] img').hidden");
+        await evaluate("click('[data-stanza-next]')");
+    }
+    await evaluate("q('#node-tenants-elem').focus()");
+    await command('Input.dispatchKeyEvent', { type:'keyDown', key:'Enter', code:'Enter', windowsVirtualKeyCode:13, text:'\r' });
+    await command('Input.dispatchKeyEvent', { type:'keyUp', key:'Enter', code:'Enter', windowsVirtualKeyCode:13 });
+    await check("q('#node-tenants-elem').getAttribute('aria-pressed')==='true' && document.activeElement===q('#node-tenants-elem')");
+    await evaluate("q('#tab-btn-sql').focus()");
+    await command('Input.dispatchKeyEvent', { type:'keyDown', key:'ArrowRight', code:'ArrowRight', windowsVirtualKeyCode:39 });
+    await command('Input.dispatchKeyEvent', { type:'keyUp', key:'ArrowRight', code:'ArrowRight', windowsVirtualKeyCode:39 });
+    await check("document.activeElement===q('#tab-btn-rls') && q('#tab-btn-rls').getAttribute('aria-selected')==='true' && q('#code-block-sql').hidden && !q('#code-block-rls').hidden");
     await evaluate("template('saas');view(0);click('#lang-toggle')");
     await waitFor("document.documentElement.dir==='ltr'");
     await evaluate("window.flowSaved=localStorage.getItem('awad-portfolio-studio');window.flowPrice=q('#price-display').dataset.price;window.flowCommercial=q('.commercial-summary').textContent;q('[data-preview-action]').focus()");
@@ -387,5 +425,33 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
             await check("document.documentElement.scrollWidth===document.documentElement.clientWidth && q('.studio-layout-picker legend').textContent==='التخطيط'");
         }
     }
+    await check("q('.space-atmosphere').getAttribute('aria-hidden')==='true' && getComputedStyle(q('.space-atmosphere')).pointerEvents==='none' && !backgroundAnimations().length && !cometTimers.size");
+    await command('Emulation.setEmulatedMedia', { features: [{ name:'prefers-reduced-motion', value:'no-preference' }] });
+    await waitFor("backgroundAnimations().length===2 && cometTimers.size===1");
+    await evaluate("scrollTo({top:0,behavior:'instant'})");
+    await new Promise(resolve => setTimeout(resolve, 650));
+    await evaluate("window.idleDraws=starfieldDraws;window.heroBefore=JSON.stringify(q('#profile-card').getBoundingClientRect());releaseComet()");
+    await waitFor("q('.space-comet').getAnimations().length===1");
+    await check("cometTimers.size===0 && !document.elementFromPoint(15,15)?.closest('.space-atmosphere')");
+    await waitFor("q('.space-comet').getAnimations().length===0 && cometTimers.size===1");
+    await check("idleDraws===starfieldDraws && heroBefore===JSON.stringify(q('#profile-card').getBoundingClientRect()) && document.documentElement.scrollWidth===document.documentElement.clientWidth");
+    await evaluate("releaseComet()");
+    const backgroundTab = await (await fetch(new URL('/json/new?about:blank', debug), { method: 'PUT' })).json();
+    try {
+        const activated = await fetch(new URL('/json/activate/' + backgroundTab.id, debug));
+        assert(activated.ok);
+        await waitFor("document.hidden && !backgroundAnimations().length && !cometTimers.size");
+        await command('Page.bringToFront');
+        await waitFor("!document.hidden && backgroundAnimations().length===2 && cometTimers.size===1");
+    } finally {
+        await fetch(new URL('/json/close/' + backgroundTab.id, debug));
+    }
+    await command('Emulation.setEmulatedMedia', { features: [{ name:'prefers-reduced-motion', value:'reduce' }] });
+    await waitFor("!backgroundAnimations().length && !cometTimers.size");
+    const production = await (await fetch(url)).text();
+    const entry = production.match(/<script type="module"[^>]*src="([^"]+)"/)?.[1];
+    assert(entry);
+    const bundle = await (await fetch(new URL(entry, url))).text();
+    assert.doesNotMatch(bundle, /studio-flow-panel|studio-trace-bar|Drag the request from Browser|workspace-scrubber|How It Works/);
     assert.deepEqual(runtimeErrors, []);
 });

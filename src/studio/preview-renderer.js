@@ -35,14 +35,17 @@ export function mountDesignStudio(store, reset) {
     <div class="studio-layout" id="studio-workspace">
         <form class="studio-settings" aria-label="Preview settings">
             <label>${localized('template')}<select name="applicationType">${options(APPLICATION_TYPES)}</select></label>
-            <fieldset><legend data-studio-copy="features"></legend>${displayFeatures.map(featureInput).join('')}</fieldset>
-            <div class="studio-media-settings">
-                ${featureInput('enabled')}
-                <div class="studio-media-options" hidden>
-                    <label>${localized('asset')}<select name="asset">${options(Object.keys(modelAssets))}</select></label>
-                    <label>${localized('mode')}<select name="mode">${options(modelModes)}</select></label>
+            <details class="studio-feature-settings">
+                <summary data-studio-copy="featureSettings"></summary>
+                <fieldset><legend data-studio-copy="features"></legend>${displayFeatures.map(featureInput).join('')}</fieldset>
+                <div class="studio-media-settings">
+                    ${featureInput('enabled')}
+                    <div class="studio-media-options" hidden>
+                        <label>${localized('asset')}<select name="asset">${options(Object.keys(modelAssets))}</select></label>
+                        <label>${localized('mode')}<select name="mode">${options(modelModes)}</select></label>
+                    </div>
                 </div>
-            </div>
+            </details>
             <button type="button" class="studio-plan-link" data-studio-plan data-studio-copy="plan"></button>
             <button type="button" data-studio-reset data-studio-copy="reset"></button>
             <p class="studio-announcement" role="status"></p>

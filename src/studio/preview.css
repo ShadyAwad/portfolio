@@ -16,7 +16,7 @@
 .studio-layout {
     margin-block-start: 1rem;
     display: grid;
-    grid-template-columns: minmax(13rem, 15.5rem) minmax(0, 1fr);
+    grid-template-columns: minmax(12rem, 14rem) minmax(0, 1fr);
     align-items: start;
     gap: clamp(.75rem, 2vw, 1.5rem);
 }
@@ -26,7 +26,10 @@
     border-radius: 14px;
     background: var(--input-bg);
 }
-.studio-settings { padding: 1rem; font-size: .86rem; }
+.studio-settings { padding: .85rem; font-size: .86rem; background: transparent; }
+.studio-feature-settings { margin-block-end: .45rem; border-block: 1px solid var(--border); }
+.studio-feature-settings > summary { min-block-size: 44px; padding-block: .65rem; cursor: pointer; font-weight: 650; }
+.studio-feature-settings > summary::marker { color: var(--accent); }
 .studio-settings > label { display: grid; gap: .3rem; margin-block-end: .75rem; font-weight: 650; }
 .studio-settings select, .studio-settings button {
     inline-size: 100%;
@@ -522,12 +525,14 @@
 .studio-heading { padding-block-end: .8rem; border-block-end: 1px solid var(--border); }
 .studio-heading p { max-inline-size: 62ch; margin-block-start: .25rem; }
 .studio-settings select, .studio-settings button { min-block-size: 44px; }
-.studio-settings .studio-plan-link {
-    margin-block-end: .45rem;
-    color: var(--accent);
-    background: var(--table-header);
-    border-color: var(--accent);
+.studio-settings .studio-plan-link, .studio-settings [data-studio-reset] {
+    padding-inline: .25rem;
+    border-color: transparent;
+    background: transparent;
+    text-align: start;
 }
+.studio-settings .studio-plan-link { color: var(--accent); }
+.studio-settings [data-studio-reset] { color: var(--muted); }
 .studio-settings button[hidden] { display: none; }
 .studio-return-link { display: inline-flex; align-items: center; min-block-size: 36px; color: var(--accent); font-size: .85rem; }
 .studio-template > div, .architecture-explorer:not([hidden]) { animation: studio-view-entry 170ms ease-out both; }

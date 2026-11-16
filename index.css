@@ -651,13 +651,7 @@ html[dir="rtl"] .checkbox-group label {
     display: block;
 }
 
-.topology-legend {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: calc(0.68rem * var(--font-scale));
-    color: var(--muted);
-    text-align: center;
-    margin-top: 10px;
-}
+
 
 /* SVG Node and connectors stylings */
 .topology-connector {
@@ -728,12 +722,12 @@ html[dir="rtl"] .checkbox-group label {
 }
 
 /* Hover behaviors for diagram tables */
-.topology-node:hover .entity-rect {
+.topology-node:is(:hover, :focus-visible) .entity-rect {
     stroke: var(--accent);
     stroke-width: 1.5;
     fill: #141c3e;
 }
-.topology-node:hover .entity-header {
+.topology-node:is(:hover, :focus-visible) .entity-header {
     stroke: var(--accent);
     fill: #1c2756;
 }

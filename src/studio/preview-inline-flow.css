@@ -5,12 +5,26 @@
 .mock-flow-feedback { min-inline-size: 0; }
 .mock-flow-feedback[data-flow-state] {
     display: grid;
-    gap: .45rem;
+    gap: calc(var(--mock-gap) * .6);
     margin-block-start: .45rem;
-    padding: .55rem .65rem;
+    padding: calc(var(--mock-spacing) * .52) calc(var(--mock-spacing) * .68);
+    border: var(--mock-stroke) solid var(--mock-border);
     border-inline-start: 2px solid var(--mock-accent);
     border-radius: var(--mock-control-corner);
     background: var(--mock-tint);
+}
+.mock-flow-feedback[data-flow-state="complete"] .mock-flow-status {
+    display: flex;
+    align-items: baseline;
+    gap: .5em;
+}
+.mock-flow-feedback[data-flow-state="complete"] .mock-flow-status::before {
+    content: '';
+    flex: 0 0 .45em;
+    block-size: .7em;
+    border: solid var(--mock-accent);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
 }
 .mock-flow-status {
     color: var(--mock-ink);

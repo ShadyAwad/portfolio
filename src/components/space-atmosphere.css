@@ -1,7 +1,8 @@
 .space-atmosphere {
-    --well-core: #02040c72;
-    --well-rim: #879be233;
-    --well-halo: #3b56a627;
+    --well-core: #010209;
+    --well-rim: #8198c55c;
+    --well-halo: #677eab31;
+    --well-glint: #a6b8df7a;
     --comet-ink: #a5cdff;
     position: fixed;
     z-index: -1;
@@ -11,27 +12,32 @@
     contain: strict;
 }
 [data-theme="light"] .space-atmosphere {
-    --well-core: #b2c1db26;
-    --well-rim: #7e8fa83b;
-    --well-halo: #a8bbd32d;
+    --well-core: #62738e30;
+    --well-rim: #546e9257;
+    --well-halo: #829cb232;
+    --well-glint: #435f8980;
     --comet-ink: #536f99;
 }
 .space-well {
     position: absolute;
-    top: 10%;
-    left: clamp(-15rem, -17vw, -1rem);
-    width: clamp(20rem, 52vw, 45rem);
-    aspect-ratio: 1;
-    background: radial-gradient(ellipse at center,
-        var(--well-core) 0 26%, var(--well-halo) 36%, transparent 64%);
+    top: clamp(6.75rem, 21vh, 13rem);
+    left: clamp(-2.5rem, calc(3vw - 4rem), -1.25rem);
+    width: clamp(7.5rem, 14vw, 11rem);
+    aspect-ratio: 5 / 4;
 }
-.space-well::after {
-    content: '';
+.space-well svg {
     position: absolute;
-    inset: 26% 1%;
-    transform: rotate(-24deg);
-    background: radial-gradient(ellipse at center,
-        transparent 37%, var(--well-rim) 46%, var(--well-halo) 56%, transparent 72%);
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+.space-lensing { opacity: .59; }
+@media (max-width: 600px) {
+    .space-well {
+        top: -1.8rem;
+        left: auto;
+        right: -.75rem;
+    }
 }
 .space-comet {
     position: absolute;
@@ -43,7 +49,29 @@
     background: linear-gradient(90deg, transparent, var(--comet-ink));
     opacity: 0;
 }
+.space-comet::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: -1px;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--comet-ink);
+    box-shadow: 0 0 4px var(--comet-ink);
+}
 @media (prefers-reduced-motion: no-preference) {
+    .space-atmosphere[data-moving] .space-well { animation: space-drift 29s ease-in-out alternate infinite; }
+    .space-atmosphere[data-moving] .space-lensing { animation: space-lensing 23s ease-in-out alternate infinite; }
+    .space-atmosphere:has(.is-flying) .space-lensing { animation-play-state: paused; }
+    @keyframes space-drift {
+        from { transform: translate3d(-2px, -3px, 0); }
+        to { transform: translate3d(7px, 5px, 0); }
+    }
+    @keyframes space-lensing {
+        from { transform: rotate(-5deg) scaleY(.94); opacity: .48; }
+        to { transform: rotate(6deg) scaleY(1.06); opacity: .77; }
+    }
     .space-comet.is-flying { animation: space-fly-by 1550ms linear; }
     @keyframes space-fly-by {
         0% { transform: translate3d(0, 0, 0) rotate(5deg); opacity: 0; }

@@ -13,9 +13,35 @@
 <body>
 
     <canvas id="starfield" aria-hidden="true"></canvas>
-    <div class="space-atmosphere" aria-hidden="true"><div class="space-well"></div><div class="space-comet"></div></div>
+    <div class="space-atmosphere" aria-hidden="true">
+        <div class="space-well">
+            <svg viewBox="0 0 180 144" focusable="false">
+                <defs>
+                    <radialGradient id="space-disk-glow">
+                        <stop offset=".53" stop-color="var(--well-halo)" stop-opacity="0"/>
+                        <stop offset=".76" stop-color="var(--well-halo)"/>
+                        <stop offset="1" stop-color="var(--well-halo)" stop-opacity="0"/>
+                    </radialGradient>
+                </defs>
+                <g transform="rotate(-14 90 72)">
+                    <ellipse cx="90" cy="72" rx="83" ry="17" fill="url(#space-disk-glow)"/>
+                    <ellipse cx="90" cy="72" rx="69" ry="9" fill="none" stroke="var(--well-rim)" stroke-width=".7"/>
+                    <path d="M58 67C59 26 119 24 122 65M58 77c8 34 54 34 64 0" fill="none" stroke="var(--well-rim)" stroke-width=".55"/>
+                    <circle cx="90" cy="72" r="24" fill="var(--well-core)" stroke="var(--well-rim)" stroke-width=".5"/>
+                    <path d="M22 75c21 12 112 12 136-1" fill="none" stroke="var(--well-rim)" stroke-width=".75"/>
+                </g>
+            </svg>
+            <svg class="space-lensing" viewBox="0 0 180 144" focusable="false">
+                <g transform="rotate(-14 90 72)" fill="none" stroke="var(--well-glint)" stroke-linecap="round">
+                    <path d="M66 54a26 26 0 0 1 23-10M101 99a29 29 0 0 0 17-11" stroke-width=".7"/>
+                    <path d="M34 79q21 6 42 5m37-2q16-2 29-6" stroke-width=".8"/>
+                </g>
+            </svg>
+        </div>
+        <div class="space-comet"></div>
+    </div>
 
-<canvas id="cursor-trail-canvas"></canvas>
+<canvas id="cursor-trail-canvas" aria-hidden="true"></canvas>
 
     <main class="bento-container" id="portfolio-grid">
         
@@ -228,19 +254,14 @@
 
                             <div class="stanza-summary">
                                 <span class="stanza-eyebrow" data-i18n="stanzaEyebrow">Product showcase</span>
-                                <h2 id="stanza-title" data-i18n="stanzaTitle" data-stanza-brand><span class="stanza-brand">Stanza</span> HR — Multi-Tenant Workforce Management Platform</h2>
-                                <p class="pane-desc" data-i18n="stanzaDescription">A customizable, multi-tenant workforce management platform built with Node.js, Express, PostgreSQL, React, Redis, and BullMQ. The system combines secure tenant isolation, role-based access control, geofenced attendance, HR workflows, and semantic intelligence in a performance-focused progressive web application.</p>
+                                <h2 id="stanza-title" data-i18n="stanzaTitle" data-stanza-brand><span class="stanza-brand">Stanza</span> HR</h2>
+                                <p class="pane-desc" data-i18n="stanzaDescription">A multi-tenant HR workspace for geofenced attendance, payroll, performance reviews, and HR workflows, with role-based access and semantic routing.</p>
                                 <div class="stanza-caption">
                                     <span class="stanza-eyebrow" data-i18n="stanzaCaption">On screen</span>
                                     <h3 data-stanza-title>Performance</h3>
                                     <p data-stanza-description>Performance reviews, goals and OKRs, recognition, and review cycles, shown in Stanza’s dark theme.</p>
                                 </div>
-                                <ul class="stanza-highlights" aria-label="Stanza HR">
-                                    <li data-i18n="stanzaAttendance">Geofenced attendance</li>
-                                    <li data-i18n="stanzaAccess">Role-based access</li>
-                                    <li data-i18n="stanzaWorkflows">HR workflows</li>
-                                </ul>
-                            </div>
+                                </div>
 
                             <dialog class="stanza-lightbox" id="stanza-lightbox" aria-labelledby="stanza-lightbox-title">
                                 <header class="stanza-lightbox-bar">
@@ -358,8 +379,8 @@
         </div>
 
         <div class="bento-item systems-topology" id="systems-architecture-card">
-            <div class="tech-tag" data-i18n="systemTopology">Systems Architecture & Topology</div>
-            <p class="topology-desc" data-i18n="topologyDesc">Interactive Database Schema & System Topology Map. Toggle between optimized Raw SQL execution paths and database Row-Level Security (RLS) policies. Rendering active query flows at 60 FPS.</p>
+            <h3 class="tech-tag" data-i18n="systemTopology">PostgreSQL schema and tenant isolation</h3>
+            <p class="topology-desc" data-i18n="topologyDesc">Select a table to trace its relationships, then compare the SQL query and row-level security policy.</p>
             
             <div class="topology-dashboard-grid">
                 <div class="topology-map-container" id="svg-container">
@@ -387,7 +408,7 @@
                         </g>
                         
                         <g id="topology-entities">
-                            <g class="topology-node" id="node-orgs-elem" transform="translate(40, 50)" role="button" aria-label="Organizations schema card">
+                            <g class="topology-node" id="node-orgs-elem" transform="translate(40, 50)" role="button" tabindex="0" aria-pressed="false" aria-label="Organizations schema card">
                                 <rect width="150" height="110" rx="12" class="entity-rect" />
                                 <rect width="150" height="30" rx="12" class="entity-header" />
                                 <text x="75" y="20" class="entity-title">tbl_organizations</text>
@@ -397,7 +418,7 @@
                                 <circle cx="150" cy="65" r="4" class="node-bus-port" />
                             </g>
                             
-                            <g class="topology-node active" id="node-tenants-elem" transform="translate(320, 50)" role="button" aria-label="Tenant registry schema card">
+                            <g class="topology-node active" id="node-tenants-elem" transform="translate(320, 50)" role="button" tabindex="0" aria-pressed="false" aria-label="Tenant registry schema card">
                                 <rect width="160" height="115" rx="12" class="entity-rect" />
                                 <rect width="160" height="30" rx="12" class="entity-header" />
                                 <text x="80" y="20" class="entity-title">tbl_tenant_registry</text>
@@ -409,7 +430,7 @@
                                 <circle cx="160" cy="70" r="4" class="node-bus-port" />
                             </g>
                             
-                            <g class="topology-node" id="node-users-elem" transform="translate(130, 260)" role="button" aria-label="User credentials schema card">
+                            <g class="topology-node" id="node-users-elem" transform="translate(130, 260)" role="button" tabindex="0" aria-pressed="false" aria-label="User credentials schema card">
                                 <rect width="150" height="110" rx="12" class="entity-rect" />
                                 <rect width="150" height="30" rx="12" class="entity-header" />
                                 <text x="75" y="20" class="entity-title">tbl_user_credentials</text>
@@ -420,7 +441,7 @@
                                 <circle cx="150" cy="80" r="4" class="node-bus-port" />
                             </g>
                             
-                            <g class="topology-node active" id="node-transactions-elem" transform="translate(610, 50)" role="button" aria-label="Client transactions schema card">
+                            <g class="topology-node active" id="node-transactions-elem" transform="translate(610, 50)" role="button" tabindex="0" aria-pressed="false" aria-label="Client transactions schema card">
                                 <rect width="160" height="120" rx="12" class="entity-rect" />
                                 <rect width="160" height="30" rx="12" class="entity-header transaction-header" />
                                 <text x="80" y="20" class="entity-title">client_transactions</text>
@@ -434,17 +455,16 @@
 
                         <circle id="pulsing-tracer" cx="0" cy="0" r="6" fill="#fb48c4" style="display: none; filter: url(#glow-effect);" />
                     </svg>
-                    <div class="topology-legend">PostgreSQL Interactive Relational Topology • Click Table Entities to Probe Database Pipeline</div>
                 </div>
                 
                 <div class="topology-code-side" id="code-viewer-panel">
-                    <div class="code-tabs" role="tablist" aria-label="Systems Architecture Configurations">
-                        <button class="code-tab-btn active" id="tab-btn-sql" role="tab" aria-selected="true" data-i18n="viewSqlBtn">View Recursive Query CTE</button>
-                        <button class="code-tab-btn" id="tab-btn-rls" role="tab" aria-selected="false" data-i18n="viewRlsBtn">View RLS Security Rules</button>
+                    <div class="code-tabs" role="tablist" aria-label="PostgreSQL examples">
+                        <button class="code-tab-btn active" id="tab-btn-sql" type="button" role="tab" aria-controls="code-block-sql" aria-selected="true" data-i18n="viewSqlBtn">View Recursive Query CTE</button>
+                        <button class="code-tab-btn" id="tab-btn-rls" type="button" role="tab" aria-controls="code-block-rls" tabindex="-1" aria-selected="false" data-i18n="viewRlsBtn">View RLS Security Rules</button>
                     </div>
                     
                     <div class="code-container">
-                        <pre id="code-block-sql" class="code-block active"><code><span class="sql-comment">-- High-Performance Recursive Common Table Expression (CTE)</span>
+                        <pre id="code-block-sql" role="tabpanel" aria-labelledby="tab-btn-sql" tabindex="0" class="code-block active"><code><span class="sql-comment">-- High-Performance Recursive Common Table Expression (CTE)</span>
 <span class="sql-comment">-- Traverses hierarchy organizational parent-child tenant nodes,</span>
 <span class="sql-comment">-- calculating execution depth, run paths, and active budgets.</span>
 <span class="sql-keyword">WITH RECURSIVE</span> org_hierarchy <span class="sql-keyword">AS</span> (
@@ -486,7 +506,7 @@
 <span class="sql-keyword">FROM</span> org_hierarchy
 <span class="sql-keyword">ORDER BY</span> node_path;</code></pre>
                         
-                        <pre id="code-block-rls" class="code-block"><code><span class="sql-comment">-- Rigid Multi-Tenant Row-Level Security (RLS) Policy Configurations</span>
+                        <pre id="code-block-rls" role="tabpanel" aria-labelledby="tab-btn-rls" tabindex="0" hidden class="code-block"><code><span class="sql-comment">-- Rigid Multi-Tenant Row-Level Security (RLS) Policy Configurations</span>
 <span class="sql-comment">-- Enforced directly at the bare PostgreSQL kernel boundary</span>
 <span class="sql-keyword">ALTER TABLE</span> client_transactions <span class="sql-keyword">ENABLE ROW LEVEL SECURITY</span>;
 
@@ -523,7 +543,7 @@
 
         <div class="bento-item db-visualizer" id="traversal-visualizer-card">
             <h3 data-i18n="dbVisualizer">Active Index Traversal & Memory Allocator</h3>
-            <p class="visualizer-desc" data-i18n="visualizerDesc">Traverse a B+ Tree indexing pathway or compact memory block fragments. Watch low-abstraction systems logic execute at 60fps.</p>
+            <p class="visualizer-desc" data-i18n="visualizerDesc">Follow a key through a B+ tree or see how compaction reclaims fragmented memory.</p>
             <div class="visualizer-dashboard-grid">
                 <div class="visualizer-viewport">
                     <canvas id="visualizer-canvas"></canvas>
@@ -558,10 +578,10 @@
             </div>
             <div class="footer-links">
                 <a href="#profile-card" data-i18n="about">About</a>
-                <a href="#systems-architecture-card" data-i18n="projects">Projects</a>
+                <a href="#architectural-showcase-card" data-i18n="projects">Projects</a>
                 <a href="#contact-dock" data-i18n="contact">Contact</a>
             </div>
-            <small data-i18n="copyright">© 2026 Shady Awad. Handcrafted in pure Vanilla JavaScript & CSS. No bloat, no overhead.</small>
+            <small data-i18n="copyright">© 2026 Shady Awad.</small>
         </div>
     </footer>
 
