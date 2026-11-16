@@ -260,6 +260,31 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await command('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
     await waitFor("q('.workspace-preview-motion').dataset.pulse==='ready' && q('.workspace-preview-motion').getAnimations({subtree:true}).length===0");
 
+    await evaluate(`for (const key of ['auth','tenancy','jobs']) {
+        const control = q('.studio-settings [name='+key+']');
+        if (control.checked) control.click();
+    }`);
+    await check("!q('[data-pulse-node=access]') && q('.workspace-preview-motion').dataset.pulse==='idle'");
+    await command('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'no-preference' }] });
+    await evaluate("traceAction();window.oldJourney=q('.workspace-preview-motion svg');window.oldEffects=oldJourney.getAnimations({subtree:true});click('.studio-settings [name=auth]')");
+    await check("!oldJourney.isConnected && oldEffects.every(effect=>effect.playState==='idle') && q('.workspace-preview-motion').dataset.pulse==='idle' && !q('.mock-trace').hasAttribute('data-trace-complete') && !q('[data-preview-trace]').hidden");
+    await check("q('[data-pulse-node=access]').parentElement.textContent.includes('Session') && q('#workspace-pulse-route').textContent.includes('API → Session → Database') && q('.workspace-preview-motion').getAnimations({subtree:true}).length<=1");
+    await evaluate(`window.secureJourney=q('.workspace-preview-motion svg');
+        click('.studio-settings [name=jobs]');
+        window.secureSaved=localStorage.getItem('awad-portfolio-studio');
+        traceAction();`);
+    await check("secureJourney===q('.workspace-preview-motion svg') && q('.workspace-preview-motion').dataset.pulse==='running' && secureJourney.querySelectorAll('.workspace-pulse-lanes path').length===5");
+    await waitFor("Number(getComputedStyle(q('.workspace-pulse-verified')).opacity)>.55");
+    await waitFor("q('.workspace-preview-motion').dataset.pulse==='ready'");
+    await check("localStorage.getItem('awad-portfolio-studio')===secureSaved && q('#price-display').dataset.price===tracePrice && secureJourney.getAnimations({subtree:true}).length===0");
+    await command('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
+    await evaluate("click('.studio-settings [name=tenancy]');click('.studio-settings [name=auth]')");
+    await check("q('[data-pulse-node=access]').parentElement.textContent.includes('Scope') && q('.workspace-preview-motion').getAnimations({subtree:true}).length===0");
+    await evaluate("traceAction();openTrace()");
+    await check("q('[data-flow-scenario]').value==='workspace' && q('.flow-route [data-component=tenant]') && !q('.flow-route [data-component=auth]')");
+    await evaluate("completeTrace();returnToPreview()");
+    await check("q('.workspace-preview-motion').dataset.pulse==='ready' && document.activeElement===q('[data-preview-action]')");
+
     await evaluate("template('ecommerce')");
     await check("q('[data-preview-action]').disabled && q('[data-preview-trace]').hidden");
     await evaluate("click('[data-cart-add]');traceAction();openTrace()");

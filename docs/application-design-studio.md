@@ -231,3 +231,11 @@ The SaaS preview keeps a compact request strip immediately below Load Workspace.
 For the default route, the UI receives the token at 240 ms, the API at 710 ms, and the database at 1,200 ms. The return reaches the API at 1,660 ms and the UI at 2,160 ms. The final pulse settles by about 2,400 ms. These are presentation timings for a simulated request. The strip only shows components present in the configured graph and shortens the route if a component is absent.
 
 The existing trace invitation remains available throughout. A second activation cancels the first run and launches a fresh token. Leaving the preview, changing template or workspace, or hiding the tab cancels an unfinished run. Reduced motion resolves the interaction immediately and shows the same ready state. The prototype uses bounded element animations and the current fictional preview feedback, with no ambient animation or changes to pricing or saved state.
+
+### V2 — Configuration-reactive workspace choreography
+
+Load Workspace keeps the 2.4-second baseline. The preview reads the same resolved scenario as How It Works. Authentication or WebAuthn adds a Session checkpoint between API and database. Tenancy or row-level security adds a Scope checkpoint. When both checks apply, Access represents them in one socket, while the detailed trace presents each check individually. The token pauses briefly for a spring and a checkmark at that socket, then continues. These variants finish in about 2.7 seconds.
+
+When a setting changes the route, the strip redraws the affected stage and gives it one restrained emphasis pulse. It does not launch a request. A route change cancels an in-flight run and clears its completion feedback. The trace invitation stays available. Reduced motion shows the changed label and route immediately, then resolves a launched request without motion.
+
+Load Workspace has no modeled background step, so Background jobs does not add a branch even when the configuration includes a queue and workers. Theme, pricing and unrelated capabilities do not change the route.

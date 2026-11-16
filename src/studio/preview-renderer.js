@@ -5,7 +5,8 @@ import { mountArchitectureExplorer } from './architecture/explorer.js';
 import { bindPreviewInteractions } from './preview-interactions.js';
 import { createPreviewTrace, previewTraceContext } from './preview-trace.js';
 import { buildArchitectureGraph } from './architecture/graph.js';
-import { mountWorkspacePreview } from './preview-workspace-motion.js';
+import { resolveFlow } from './flow/model.js';
+import { mountWorkspacePreview, workspacePreviewJourney } from './preview-workspace-motion.js';
 import './preview-workspace-motion.css';
 import { modelAssets, modelModes } from '../components/model-assets.js';
 import { mediaCopy, mountPreviewMedia } from './preview-media.js';
@@ -103,6 +104,7 @@ export function mountDesignStudio(store, reset) {
     let moduleElements;
     let media;
     let workspaceMotion;
+    let workspaceRouteKey;
 
     const label = pair => pair[language === 'ar' ? 1 : 0];
     const copy = key => label(translations[key] ?? mediaCopy[key] ?? modelAssets[key].name);
@@ -133,6 +135,20 @@ export function mountDesignStudio(store, reset) {
         workspaceMotion?.cancel();
         architecture.openTrace(action, completed => trace.reflect(action, completed),
             screen.querySelector('[data-preview-action]'));
+    }
+
+    function syncWorkspaceMotion(state) {
+        if (state.applicationType !== 'saas') return;
+        const key = [state.previewFeatures.auth, state.previewFeatures.tenancy, state.engineering.webauthn, state.engineering.rls].join();
+        if (workspaceMotion && workspaceRouteKey === key) return;
+        workspaceRouteKey = key;
+        const journey = workspacePreviewJourney(resolveFlow(state, buildArchitectureGraph(state), 'workspace').steps);
+        if (!workspaceMotion) {
+            workspaceMotion = mountWorkspacePreview(screen.querySelector('.workspace-preview-motion'),
+                screen.querySelector('[data-preview-action="workspace"]'), previewPanel, host, journey, label);
+        } else if (workspaceMotion.configure(journey)) {
+            trace.reflect(trace.action, false);
+        }
     }
 
     function renderTheme() {
@@ -176,9 +192,6 @@ export function mountDesignStudio(store, reset) {
                 landing: 'linearise.example', 'internal-tool': 'ops.relay.example'
             }[model.template];
             screen.innerHTML = templates[model.template](label);
-            const pulse = screen.querySelector('.workspace-preview-motion');
-            if (pulse) workspaceMotion = mountWorkspacePreview(pulse,
-                screen.querySelector('[data-preview-action="workspace"]'), previewPanel, host, buildArchitectureGraph(state), label);
             media = mountPreviewMedia(screen.querySelector('[data-preview-media]'), label);
             screen.querySelector('[data-preview-workspace]').append(workspaces);
             const footer = screen.querySelector('[data-preview-footer]');
@@ -187,6 +200,7 @@ export function mountDesignStudio(store, reset) {
             const workspaceName = screen.querySelector('[data-workspace-name]');
             if (workspaceName) workspaceName.textContent = workspaces.querySelector('select').value;
         }
+        syncWorkspaceMotion(state);
 
         if (localeChanged) {
             moduleElements = { tenancy: workspaces };
@@ -278,7 +292,9 @@ export function mountDesignStudio(store, reset) {
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
     const unsubscribe = store.subscribe((next, last) => {
         if (next.applicationType !== last.applicationType || next.visual.theme !== last.visual.theme ||
-            next.visual.density !== last.visual.density || next.engineering.rbac !== last.engineering.rbac ||
+            next.visual.density !== last.visual.density ||
+            next.engineering.rbac !== last.engineering.rbac ||
+            (next.applicationType === 'saas' && ['rls', 'webauthn'].some(key => next.engineering[key] !== last.engineering[key])) ||
             Object.keys(next.interactiveMedia).some(key => next.interactiveMedia[key] !== last.interactiveMedia[key]) ||
             PREVIEW_FEATURE_KEYS.some(key => next.previewFeatures[key] !== last.previewFeatures[key])) render();
     });
