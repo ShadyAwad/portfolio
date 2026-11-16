@@ -10,6 +10,7 @@ import { mountWorkspacePreview, workspacePreviewJourney } from './preview-worksp
 import './preview-workspace-motion.css';
 import { modelAssets, modelModes } from '../components/model-assets.js';
 import { mediaCopy, mountPreviewMedia } from './preview-media.js';
+import { mountPreviewAppearance } from './preview-appearance.js';
 import './preview-media.css';
 
 const displayFeatures = [...PREVIEW_FEATURE_KEYS, 'roles'];
@@ -92,6 +93,7 @@ export function mountDesignStudio(store, reset) {
     const mediaOptions = studio.querySelector('.studio-media-options');
     const events = new AbortController();
     const listen = (element, type, handler) => element.addEventListener(type, handler, { signal: events.signal });
+    const appearance = mountPreviewAppearance(studio.querySelector('.studio-preview-tools'), preview, store, events.signal);
     const planner = document.getElementById('architecture-planner');
     const plan = form.querySelector('[data-studio-plan]');
     const returnLink = document.createElement('a');
@@ -152,13 +154,18 @@ export function mountDesignStudio(store, reset) {
     }
 
     function renderTheme() {
-        const theme = store.getState().visual.theme;
+        const visual = store.getState().visual;
+        const { theme } = visual;
         const dark = theme === 'system' ? systemTheme.matches : theme === 'dark';
         const action = copy(dark ? 'useLight' : 'useDark');
-        preview.dataset.previewTheme = dark ? 'dark' : 'light';
-        themeButton.setAttribute('aria-label', action);
-        themeButton.title = action;
-        themeButton.firstElementChild.textContent = dark ? '☀' : '☾';
+        const activeTheme = dark ? 'dark' : 'light';
+        if (preview.dataset.previewTheme !== activeTheme) preview.dataset.previewTheme = activeTheme;
+        if (themeButton.getAttribute('aria-label') !== action) {
+            themeButton.setAttribute('aria-label', action);
+            themeButton.title = action;
+            themeButton.firstElementChild.textContent = dark ? '☀' : '☾';
+        }
+        appearance.render(visual, dark);
     }
     function render() {
         if (host.hidden) return;
@@ -168,6 +175,7 @@ export function mountDesignStudio(store, reset) {
         if (localeChanged) {
             studio.lang = language;
             studio.dir = language === 'ar' ? 'rtl' : 'ltr';
+            appearance.localize(label);
             form.setAttribute('aria-label', copy('controls'));
             viewportControls.setAttribute('aria-label', copy('viewport'));
             returnLink.textContent = copy('backToStudio');
@@ -213,8 +221,7 @@ export function mountDesignStudio(store, reset) {
                 return section;
             }));
         }
-        if (localeChanged || model.theme !== previous?.theme || model.theme === 'system') renderTheme();
-        if (model.density !== previous?.density) preview.dataset.density = model.density;
+        renderTheme();
         if (templateChanged) form.elements.applicationType.value = model.template;
         for (const key of displayFeatures) {
             const active = key === 'roles' ? model.roles : model.capabilities[key];
@@ -292,12 +299,11 @@ export function mountDesignStudio(store, reset) {
     const observer = new MutationObserver(render);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
     const unsubscribe = store.subscribe((next, last) => {
-        if (next.applicationType !== last.applicationType || next.visual.theme !== last.visual.theme ||
-            next.visual.density !== last.visual.density ||
-            next.engineering.rbac !== last.engineering.rbac ||
+        if (next.applicationType !== last.applicationType || next.engineering.rbac !== last.engineering.rbac ||
             (next.applicationType === 'saas' && ['rls', 'webauthn'].some(key => next.engineering[key] !== last.engineering[key])) ||
             Object.keys(next.interactiveMedia).some(key => next.interactiveMedia[key] !== last.interactiveMedia[key]) ||
             PREVIEW_FEATURE_KEYS.some(key => next.previewFeatures[key] !== last.previewFeatures[key])) render();
+        else if (!host.hidden && Object.keys(next.visual).some(key => next.visual[key] !== last.visual[key])) renderTheme();
     });
     render();
     return () => {

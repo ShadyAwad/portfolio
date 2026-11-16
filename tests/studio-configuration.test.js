@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { createConfigurationStore } from '../src/studio/configuration.js';
 import { priceProject } from '../src/studio/pricing.js';
 import { modelArchitecture } from '../src/studio/architecture-model.js';
+import { appearanceDefaults } from '../src/studio/appearance.js';
 
 test('partial updates publish one immutable snapshot and preserve other inputs', () => {
     const store = createConfigurationStore();
@@ -36,7 +37,7 @@ test('validation applies safe defaults, bounds counts, and preserves zero versus
     const state = store.getState();
     assert.equal(state.applicationType, 'saas');
     assert.equal(state.pricingTier, 1);
-    assert.deepEqual(state.visual, { theme: 'system', density: 'compact' });
+    assert.deepEqual(state.visual, { theme: 'system', ...appearanceDefaults, density: 'compact' });
     assert.deepEqual(state.features, { pwa: false, l10n: false, rbac: false, ai: false });
     assert.equal(state.usage.jobs, 0);
     assert.equal(state.usage.uploads, 100);

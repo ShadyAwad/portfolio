@@ -247,3 +247,9 @@ Load Workspace opens an in-dashboard layer from the compact route summary. It ex
 Drag toward the highlighted socket to feel magnetic pull. Off-route motion has soft resistance. Release near the socket or flick toward it to carry momentum into the capture. A miss springs back to the last socket. Clicking, tapping, or activating the focused token with Enter or Space advances one hop. Run request continues from the current socket. Once the result is ready at the last request socket, the response follows the mint return path automatically. The existing access check remains between the API and database where configured.
 
 Close or Escape dismisses the field. A completed trip shows Workspace ready for about one second before the field closes, and focus returns to the launch control if it was in the field. Opening again starts a fresh request. Reduced motion expands instantly and advances without animated travel. The layer closes on view, route, template, or layout changes and releases the pointer and any scheduled motion.
+
+### P1 — Preview appearance
+
+Appearance lives in a disclosure beside the Live Preview toolbar. Version 1 drafts retain their existing theme and density and receive defaults for missing fields. Those defaults are the template’s accent, Minimal styling, and Modern system fonts. Reset appearance restores the controls in the disclosure while preserving preview theme, viewport, features, and the project scope.
+
+All four templates share preview-scoped tokens for accent, foreground contrast, selected tint, surfaces, corners, elevation, spacing, and typography. A selected color supplies separate tones for text and filled actions. The template’s structure and signature artwork remain visible. Appearance updates the existing preview in place, including the optional 3D surface. It does not change the graph, request choreography, workload model, or quote.

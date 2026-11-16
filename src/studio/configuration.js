@@ -1,6 +1,7 @@
 import { capacityDefaults, validAssumption } from './capacity/assumptions.js';
 import { commercialDefaults, isCommercialInput } from './commercial/inputs.js';
 import { findModelAsset, modelModes } from '../components/model-assets.js';
+import { appearanceDefaults, appearanceOptions, normalizeAccent } from './appearance.js';
 
 export const MAX_USAGE = 1_000_000_000;
 export const FEATURE_KEYS = Object.freeze(['pwa', 'l10n', 'rbac', 'ai']);
@@ -14,7 +15,7 @@ const defaults = freeze({
     features: { pwa: false, l10n: false, rbac: false, ai: false },
     previewFeatures: Object.fromEntries(PREVIEW_FEATURE_KEYS.map(key => [key, false])),
     usage: { tenants: 5, users: 250, requests: null, records: 10000, uploads: 100, jobs: 0, notifications: 0 },
-    visual: { theme: 'system', density: 'comfortable' },
+    visual: { theme: 'system', ...appearanceDefaults },
     interactiveMedia: { enabled: false, asset: 'planet', mode: 'drag' },
     capacity: capacityDefaults,
     commercial: commercialDefaults,
@@ -55,7 +56,9 @@ function applyPatch(current, patch) {
             value === null ? null : count(value, previous)),
         visual: {
             theme: choice(visual.theme, ['system', 'light', 'dark'], current.visual.theme),
-            density: choice(visual.density, ['comfortable', 'compact'], current.visual.density)
+            ...Object.fromEntries(Object.entries(appearanceOptions).map(([key, allowed]) =>
+                [key, choice(visual[key], allowed, current.visual[key])])),
+            customAccent: normalizeAccent(visual.customAccent) ?? current.visual.customAccent
         },
         interactiveMedia: {
             enabled: flag(media.enabled, current.interactiveMedia.enabled),

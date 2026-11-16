@@ -435,6 +435,8 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
         })()`);
         await evaluate("window.mediaInstance = model();click('.studio-preview-theme');set('.studio-settings [name=mode]','static','change')");
         await check("model()===mediaInstance && !model().hasAttribute('camera-controls') && !model().hasAttribute('auto-rotate')");
+        await evaluate("set('.studio-appearance [name=style]','soft','change')");
+        await check("model()===mediaInstance && getComputedStyle(q('.studio-media-card')).borderRadius==='17px'");
         await evaluate("set('.studio-settings [name=mode]','orbit','change')");
         await check("model().hasAttribute('camera-controls') && model().hasAttribute('auto-rotate')");
         await command('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
@@ -466,5 +468,48 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
         await evaluate("mediaEnabled()");
         await check("!model() && !mediaInstance.isConnected && mediaSlot().inert && modelRequests().length===1");
     }
+    await command('Emulation.setDeviceMetricsOverride', { width: 1360, height: 900, deviceScaleFactor: 1, mobile: false });
+    await command('Emulation.setTouchEmulationEnabled', { enabled: false });
+    await evaluate(`if (document.documentElement.dir==='rtl') click('#lang-toggle');
+        view(0);click('[data-preview-viewport=desktop]');
+        q('.studio-appearance').open=true;
+        window.look=(name,value)=>set('.studio-appearance [name='+name+']',value,'change');
+        window.theme=value=>{if(q('.studio-preview').dataset.previewTheme!==value)click('.studio-preview-theme')};
+        window.appearancePrice=q('#price-display').dataset.price;`);
+    await waitFor("document.documentElement.dir==='ltr'");
+    for (const [app, tone, accent, style, typography, density, hex] of [
+        ['saas', 'dark', 'violet', 'soft', 'modern', 'comfortable', '#8055dc'],
+        ['ecommerce', 'light', 'coral', 'minimal', 'editorial', 'comfortable', '#e3665a'],
+        ['landing', 'dark', 'emerald', 'bold', 'modern', 'comfortable', '#17a472'],
+        ['internal-tool', 'light', 'cyan', 'minimal', 'technical', 'compact', '#0899bd']
+    ]) {
+        await evaluate(`template('${app}');theme('${tone}');
+            window.mockRoot=q('.studio-template').firstElementChild;
+            look('accent','${accent}');look('style','${style}');look('typography','${typography}');look('density','${density}');`);
+        await check(`mockRoot===q('.studio-template').firstElementChild && q('.studio-preview').style.getPropertyValue('--appearance-source')==='${hex}' &&
+            q('.studio-preview').dataset.style==='${style}' && q('.studio-preview').dataset.typography==='${typography}' &&
+            q('.studio-preview').dataset.density==='${density}' && q('#price-display').dataset.price===appearancePrice`);
+    }
+    await evaluate("q('.studio-appearance summary').focus()");
+    for (const open of [false, true]) {
+        await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, text: '\r' });
+        await command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
+        await check(`q('.studio-appearance').open===${open} && document.activeElement===q('.studio-appearance summary')`);
+    }
+    await evaluate(`q('[data-appearance-hex]').focus();
+        set('[data-appearance-hex]','#f0','input');`);
+    await check("q('[data-appearance-hex]').getAttribute('aria-invalid')==='true' && q('.studio-appearance [name=accent]').value==='cyan'");
+    await evaluate("q('[data-appearance-hex]').select();window.appearanceScroll=scrollY");
+    await command('Input.insertText', { text: '#1AB2CF' });
+    await check("document.activeElement===q('[data-appearance-hex]') && !q('[data-appearance-hex]').hasAttribute('aria-invalid') && q('.studio-appearance [name=accent]').value==='custom' && q('.studio-preview').style.getPropertyValue('--appearance-source')==='#1ab2cf'");
+    await check("scrollY===appearanceScroll");
+    await evaluate("set('[data-appearance-picker]','#bf2150','input');click('[data-preview-viewport=tablet]');theme('dark')");
+    await check("q('[data-appearance-hex]').value==='#bf2150' && q('.studio-preview-frame').dataset.viewport==='tablet' && q('.studio-preview').dataset.previewTheme==='dark'");
+    await evaluate("click('[data-appearance-reset]')");
+    await check("q('.studio-appearance [name=accent]').value==='template' && q('.studio-preview').dataset.style==='minimal' && q('.studio-preview').dataset.typography==='modern' && q('.studio-preview').dataset.density==='comfortable' && q('.studio-preview-frame').dataset.viewport==='tablet' && q('.studio-preview').dataset.previewTheme==='dark'");
+    await command('Emulation.setDeviceMetricsOverride', { width: 320, height: 760, deviceScaleFactor: 1, mobile: true });
+    await evaluate("click('#lang-toggle');look('accent','amber');look('typography','technical')");
+    await waitFor("document.documentElement.dir==='rtl' && q('.studio-appearance summary').textContent.includes('المظهر')");
+    await check("document.documentElement.scrollWidth===document.documentElement.clientWidth && q('[data-appearance-picker]').getAttribute('aria-label').includes('اختر')");
     assert.deepEqual(runtimeErrors, []);
 });
