@@ -2,6 +2,7 @@ import { capacityDefaults, validAssumption } from './capacity/assumptions.js';
 import { commercialDefaults, isCommercialInput } from './commercial/inputs.js';
 import { findModelAsset, modelModes } from '../components/model-assets.js';
 import { appearanceDefaults, appearanceOptions, normalizeAccent } from './appearance.js';
+import { isPreviewLayout, layoutDefaults } from './preview-layouts.js';
 
 export const MAX_USAGE = 1_000_000_000;
 export const FEATURE_KEYS = Object.freeze(['pwa', 'l10n', 'rbac', 'ai']);
@@ -16,6 +17,7 @@ const defaults = freeze({
     previewFeatures: Object.fromEntries(PREVIEW_FEATURE_KEYS.map(key => [key, false])),
     usage: { tenants: 5, users: 250, requests: null, records: 10000, uploads: 100, jobs: 0, notifications: 0 },
     visual: { theme: 'system', ...appearanceDefaults },
+    layouts: layoutDefaults,
     interactiveMedia: { enabled: false, asset: 'planet', mode: 'drag' },
     capacity: capacityDefaults,
     commercial: commercialDefaults,
@@ -60,6 +62,8 @@ function applyPatch(current, patch) {
                 [key, choice(visual[key], allowed, current.visual[key])])),
             customAccent: normalizeAccent(visual.customAccent) ?? current.visual.customAccent
         },
+        layouts: patchGroup(current.layouts, input.layouts, (value, previous, template) =>
+            isPreviewLayout(template, value) ? value : previous),
         interactiveMedia: {
             enabled: flag(media.enabled, current.interactiveMedia.enabled),
             asset: findModelAsset(media.asset)?.id ?? current.interactiveMedia.asset,

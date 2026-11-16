@@ -154,7 +154,15 @@ export function mountDesignStudio(store, reset) {
     }
 
     function renderTheme() {
-        const visual = store.getState().visual;
+        const state = store.getState();
+        const { applicationType, layouts, visual } = state;
+        const selectedLayout = layouts[applicationType];
+        const hiddenProductDetail = preview.dataset.layout === 'catalog' && selectedLayout === 'product' &&
+            preview.contains(document.activeElement) && document.activeElement.closest('.mock-product-details');
+        if (preview.dataset.layout !== selectedLayout) {
+            workspaceMotion?.cancel();
+            preview.dataset.layout = selectedLayout;
+        }
         const { theme } = visual;
         const dark = theme === 'system' ? systemTheme.matches : theme === 'dark';
         const action = copy(dark ? 'useLight' : 'useDark');
@@ -165,7 +173,8 @@ export function mountDesignStudio(store, reset) {
             themeButton.title = action;
             themeButton.firstElementChild.textContent = dark ? '☀' : '☾';
         }
-        appearance.render(visual, dark);
+        appearance.render(state, dark);
+        if (hiddenProductDetail) hiddenProductDetail.closest('.mock-product').querySelector('[data-cart-add]').focus({ preventScroll: true });
     }
     function render() {
         if (host.hidden) return;
@@ -303,7 +312,8 @@ export function mountDesignStudio(store, reset) {
             (next.applicationType === 'saas' && ['rls', 'webauthn'].some(key => next.engineering[key] !== last.engineering[key])) ||
             Object.keys(next.interactiveMedia).some(key => next.interactiveMedia[key] !== last.interactiveMedia[key]) ||
             PREVIEW_FEATURE_KEYS.some(key => next.previewFeatures[key] !== last.previewFeatures[key])) render();
-        else if (!host.hidden && Object.keys(next.visual).some(key => next.visual[key] !== last.visual[key])) renderTheme();
+        else if (!host.hidden && (next.layouts[next.applicationType] !== last.layouts[next.applicationType] ||
+            Object.keys(next.visual).some(key => next.visual[key] !== last.visual[key]))) renderTheme();
     });
     render();
     return () => {

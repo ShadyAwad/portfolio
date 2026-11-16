@@ -1,5 +1,7 @@
 import { appearanceDefaults, appearanceOptions, appearancePalette, normalizeAccent } from './appearance.js';
+import { layoutDefaults, previewLayouts } from './preview-layouts.js';
 import './preview-appearance.css';
+import './preview-layouts.css';
 
 const copy = {
     title: ['Appearance', 'المظهر'], accent: ['Accent', 'لون التمييز'],
@@ -9,6 +11,7 @@ const copy = {
     hex: ['Custom HEX', 'رمز اللون المخصص'], invalid: ['Enter a color like #0899BD.', 'أدخل رمز لون مثل #0899BD.'],
     style: ['Style', 'النمط'], minimal: ['Minimal', 'بسيط'], soft: ['Soft', 'ناعم'], bold: ['Bold', 'جريء'],
     typography: ['Typography', 'الخط'], modern: ['Modern', 'حديث'], editorial: ['Editorial', 'تحريري'],
+    layout: ['Layout', 'التخطيط'],
     technical: ['Technical', 'تقني'], density: ['Density', 'الكثافة'],
     comfortable: ['Comfortable', 'مريحة'], compact: ['Compact', 'مضغوطة'],
     reset: ['Reset appearance', 'إعادة ضبط المظهر']
@@ -21,7 +24,7 @@ export function mountPreviewAppearance(toolbar, preview, store, signal) {
         `<label><span data-appearance-copy="${key}"></span><select name="${key}">${choices.map(choice =>
             `<option value="${choice}" data-appearance-copy="${choice}"></option>`).join('')}</select></label>`).join('');
     details.innerHTML = '<summary><span data-appearance-copy="title"></span><i aria-hidden="true"></i></summary>' +
-        '<div class="studio-appearance-controls">' + selects +
+        '<div class="studio-appearance-controls"><fieldset class="studio-layout-picker"><legend data-appearance-copy="layout"></legend><div></div></fieldset>' + selects +
         '<div class="studio-appearance-custom"><input type="color" data-appearance-picker>' +
         '<label><span data-appearance-copy="hex"></span><input type="text" data-appearance-hex autocapitalize="off"' +
         ' spellcheck="false" placeholder="#RRGGBB" aria-describedby="studio-appearance-error" dir="ltr"></label>' +
@@ -29,12 +32,14 @@ export function mountPreviewAppearance(toolbar, preview, store, signal) {
         '<button type="button" data-appearance-reset data-appearance-copy="reset"></button></div>';
     toolbar.after(details);
     const fields = [...details.querySelectorAll('select')];
+    const layoutChoices = details.querySelector('.studio-layout-picker div');
     const picker = details.querySelector('[data-appearance-picker]');
     const input = details.querySelector('[data-appearance-hex]');
     const error = details.querySelector('[role="status"]');
     const swatch = details.querySelector('summary i');
     let invalidMessage = '';
     let lastPalette;
+    let layoutTemplate, translate;
 
     function setError(invalid) {
         if (invalid) input.setAttribute('aria-invalid', 'true');
@@ -44,6 +49,10 @@ export function mountPreviewAppearance(toolbar, preview, store, signal) {
 
     details.addEventListener('change', event => {
         const { target } = event;
+        if (target.name === 'preview-layout') {
+            const template = store.getState().applicationType;
+            store.update({ layouts: { [template]: target.value } });
+        }
         if (fields.includes(target)) {
             if (target.name === 'accent') {
                 input.value = store.getState().visual.customAccent;
@@ -64,17 +73,31 @@ export function mountPreviewAppearance(toolbar, preview, store, signal) {
     details.querySelector('[data-appearance-reset]').addEventListener('click', () => {
         input.value = appearanceDefaults.customAccent;
         setError(false);
-        store.update({ visual: appearanceDefaults });
+        const template = store.getState().applicationType;
+        store.update({ visual: appearanceDefaults, layouts: { [template]: layoutDefaults[template] } });
     }, { signal });
 
     return {
         localize(label) {
+            translate = label;
+            layoutTemplate = undefined;
             details.querySelectorAll('[data-appearance-copy]').forEach(node => { node.textContent = label(copy[node.dataset.appearanceCopy]); });
             picker.setAttribute('aria-label', label(copy.picker));
             invalidMessage = label(copy.invalid);
             if (input.hasAttribute('aria-invalid')) setError(true);
         },
-        render(visual, dark) {
+        render({ applicationType, layouts, visual }, dark) {
+            if (layoutTemplate !== applicationType) {
+                layoutTemplate = applicationType;
+                layoutChoices.innerHTML = previewLayouts[applicationType].map(({ id, label }) =>
+                    `<label><input type="radio" name="preview-layout" value="${id}">
+                        <span><i class="studio-layout-icon" data-layout-icon="${id}" aria-hidden="true"><i></i><i></i><i></i></i>${translate(label)}</span>
+                    </label>`).join('');
+            }
+            for (const control of layoutChoices.querySelectorAll('input')) {
+                const checked = control.value === layouts[applicationType];
+                if (control.checked !== checked) control.checked = checked;
+            }
             for (const field of fields) {
                 if (field.value !== visual[field.name]) field.value = visual[field.name];
             }

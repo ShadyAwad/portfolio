@@ -56,6 +56,10 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
         };
         window.template = value => set('.studio-settings select[name=applicationType]', value, 'change');
         window.scenario = value => set('[data-flow-scenario]', value, 'change');
+        window.traceAction = () => click('[data-preview-action]');
+        window.openTrace = () => click('[data-preview-trace]');
+        window.returnToPreview = () => click('.studio-trace-bar button');
+        window.completeTrace = () => set('#workspace-scrubber',q('#workspace-scrubber').max);
         window.mediaEnabled = () => click('.studio-settings [name=enabled]');
         window.mediaSlot = () => q('[data-preview-media]');
         window.model = () => mediaSlot().querySelector('model-viewer');
@@ -216,10 +220,6 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await evaluate("click('#lang-toggle')");
     await waitFor("document.documentElement.lang === 'en' && q('.architecture-switch button:last-child').textContent === 'How It Works'");
     await evaluate(`view(0);template('saas');
-        window.traceAction = () => click('[data-preview-action]');
-        window.openTrace = () => click('[data-preview-trace]');
-        window.returnToPreview = () => click('.studio-trace-bar button');
-        window.completeTrace = () => set('#workspace-scrubber',q('#workspace-scrubber').max);
         window.traceSaved = localStorage.getItem('awad-portfolio-studio');
         window.tracePrice = q('#price-display').dataset.price;
         window.traceCommercial = q('.commercial-summary').textContent;
@@ -437,6 +437,8 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
         await check("model()===mediaInstance && !model().hasAttribute('camera-controls') && !model().hasAttribute('auto-rotate')");
         await evaluate("set('.studio-appearance [name=style]','soft','change')");
         await check("model()===mediaInstance && getComputedStyle(q('.studio-media-card')).borderRadius==='17px'");
+        await evaluate("click('[name=preview-layout][value=overview]')");
+        await check("model()===mediaInstance && q('.studio-preview').dataset.layout==='overview' && mediaSlot().closest('.mock-ops')");
         await evaluate("set('.studio-settings [name=mode]','orbit','change')");
         await check("model().hasAttribute('camera-controls') && model().hasAttribute('auto-rotate')");
         await command('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
@@ -511,5 +513,58 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await evaluate("click('#lang-toggle');look('accent','amber');look('typography','technical')");
     await waitFor("document.documentElement.dir==='rtl' && q('.studio-appearance summary').textContent.includes('المظهر')");
     await check("document.documentElement.scrollWidth===document.documentElement.clientWidth && q('[data-appearance-picker]').getAttribute('aria-label').includes('اختر')");
+
+    await command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
+    await evaluate("click('#lang-toggle');click('[data-preview-viewport=desktop]');window.chooseLayout=id=>click('[name=preview-layout][value='+id+']')");
+    await waitFor("document.documentElement.dir==='ltr'");
+    const layoutPairs = [
+        ['saas','sidebar','top'], ['ecommerce','product','catalog'],
+        ['landing','split','centered'], ['internal-tool','table','overview']
+    ];
+    for (const [app, baseline, alternate] of layoutPairs) {
+        await evaluate(`template('${app}');window.layoutRoot=q('.studio-template').firstElementChild;chooseLayout('${baseline}')`);
+        await check(`q('.studio-preview').dataset.layout==='${baseline}' &&
+            [...document.querySelectorAll('[name=preview-layout]')].map(input=>input.value).join(',')==='${baseline},${alternate}'`);
+        await evaluate(`chooseLayout('${alternate}')`);
+        await check(`q('.studio-preview').dataset.layout==='${alternate}' && layoutRoot===q('.studio-template').firstElementChild &&
+            q('.studio-preview').dataset.typography==='technical' && q('.studio-preview').style.getPropertyValue('--appearance-source')==='#d58b16'`);
+    }
+    await evaluate("template('saas');chooseLayout('sidebar');traceAction();window.workspaceField=q('.workspace-request-surface');chooseLayout('top')");
+    await check("workspaceField===q('.workspace-request-surface') && workspaceField.hidden && !q('[data-preview-trace]').hidden && getComputedStyle(q('.mock-sidebar')).flexDirection==='row'");
+    await evaluate("traceAction();click('[data-workspace-run]');openTrace();completeTrace();returnToPreview()");
+    await check("q('.studio-preview').dataset.layout==='top' && q('.mock-trace-status').textContent.includes('workspace ready')");
+
+    await evaluate("template('ecommerce');chooseLayout('product');click('[data-cart-add]');click('[data-store-category=lighting]');chooseLayout('catalog');q('.mock-product-details summary').focus()");
+    await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, text: '\r' });
+    await command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
+    await check("q('.mock-product-details').open && q('[data-cart-count]').textContent==='1' && q('[data-category=furniture]').hidden && getComputedStyle(q('.mock-store-feature')).display==='none'");
+    await evaluate("chooseLayout('product')");
+    await check("document.activeElement===q('[data-cart-add]') && getComputedStyle(q('.mock-product-details')).display==='none'");
+    await evaluate("chooseLayout('catalog');traceAction();openTrace();completeTrace();returnToPreview()");
+    await check("q('.mock-product-details').open && q('[data-cart-count]').textContent==='1' && q('.mock-trace-status').textContent.includes('confirmed')");
+
+    await evaluate(`template('landing');chooseLayout('split');
+        if(!q('.studio-settings [name=conversion]').checked)click('.studio-settings [name=conversion]');
+        click('.mock-landing-hero [data-preview-start]');document.activeElement.value='custom@example.test';
+        window.formField=document.activeElement;chooseLayout('centered');click('.mock-landing-hero [data-preview-start]')`);
+    await check("document.activeElement===formField && formField.value==='custom@example.test' && getComputedStyle(q('.mock-landing-hero')).textAlign==='center'");
+    await evaluate("q('[data-preview-demo]').requestSubmit();chooseLayout('split');chooseLayout('centered')");
+    await check("q('[data-preview-demo] [role=status]').textContent.length>0");
+
+    await evaluate("template('internal-tool');chooseLayout('table');set('[data-record-filter]','pending','change');chooseLayout('overview');traceAction();openTrace();completeTrace();returnToPreview()");
+    await check("q('[data-record-filter]').value==='pending' && q('[data-record-status=review]').hidden && q('.mock-trace-status').textContent.includes('ready') && getComputedStyle(q('.mock-workflow')).gridColumnStart==='2'");
+    await evaluate("click('[data-appearance-reset]');template('ecommerce')");
+    await check("q('.studio-preview').dataset.layout==='catalog'");
+    await evaluate("template('internal-tool')");
+    await check("q('.studio-preview').dataset.layout==='table' && q('#price-display').dataset.price===appearancePrice");
+    await command('Emulation.setDeviceMetricsOverride', { width: 320, height: 760, deviceScaleFactor: 1, mobile: true });
+    await evaluate("click('#lang-toggle');click('[data-preview-viewport=mobile]')");
+    await waitFor("document.documentElement.dir==='rtl'");
+    for (const [app, baseline, alternate] of layoutPairs) {
+        for (const id of [baseline, alternate]) {
+            await evaluate(`template('${app}');chooseLayout('${id}')`);
+            await check("document.documentElement.scrollWidth===document.documentElement.clientWidth && q('.studio-layout-picker legend').textContent==='التخطيط'");
+        }
+    }
     assert.deepEqual(runtimeErrors, []);
 });

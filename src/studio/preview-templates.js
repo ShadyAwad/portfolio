@@ -109,6 +109,12 @@ const products = [
     ['clock','decor',['Dial Wall Clock','ساعة دَيل'],['Warm walnut · silent sweep','خشب الجوز · حركة هادئة'],38]
 ];
 
+const productDetails = {
+    lamp: ['A linen shade softens the light for a reading corner or bedside table.','يخفّف الغطاء الكتاني الضوء ليناسب ركن القراءة أو الطاولة بجانب السرير.'],
+    chair: ['A low seat with a solid oak frame and an upholstered cushion.','مقعد منخفض بإطار من خشب البلوط المصمت ووسادة منجّدة.'],
+    clock: ['The quiet movement suits shared rooms and workspaces.','تناسب الحركة الهادئة الغرف المشتركة ومساحات العمل.']
+};
+
 const filterButtons = (attribute, items, label) => items.map(([value, caption], index) =>
     `<button type="button" ${attribute}="${value}" aria-pressed="${index === 0}">${label(caption)}</button>`).join('');
 
@@ -122,7 +128,8 @@ function ecommerce(label) {
                 <span class="mock-bag-icon" aria-hidden="true"></span> ${label(['Bag','السلة'])} <b data-cart-count>0</b></button></div>
         <header class="mock-store-hero" data-preview-section="store-story" tabindex="-1"><div>
             <p>${label(['The Home Edit','مختارات المنزل'])}</p>
-            <h4>${label(['Good design. Better days.','تصميم جميل لأيام أجمل.'])}</h4>
+            <h4><span class="mock-product-title">${label(['Good design. Better days.','تصميم جميل لأيام أجمل.'])}</span>
+                <span class="mock-catalog-title">${label(['Browse the collection','تصفّح المجموعة'])}</span></h4>
             <div>${label(['Thoughtful objects for the spaces you live in.','قطع مدروسة للمساحات التي تعيش فيها.'])}</div>
         </div><div class="mock-product-art mock-store-feature" data-product="lamp" aria-hidden="true"><i></i></div></header>
         <section class="mock-collection" data-preview-section="collection" tabindex="-1">
@@ -135,6 +142,8 @@ function ecommerce(label) {
                 <div class="mock-product-art" data-product="${shape}" aria-hidden="true"><i></i></div>
                 <div class="mock-product-info"><strong>${label(name)}</strong><p>${label(material)}</p>
                     <div><bdi>$${price}</bdi><button type="button" class="mock-action" data-cart-add="${price}" aria-label="${label(['Add to bag','أضف إلى السلة'])} · ${label(name)}">${label(['Add','أضف'])}</button></div>
+                    <details class="mock-product-details"><summary aria-label="${label(['Details','التفاصيل'])} · ${label(name)}">${label(['Details','التفاصيل'])}</summary>
+                        <p>${label(productDetails[shape])}</p></details>
                 </div></article>`).join('')}</div>
             ${previewMediaSlot('ecommerce', label)}
         </section>
@@ -194,7 +203,8 @@ function internalTool(label) {
             ], label)}
             ${account(label,'LP','Lina Park',['Operations coordinator','منسقة العمليات'])}</div>
         <div class="mock-page-content" data-preview-modules>
-            <header class="mock-page-heading"><div><h4>${label(['Operations inbox','صندوق العمليات'])}</h4>
+            <header class="mock-page-heading"><div><h4><span class="mock-table-title">${label(['Operations inbox','صندوق العمليات'])}</span>
+                <span class="mock-overview-title">${label(['Operations overview','نظرة عامة على العمليات'])}</span></h4>
                 <p>${label(['Track service requests and approvals across your team.','تابع طلبات الخدمة والموافقات عبر فريقك.'])}</p></div></header>
             ${metrics([[['Open requests','طلبات مفتوحة'],'24'],[['Awaiting review','بانتظار المراجعة'],'8'],[['Completed this week','المكتملة هذا الأسبوع'],'63']],label)}
             <section class="mock-card mock-records" data-preview-section="records" tabindex="-1">
