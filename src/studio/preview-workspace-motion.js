@@ -1,8 +1,6 @@
-import { channel, landingFrames } from './flow/request-motion.js';
+import { captures, channel, clamp, createFrameLoop, distance, easeTravel, handoff, landingFrames, magnet, mix, proximity, spring } from './flow/request-motion.js';
 import { socketFor } from './flow/request-layout.js';
 
-const width = 360;
-const height = 90;
 const copy = {
     browser: ['UI', 'الواجهة'],
     api: ['API', 'واجهة البرمجة'],
@@ -19,9 +17,7 @@ const glyph = {
     scope: '<path d="M0-7 6-4v4c0 3-2.5 5.5-6 7C-3.5 5.5-6 3-6 0v-4zM-2 0h4"/>',
     access: '<path d="M0-7 6-4v4c0 3-2.5 5.5-6 7C-3.5 5.5-6 3-6 0v-4z"/><circle cy="-1" r="1.4"/><path d="M0 .4v2"/>'
 };
-const requestTiming = { browser: 240, api: 470, access: 290, postgres: 490 };
-const responseTiming = { browser: 500, api: 460 };
-const checkpointDwell = 80;
+const stages = ['browser', 'api', 'access', 'postgres'];
 
 export function workspacePreviewJourney(steps) {
     const stops = [];
@@ -29,202 +25,365 @@ export function workspacePreviewJourney(steps) {
     for (const step of steps) {
         if (step.illustrative || step.channel === 'background') continue;
         const id = socketFor(step);
-        if (!Object.hasOwn(requestTiming, id)) continue;
+        if (!stages.includes(id)) continue;
         if (id === 'access') checks.add(step.node);
         const returning = step.channel === 'response';
         const previous = stops.at(-1);
         if (previous?.id === id && (id !== 'browser' || previous.returning === returning)) continue;
-        const delay = returning && previous?.id !== id ? responseTiming[id] : requestTiming[id];
-        stops.push({ id, time: (previous?.time ?? 0) + delay, returning });
+        stops.push({ id, returning });
     }
     const outward = [...new Set(stops.filter(stop => !stop.returning).map(stop => stop.id))];
     const checkpoint = checks.size > 1 ? 'access' : checks.has('auth') ? 'session' : checks.has('tenant') ? 'scope' : null;
-    return { outward, stops, checkpoint, duration: stops.at(-1).time + 240 };
+    return { outward, stops, checkpoint };
 }
 
-// Animation completion belongs to the current invitation. Cancellation invalidates even queued promises.
-export function createWorkspaceRun({ canRun, stage, animate }) {
-    let current;
+const velocity = () => ({ x: 0, y: 0 });
 
-    function cancel() {
-        if (!current) return;
-        const previous = current;
-        current = undefined;
-        previous.effects?.forEach(effect => effect.cancel());
-        stage('idle');
-    }
-
-    function finish() {
-        if (!current) return;
-        const { complete } = current;
-        cancel();
-        if (canRun()) complete();
-    }
-
-    return {
-        play(input, reduced, complete) {
-            cancel();
-            if (!canRun()) return;
-            if (reduced) {
-                complete();
-                return;
-            }
-            stage('running');
-            const run = { complete, effects: animate(input) };
-            current = run;
-            run.effects[0].finished.then(() => {
-                if (current === run) finish();
-            }, () => {
-                if (current === run) cancel();
-            });
-        },
-        cancel, finish
-    };
+export function previewDragTarget(point, from, to) {
+    const length = distance(from, to) || 1;
+    const x = (to.x - from.x) / length;
+    const y = (to.y - from.y) / length;
+    const across = (point.x - from.x) * -y + (point.y - from.y) * x;
+    const resistance = across - 56 * Math.tanh(across / 56);
+    const behind = Math.max(0, -((point.x - from.x) * x + (point.y - from.y) * y));
+    const pullback = behind - 34 * Math.tanh(behind / 34);
+    const softened = { x: point.x + y * resistance + x * pullback, y: point.y - x * resistance + y * pullback };
+    return magnet(softened, to, Math.min(87, length * .85));
 }
 
-const pointText = point => `${point.x},${point.y}`;
-const curve = (from, to, bend) => {
+export function previewCaptures(point, from, to, speed, recent) {
+    const radius = Math.max(22, Math.min(49, distance(from, to) * .43));
+    const factor = 54 / radius;
+    const scale = ({ x, y }) => ({ x: x * factor, y: y * factor });
+    return captures(scale(point), scale(to), scale(speed), recent);
+}
+
+function curve(from, to, bend) {
     const mid = channel(from, to, bend)(.5);
-    const control = { x: 2 * mid.x - (from.x + to.x) / 2, y: 2 * mid.y - (from.y + to.y) / 2 };
-    return `M${pointText(from)} Q${pointText(control)} ${pointText(to)}`;
-};
+    return 'M' + from.x + ',' + from.y + ' Q' + (2 * mid.x - (from.x + to.x) / 2) + ',' +
+        (2 * mid.y - (from.y + to.y) / 2) + ' ' + to.x + ',' + to.y;
+}
 
 export function mountWorkspacePreview(root, button, panel, host, initialJourney, label) {
     const rtl = root.closest('[dir]')?.dir === 'rtl';
-    const bend = rtl ? -24 : 24;
-    let journey, signature, svg, points, packets, emphasis;
     const motion = matchMedia('(prefers-reduced-motion: reduce)');
+    const events = new AbortController();
+    const { signal } = events;
+    const loop = createFrameLoop(requestAnimationFrame, cancelAnimationFrame);
     const canRun = () => root.isConnected && !root.closest('[hidden]') && !document.hidden;
-    const stage = state => { root.dataset.pulse = state; };
+    const ready = label(['Workspace ready', 'مساحة العمل جاهزة']);
+    let journey, signature, surface, board, token, svg, trail, status;
+    let points, bounds, index, result, gesture, body, target, lastFrame, reaction, checkmark, entrance, closeTimer;
+    let busy = false, suppressClick = false, previousBounds;
+
+    const stageName = id => label(copy[id === 'access' ? journey.checkpoint : id]);
+    const nextStop = () => journey.stops[index + 1];
+    const currentPoint = () => points[journey.stops[index].id];
 
     function drawRoute() {
-        const { outward, stops, checkpoint } = journey;
-        points = Object.fromEntries(outward.map((id, i) => {
-            const x = 45 + i * 270 / Math.max(1, outward.length - 1);
-            return [id, { x: rtl ? width - x : x, y: 44 }];
-        }));
-        root.innerHTML = `<svg viewBox="0 0 ${width} ${height}" aria-hidden="true">
-            <g class="workspace-pulse-lanes">${stops.slice(1).map((stop, i) => stop.id === stops[i].id ? '' :
-                `<path class="${stop.returning ? 'pulse-response' : 'pulse-request'}" d="${curve(points[stops[i].id], points[stop.id], bend)}"/>`).join('')}</g>
-            ${outward.map(id => {
-                const { x, y } = points[id];
-                const key = id === 'access' ? checkpoint : id;
-                return `<g transform="translate(${x} ${y})">
-                    <g class="workspace-pulse-socket" data-pulse-node="${id}">
-                        <circle class="workspace-pulse-ring" r="18"/><circle class="workspace-pulse-core" r="13"/>
-                        <g class="workspace-pulse-glyph">${glyph[key]}</g>
-                        ${id === 'access' ? '<g class="workspace-pulse-verified"><circle cx="10" cy="-10" r="5.5"/><path d="m7.4-10 1.7 1.9 3.4-4"/></g>' : ''}
-                    </g><text y="33" text-anchor="middle">${label(copy[key])}</text>
-                </g>`;
-            }).join('')}
-            <g class="workspace-pulse-packets">${[1.4, 2.1, 3, 4].map(radius => `<circle r="${radius}"/>`).join('')}</g>
-        </svg><span class="workspace-pulse-demo">${label(['Simulated request', 'طلب محاكى'])}</span>
-        <span id="workspace-pulse-route" class="workspace-pulse-description">${label(['Simulated request', 'طلب محاكى'])}.
-            ${stops.map(({ id }) => label(copy[id === 'access' ? checkpoint : id])).join(rtl ? ' ← ' : ' → ')}</span>`;
-        svg = root.querySelector('svg');
-        packets = [...root.querySelectorAll('.workspace-pulse-packets circle')].reverse();
+        const route = journey.stops.map(stop => stageName(stop.id)).join(rtl ? ' ← ' : ' → ');
+        root.innerHTML = '<span id="workspace-pulse-route" class="workspace-pulse-route"><b>' +
+            label(['Simulated request', 'طلب محاكى']) + '</b> <span>' + route + '</span></span>' +
+            '<section class="workspace-request-surface" id="workspace-request-surface" aria-label="' +
+            label(['Workspace request field', 'مساحة طلب العمل']) + '" hidden>' +
+            '<div class="workspace-field-heading"><div><strong>' + label(['Workspace request', 'طلب مساحة العمل']) + '</strong>' +
+            '<p class="workspace-field-status" role="status"></p></div><button type="button" data-workspace-close>' +
+            label(['Close', 'إغلاق']) + '</button></div>' +
+            '<div class="workspace-request-board"><svg aria-hidden="true"><g class="workspace-pulse-lanes"></g>' +
+            '<g class="workspace-field-trail"><circle r="2"/><circle r="3"/><circle r="4"/></g></svg>' +
+            journey.outward.map(id => '<div class="workspace-field-node" data-pulse-node="' + id + '">' +
+                '<span class="workspace-field-socket"><svg viewBox="-11 -11 22 22" aria-hidden="true">' +
+                glyph[id === 'access' ? journey.checkpoint : id] + '</svg>' +
+                (id === 'access' ? '<span class="workspace-field-verified" aria-hidden="true">✓</span>' : '') +
+                '</span><span>' + stageName(id) + '</span></div>').join('') +
+            '<button type="button" class="workspace-field-token"><span aria-hidden="true"></span></button></div>' +
+            '<div class="workspace-field-footer"><span>' + label(['Simulated request', 'طلب محاكى']) +
+            '</span><button type="button" data-workspace-run>' + label(['Run request', 'تشغيل الطلب']) +
+            '</button></div></section>';
+        surface = root.querySelector('.workspace-request-surface');
+        board = root.querySelector('.workspace-request-board');
+        token = root.querySelector('.workspace-field-token');
+        svg = board.querySelector('svg');
+        trail = [...svg.querySelectorAll('circle')];
+        status = root.querySelector('.workspace-field-status');
     }
 
-    function animate(origin) {
-        const { stops, duration } = journey;
-        const legs = stops.map((stop, index) => ({
-            ...stop,
-            start: (stops[index - 1]?.time ?? 0) + (stops[index - 1]?.id === 'access' ? checkpointDwell : 0),
-            path: channel(index ? points[stops[index - 1].id] : origin, points[stop.id], index ? bend : -bend / 2)
+    function measure() {
+        bounds = board.getBoundingClientRect();
+        previousBounds = { width: board.clientWidth, height: board.clientHeight };
+        const { width, height } = previousBounds;
+        const compact = width < 420;
+        const layout = compact ? [[.24, .25], [.76, .25], [.76, .67], [.24, .67]] :
+            [[.12, .56], [.37, .32], [.63, .56], [.87, .32]];
+        points = Object.fromEntries(journey.outward.map((id, i) => {
+            const slot = !compact && journey.outward.length === 3 && i === 2 ? 3 : i;
+            const [x, y] = layout[slot];
+            return [id, { x: width * (rtl ? 1 - x : x), y: height * y }];
         }));
-        const travel = packets.map((packet, index) => {
-            const keyframes = legs.flatMap(({ start, time, path, returning }, leg) =>
-                Array.from({ length: 15 }, (_, sample) => {
-                    if (leg && sample === 0 && start === stops[leg - 1].time) return null;
-                    const fraction = sample / 14;
-                    const t = fraction * fraction * (3 - 2 * fraction);
-                    const point = path(t);
-                    const age = (start + (time - start) * fraction + index * 36) / duration;
-                    return {
-                        offset: age,
-                        transform: `translate(${point.x}px, ${point.y}px)`,
-                        fill: returning ? 'var(--pulse-return)' : 'var(--pulse-live)',
-                        opacity: index ? .46 / index : 1
-                    };
-                }).filter(Boolean));
-            if (index) keyframes.unshift({ offset: 0, opacity: 0, transform: keyframes[0].transform });
-            keyframes.push({ offset: 1, opacity: 0, transform: keyframes.at(-1).transform });
-            return packet.animate(keyframes, { duration });
-        });
-        const press = button.animate([{ scale: 1 }, { scale: .96, offset: .28 }, { scale: 1 }],
-            { duration: 205, easing: 'ease-out' });
-        const reactions = stops.map(({ id, time, returning }) => {
-            const socket = root.querySelector(`[data-pulse-node="${id}"]`);
-            return socket.animate(landingFrames(returning && id === 'browser').map(frame => ({
-                ...frame,
-                color: frame.offset === 1 ? 'var(--pulse-rest)' : id === 'access' ? 'var(--pulse-check)' :
-                    returning ? 'var(--pulse-return)' : 'var(--pulse-live)'
-            })), { duration: 240, delay: time });
-        });
-        const verification = root.querySelector('.workspace-pulse-verified');
-        if (verification) reactions.push(verification.animate([
-            { opacity: 0, scale: .78 }, { opacity: 1, scale: 1.06, offset: .23 },
-            { opacity: 1, scale: 1, offset: .67 }, { opacity: 0, scale: 1 }
-        ], { duration: 320, delay: stops.find(stop => stop.id === 'access').time }));
-        return [...travel, press, ...reactions];
+        for (const node of board.querySelectorAll('[data-pulse-node]')) {
+            const point = points[node.dataset.pulseNode];
+            node.style.left = point.x + 'px';
+            node.style.top = point.y + 'px';
+        }
+        svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+        svg.firstElementChild.innerHTML = journey.stops.slice(1).map((stop, i) => {
+            const from = points[journey.stops[i].id], to = points[stop.id];
+            return from === to ? '' : '<path class="' + (stop.returning ? 'pulse-response' : 'pulse-request') +
+                '" d="' + curve(from, to, rtl ? -24 : 24) + '"/>';
+        }).join('');
     }
 
-    const run = createWorkspaceRun({ canRun, stage, animate });
-    function cancel() {
-        run.cancel();
-        emphasis?.cancel();
-        emphasis = undefined;
+    function place(point) {
+        token.style.transform = 'translate3d(' + point.x + 'px,' + point.y + 'px,0)';
+    }
+
+    function hideTrail() { board.removeAttribute('data-travel'); }
+
+    function releaseCapture() {
+        if (!gesture) return;
+        const { id } = gesture;
+        gesture = undefined;
+        if (token.hasPointerCapture(id)) token.releasePointerCapture(id);
+        board.removeAttribute('data-drag');
+        board.style.removeProperty('--pull');
+    }
+
+    function close(restore = true) {
+        if (!surface || surface.hidden) return;
+        const focused = surface.contains(document.activeElement);
+        loop.stop();
+        releaseCapture();
+        hideTrail();
+        reaction?.cancel();
+        checkmark?.cancel();
+        entrance?.cancel();
+        clearTimeout(closeTimer);
+        result = undefined;
+        busy = false;
+        surface.hidden = true;
+        button.setAttribute('aria-expanded', 'false');
+        root.dataset.pulse = root.dataset.completed === 'true' ? 'ready' : 'idle';
+        if (restore && focused && canRun()) button.focus({ preventScroll: true });
+    }
+
+    function sync() {
+        const next = nextStop();
+        for (const node of board.querySelectorAll('[data-pulse-node]')) {
+            node.toggleAttribute('data-current', node.dataset.pulseNode === journey.stops[index].id);
+            node.toggleAttribute('data-next', node.dataset.pulseNode === next?.id);
+        }
+        board.toggleAttribute('data-return', Boolean(next?.returning));
+        const hint = next
+            ? (next.returning ? label(['Returning to the workspace', 'العودة إلى مساحة العمل']) :
+                label(['Drag or tap → ', 'اسحب أو اضغط ← ']) + stageName(next.id))
+            : ready;
+        status.textContent = hint;
+        token.setAttribute('aria-label', next
+            ? label(['Advance request to ', 'أرسل الطلب إلى ']) + stageName(next.id)
+            : ready);
+        token.setAttribute('aria-disabled', String(!next || busy));
+    }
+
+    function finish() {
+        if (!result || !canRun()) { close(false); return; }
+        const complete = result;
+        result = undefined;
+        index = journey.stops.length - 1;
+        busy = false;
+        body.position = currentPoint();
+        place(body.position);
+        hideTrail();
+        sync();
+        complete();
+        closeTimer = setTimeout(close, 1000);
+    }
+
+    function fly(automatic = false, handoffVelocity) {
+        const stop = nextStop();
+        if (!stop || !result || !canRun()) return;
+        releaseCapture();
+        if (motion.matches && automatic) { finish(); return; }
+        loop.stop();
+        const from = body.position;
+        const to = points[stop.id];
+        const duration = clamp(290 + distance(from, to) * .56, 330, 525);
+        const path = handoffVelocity ? handoff(from, to, handoffVelocity, duration / 1000)
+            : channel(from, to, rtl ? -24 : 24);
+        busy = true;
+        token.setAttribute('aria-disabled', 'true');
+        const start = performance.now();
+        function arrive() {
+            hideTrail();
+            index++;
+            busy = false;
+            body.position = to;
+            body.velocity = velocity();
+            place(to);
+            sync();
+            const node = board.querySelector('[data-current] .workspace-field-socket');
+            if (!motion.matches) {
+                reaction?.cancel();
+                reaction = node.animate(landingFrames(!nextStop()), { duration: 240 });
+                const mark = node.querySelector('.workspace-field-verified');
+                if (mark) checkmark = mark.animate([{ opacity: 0 }, { opacity: 1, offset: .23 }, { opacity: 1, offset: .72 }, { opacity: 0 }], 390);
+            }
+            if (!nextStop()) finish();
+            else if (automatic || nextStop().returning) fly(true);
+        }
+        if (motion.matches) { arrive(); return; }
+        board.setAttribute('data-travel', '');
+        loop.start(now => {
+            const progress = clamp((now - start) / duration, 0, 1);
+            const positionAt = t => path(handoffVelocity ? t : easeTravel(t));
+            body.position = positionAt(progress);
+            place(body.position);
+            trail.forEach((bead, i) => {
+                const point = positionAt(Math.max(0, progress - (3 - i) * .067));
+                bead.setAttribute('cx', point.x);
+                bead.setAttribute('cy', point.y);
+            });
+            if (progress < 1) return true;
+            arrive();
+            return false;
+        });
+    }
+
+    function open(complete) {
+        close(false);
+        if (!canRun()) return;
+        const keyboard = button.matches(':focus-visible');
+        result = complete;
+        index = 0;
+        root.dataset.completed = 'false';
+        root.dataset.pulse = 'open';
+        surface.hidden = false;
+        button.setAttribute('aria-expanded', 'true');
+        measure();
+        body = { position: currentPoint(), velocity: velocity() };
+        hideTrail();
+        place(body.position);
+        sync();
+        if (!motion.matches) entrance = surface.animate([
+            { opacity: .25, clipPath: rtl ? 'inset(0 0 55% 11% round 14px)' : 'inset(0 11% 55% 0 round 14px)', translate: '0 -7px' },
+            { opacity: 1, clipPath: 'inset(0 0 0 0 round 14px)', translate: '0 0' }
+        ], { duration: 260, easing: 'cubic-bezier(.2,.76,.25,1)' });
+        token.focus({ preventScroll: true });
+        if (keyboard) token.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'instant' });
+    }
+
+    function reflect(completed) {
+        root.dataset.completed = String(completed);
+        if (completed) root.dataset.pulse = 'ready';
+        else if (surface.hidden) root.dataset.pulse = 'idle';
     }
 
     function configure(next) {
         const key = JSON.stringify(next);
         if (key === signature) return false;
         const changed = Boolean(journey);
-        cancel();
+        close();
         signature = key;
         journey = next;
-        stage('idle');
+        root.dataset.pulse = 'idle';
         drawRoute();
-        if (changed && canRun() && !motion.matches) {
-            const node = root.querySelector(`[data-pulse-node="${journey.checkpoint ? 'access' : 'api'}"]`);
-            emphasis = node?.animate(landingFrames(true), { duration: 330 });
-        }
         return changed;
     }
 
     button.setAttribute('aria-describedby', 'workspace-pulse-route');
+    button.setAttribute('aria-controls', 'workspace-request-surface');
+    button.setAttribute('aria-expanded', 'false');
     configure(initialJourney);
-    const events = new AbortController();
-    const { signal } = events;
-    const cancelIfHidden = () => { if (!canRun()) cancel(); };
+
+    function pointerPoint(event) {
+        return {
+            x: clamp(event.clientX - bounds.left + gesture.offset.x, 23, bounds.width - 23),
+            y: clamp(event.clientY - bounds.top + gesture.offset.y, 23, bounds.height - 23)
+        };
+    }
+
+    function follow(now) {
+        const settled = motion.matches || spring(body, target, (now - (lastFrame ?? now - 16)) / 1000);
+        lastFrame = settled ? undefined : now;
+        if (settled) body.position = target;
+        place(body.position);
+        return !settled;
+    }
+
+    root.addEventListener('pointerdown', event => {
+        if (!result || event.target.closest('.workspace-field-token') !== token || busy || gesture || !event.isPrimary || event.button !== 0) return;
+        suppressClick = false;
+        loop.stop();
+        lastFrame = undefined;
+        bounds = board.getBoundingClientRect();
+        gesture = { id: event.pointerId, offset: { x: body.position.x - event.clientX + bounds.left,
+            y: body.position.y - event.clientY + bounds.top }, time: event.timeStamp, moved: false, speed: velocity(),
+            last: body.position, start: body.position };
+        token.setPointerCapture(event.pointerId);
+    }, { signal });
+    root.addEventListener('pointermove', event => {
+        if (gesture?.id !== event.pointerId) return;
+        const point = pointerPoint(event);
+        const elapsed = Math.max(8, event.timeStamp - gesture.time);
+        gesture.speed = mix(gesture.speed, { x: (point.x - gesture.last.x) / elapsed,
+            y: (point.y - gesture.last.y) / elapsed }, .58);
+        gesture.last = point;
+        gesture.time = event.timeStamp;
+        gesture.moved ||= distance(point, gesture.start) > 5;
+        if (!gesture.moved) return;
+        const to = points[nextStop().id];
+        target = motion.matches ? point : previewDragTarget(point, currentPoint(), to);
+        board.setAttribute('data-drag', '');
+        board.style.setProperty('--pull', proximity(point, to, 85).toFixed(2));
+        loop.start(follow);
+    }, { signal });
+
+    function release(event, cancelled) {
+        if (gesture?.id !== event.pointerId) return;
+        const { moved, speed, time } = gesture;
+        const point = pointerPoint(event);
+        suppressClick = moved || cancelled;
+        releaseCapture();
+        if (!moved) return;
+        if (!cancelled && previewCaptures(point, currentPoint(), points[nextStop().id], speed, event.timeStamp - time < 100)) {
+            fly(false, body.velocity);
+        } else {
+            target = currentPoint();
+            lastFrame = undefined;
+            loop.start(follow);
+        }
+    }
+
+    root.addEventListener('pointerup', event => release(event, false), { signal });
+    root.addEventListener('pointercancel', event => release(event, true), { signal });
+    root.addEventListener('lostpointercapture', event => release(event, true), { signal });
+    root.addEventListener('click', event => {
+        if (event.target.closest('[data-workspace-close]')) close();
+        else if (result && !busy) {
+            if (event.target.closest('[data-workspace-run]')) fly(true);
+            else if (event.target.closest('.workspace-field-token') === token && (!suppressClick || event.detail === 0)) fly();
+        }
+    }, { signal });
+    root.parentElement.addEventListener('keydown', event => {
+        if (event.key !== 'Escape' || surface.hidden) return;
+        event.preventDefault();
+        close();
+    }, { signal });
+    root.addEventListener('focusout', event => {
+        if (event.relatedTarget && !root.parentElement.contains(event.relatedTarget)) close(false);
+    }, { signal });
+    const cancelIfHidden = () => { if (!canRun()) close(false); };
     const visibility = new MutationObserver(cancelIfHidden);
     visibility.observe(panel, { attributes: true, attributeFilter: ['hidden'] });
     host.addEventListener('studio-visibility', cancelIfHidden, { signal });
     document.addEventListener('visibilitychange', cancelIfHidden, { signal });
+    window.addEventListener('resize', () => {
+        if (!surface.hidden && (board.clientWidth !== previousBounds.width || board.clientHeight !== previousBounds.height)) close();
+    }, { signal });
     motion.addEventListener('change', () => {
         if (!motion.matches) return;
-        emphasis?.cancel();
-        run.finish();
+        entrance?.cancel();
+        if (busy) { loop.stop(); finish(); }
     }, { signal });
-    return {
-        configure,
-        play(complete) {
-            if (!canRun()) return;
-            emphasis?.cancel();
-            const bounds = svg.getBoundingClientRect();
-            const origin = button.getBoundingClientRect();
-            const factor = bounds.width / width;
-            const point = factor ? {
-                x: (origin.left + origin.width / 2 - bounds.left) / factor,
-                y: (origin.bottom - bounds.top) / factor
-            } : points.browser;
-            run.play(point, motion.matches || !factor, complete);
-        },
-        reflect(completed) {
-            if (completed) stage('ready');
-            else if (root.dataset.pulse === 'ready') stage('idle');
-        },
-        cancel,
-        destroy() { cancel(); visibility.disconnect(); events.abort(); }
-    };
+
+    return { configure, play: open, reflect, cancel: close, destroy() { close(false); visibility.disconnect(); events.abort(); } };
 }

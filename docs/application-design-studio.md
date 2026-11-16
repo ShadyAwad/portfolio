@@ -239,3 +239,11 @@ Load Workspace keeps the 2.4-second baseline. The preview reads the same resolve
 When a setting changes the route, the strip redraws the affected stage and gives it one restrained emphasis pulse. It does not launch a request. A route change cancels an in-flight run and clears its completion feedback. The trace invitation stays available. Reduced motion shows the changed label and route immediately, then resolves a launched request without motion.
 
 Load Workspace has no modeled background step, so Background jobs does not add a branch even when the configuration includes a queue and workers. Theme, pricing and unrelated capabilities do not change the route.
+
+### V3 — Interactive request field choreography
+
+Load Workspace opens an in-dashboard layer from the compact route summary. It expands beneath the button over the dashboard cards, within the width of the mock application. The Studio controls and page layout stay in place. The token begins docked at UI and the next socket is highlighted.
+
+Drag toward the highlighted socket to feel magnetic pull. Off-route motion has soft resistance. Release near the socket or flick toward it to carry momentum into the capture. A miss springs back to the last socket. Clicking, tapping, or activating the focused token with Enter or Space advances one hop. Run request continues from the current socket. Once the result is ready at the last request socket, the response follows the mint return path automatically. The existing access check remains between the API and database where configured.
+
+Close or Escape dismisses the field. A completed trip shows Workspace ready for about one second before the field closes, and focus returns to the launch control if it was in the field. Opening again starts a fresh request. Reduced motion expands instantly and advances without animated travel. The layer closes on view, route, template, or layout changes and releases the pointer and any scheduled motion.

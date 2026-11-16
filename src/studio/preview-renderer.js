@@ -115,7 +115,7 @@ export function mountDesignStudio(store, reset) {
         rail.toggleAttribute('data-trace-complete', completed);
         workspaceMotion?.reflect(completed);
         rail.querySelector('[data-preview-trace]').hidden = !action;
-        const status = rail.querySelector('[role="status"]');
+        const status = rail.querySelector('.mock-trace-status');
         const context = action && previewTraceContext(action, language);
         const message = action && label(completed ? feedback[action.action] :
             ['See how this demo request is processed.', 'اطّلع على كيفية معالجة هذا الطلب التجريبي.']);
@@ -254,6 +254,7 @@ export function mountDesignStudio(store, reset) {
     listen(viewportControls, 'click', event => {
         const mode = event.target.closest('[data-preview-viewport]')?.dataset.previewViewport;
         if (!viewports.includes(mode) || mode === frame.dataset.viewport) return;
+        workspaceMotion?.cancel();
         frame.dataset.viewport = mode;
         for (const button of viewportControls.children) {
             button.setAttribute('aria-pressed', String(button.dataset.previewViewport === mode));
