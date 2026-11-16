@@ -191,3 +191,9 @@ The M1 recording shows the route and readout clearly, but the magnet reads as a 
 M2 curves the magnetic falloff and uses distance to drive halo opacity. The drag handoff carries the spring's velocity into a bounded curve. Automated legs ease to rest at each socket, where the explanation advances and a damped reaction lights nearby connections. The static route is cached on a separate canvas from the short packet trail and arrival light. Quiet completed sockets and a mint response show where the request is in its journey.
 
 The timeline is a native range with one stop per resolved scenario step. Scrubbing cancels ongoing travel and restores the packet, active socket, completed sockets, and readout at that stop. Play resumes from it. Previous, Next, Reset, and the timeline use the same reducer. Reduced motion preserves immediate step changes and omits travel and landing effects.
+
+### M3: Checkout and Export Records
+
+Checkout and Export Records use the same packet renderer, motion primitives, scrubber, and playback reducer as Load Workspace. Scenario steps identify the channel, any earlier branch origin, and the outcome reached at that step. The layout projects those steps onto sockets. Outcome badges are derived from the steps already reached, so scrubbing backwards removes confirmations and artifacts when appropriate.
+
+Checkout commits the order in PostgreSQL and returns a frontend confirmation. With a configured queue, an amber fulfillment branch then starts at the API. The browser confirmation stays visible as that branch plays. Export queries records before generating a CSV, optionally through the configured queue and workers. A file-shaped socket represents the result, with configured storage used when present. Queue telemetry continues to use the existing illustrative capacity presets. The scene demonstrates event order and creates no actual order, export, or download.

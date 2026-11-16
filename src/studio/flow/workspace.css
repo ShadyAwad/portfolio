@@ -4,6 +4,7 @@
     --ws-returning: #9ce6bf86;
     --ws-cyan: #94edff;
     --ws-mint: #a9f7cd;
+    --ws-branch: #eab574;
     --ws-ink: #d8ebf2;
     --ws-chamber: #071726;
     --ws-atmosphere: #214155;
@@ -24,6 +25,7 @@
     --ws-returning: #397966;
     --ws-cyan: #117b96;
     --ws-mint: #207d61;
+    --ws-branch: #8f541a;
     --ws-ink: #183849;
     --ws-chamber: #eaf4f9;
     --ws-atmosphere: #c8e4ec;
@@ -57,12 +59,7 @@
     block-size: 0;
     pointer-events: none;
 }
-.workspace-socket[data-socket="browser"] { --x: 13%; --y: 51%; }
-.workspace-socket[data-socket="api"] { --x: 38%; --y: 32%; }
-.workspace-socket[data-socket="access"] { --x: 62%; --y: 59%; }
-.workspace-socket[data-socket="postgres"] { --x: 86%; --y: 36%; }
-.workspace-field:not([data-access]) [data-socket="api"] { --x: 49%; --y: 29%; }
-.workspace-field:not([data-access]) [data-socket="postgres"] { --x: 85%; --y: 54%; }
+.workspace-field:is([data-variant="checkout"], [data-variant="export"]) { block-size: 305px; }
 .workspace-socket i, .workspace-socket span {
     position: absolute;
     left: 0;
@@ -91,7 +88,7 @@
     background: var(--ws-face);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--ws-track) 18%, transparent);
 }
-.workspace-socket[data-socket="api"] i::after {
+.workspace-socket[data-entry] i::after {
     content: "";
     position: absolute;
     inset: -6px;
@@ -101,7 +98,7 @@
     opacity: var(--ws-proximity, 0);
     transition: opacity 85ms linear;
 }
-[data-delivered] .workspace-socket[data-socket="browser"] i {
+:is([data-delivered], [data-confirmed]) .workspace-socket[data-socket="browser"] i {
     border-color: var(--ws-mint);
     box-shadow: 0 0 0 5px color-mix(in srgb, var(--ws-mint) 22%, transparent),
         0 0 24px color-mix(in srgb, var(--ws-mint) 35%, transparent);
@@ -147,17 +144,43 @@
 .workspace-token[aria-disabled="true"] { cursor: default; }
 [data-drag] .workspace-token { cursor: grabbing; }
 [data-drag] .workspace-token span { scale: .86; }
-[data-response] .workspace-token span {
+[data-channel="response"] .workspace-token span {
     border-color: #ecfff4;
     background: linear-gradient(145deg, #e2fff0, #61d5a1);
     box-shadow: 0 0 0 4px #85eebb34, 0 0 16px #85eebbba;
 }
-.workspace-return {
+[data-channel="background"] .workspace-token span {
+    background: linear-gradient(145deg, #fff0ce, #eab574);
+    box-shadow: 0 0 0 4px #eab57434, 0 0 14px #eab574ad;
+}
+.workspace-socket:is([data-socket="queue"], [data-socket="workers"]) i { border-color: var(--ws-branch); }
+.workspace-socket[data-socket="artifact"] i {
+    border-radius: 7px;
+    inline-size: 35px;
+    block-size: 44px;
+    background: var(--ws-face);
+    border-style: dashed;
+}
+[data-artifact] .workspace-socket[data-socket="artifact"] i {
+    border-style: solid;
+    border-color: var(--ws-mint);
+    box-shadow: 0 0 14px color-mix(in srgb, var(--ws-mint) 32%, transparent);
+}
+.workspace-return, .workspace-branch {
     position: absolute;
     inset-inline-end: .65rem;
     inset-block-end: .55rem;
     color: var(--ws-ink);
     font-size: .72rem;
+}
+.workspace-branch { inset-inline-start: .65rem; inset-inline-end: auto; }
+.workspace-branch::before {
+    content: "";
+    display: inline-block;
+    inline-size: 1.3rem;
+    border-block-start: 1px dashed var(--ws-branch);
+    margin-inline-end: .28rem;
+    vertical-align: middle;
 }
 .workspace-return i {
     display: inline-block;
@@ -166,7 +189,10 @@
     vertical-align: middle;
     border-block-start: 1px dashed var(--ws-returning);
 }
-.workspace-hint { margin-block: .5rem .65rem; color: var(--muted); font-size: .81rem; }
+.workspace-caption { display: flex; align-items: baseline; flex-wrap: wrap; gap: .25rem .6rem; margin-block: .5rem .65rem; }
+.workspace-hint { flex: 1 1 15rem; color: var(--muted); font-size: .81rem; }
+.workspace-outcome { font-size: .81rem; font-weight: 650; color: var(--accent); }
+.workspace-outcome::before { content: "✓"; margin-inline-end: .35rem; }
 .flow-composition[data-workspace] { grid-template-columns: minmax(0, 1fr); }
 [data-workspace] .flow-scene { background: var(--card-bg); color: var(--text); border-color: var(--border); }
 [data-workspace] .flow-route { display: none; }
@@ -216,15 +242,13 @@
     background: var(--card-bg);
 }
 @container (max-width: 510px) {
-    .workspace-field { block-size: 245px; }
-    .workspace-socket { --socket: 48px; }
-    .workspace-socket[data-socket="browser"] { --x: 24%; --y: 24%; }
-    .workspace-socket[data-socket="api"], .workspace-field:not([data-access]) [data-socket="api"] { --x: 75%; --y: 24%; }
-    .workspace-socket[data-socket="access"] { --x: 75%; --y: 65%; }
-    .workspace-socket[data-socket="postgres"] { --x: 24%; --y: 65%; }
-    .workspace-field:not([data-access]) [data-socket="postgres"] { --x: 30%; --y: 66%; }
+    .workspace-field, .workspace-field:is([data-variant="checkout"], [data-variant="export"]) {
+        block-size: var(--mobile-height, 245px);
+    }
+    .workspace-socket { --socket: 48px; inset-inline-start: var(--mobile-x); inset-block-start: var(--mobile-y); }
     .workspace-socket i { font-size: 20px; }
     .workspace-socket span { font-size: .71rem; }
+    .workspace-branch { inset-block-end: 1.65rem; }
 }
 @media (prefers-reduced-motion: reduce) {
     .workspace-socket i, .workspace-socket i::after, .workspace-token span { transition: none; }

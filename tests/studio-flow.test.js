@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { APPLICATION_TYPES, createConfigurationStore } from '../src/studio/configuration.js';
 import { buildArchitectureGraph } from '../src/studio/architecture/graph.js';
 import { flowQueue, initialPlayback, playback, resolveFlow } from '../src/studio/flow/model.js';
+import { journeyOutcomes, requestLayout } from '../src/studio/flow/request-layout.js';
 
 test('every template has its own scenarios and falls back when a selection is unavailable', () => {
     const defaults = ['workspace', 'browse', 'demo', 'filter'];
@@ -62,4 +63,47 @@ test('load presets map the existing queue model outputs to status, including exa
         assert.equal(result.metrics.utilization.value, utilization);
         assert.equal(result.metrics.backlog.value, backlog);
     }
+});
+
+test('checkout confirms before the optional fulfillment branch and routes that branch from the API', () => {
+    const store = createConfigurationStore({ applicationType: 'ecommerce' });
+    const resolve = state => resolveFlow(state, buildArchitectureGraph(state), 'checkout');
+    const basic = resolve(store.getState());
+    assert.deepEqual(basic.steps.map(step => step.node), ['browser', 'api', 'postgres', 'api', 'browser']);
+    assert.equal(basic.queue, false);
+    assert.equal(basic.steps.at(-1).outcome, 'orderConfirmed');
+    const advanced = resolve(store.update({ previewFeatures: { auth: true, jobs: true } }));
+    const { steps } = advanced;
+    const layout = requestLayout(steps, advanced.scenario.motion);
+    const queue = steps.findIndex(step => step.node === 'queue');
+    const confirmed = steps.findIndex(step => step.outcome === 'orderConfirmed');
+    assert(confirmed < queue);
+    assert.equal(layout.links[confirmed].channel, 'response');
+    assert.equal(layout.links[queue].channel, 'background');
+    assert.equal(steps[layout.links[queue].from].node, 'api');
+    assert.equal(steps[layout.links[queue].from + 1].outcome, 'orderConfirmed');
+    assert.deepEqual([...journeyOutcomes(steps, queue)], ['orderConfirmed']);
+    assert.equal(journeyOutcomes(steps, confirmed - 1).size, 0);
+    assert(advanced.queue && steps.every(step => !step.illustrative));
+});
+
+test('export uses configured components and treats the file as the result of real graph roles', () => {
+    const store = createConfigurationStore({ applicationType: 'internal-tool' });
+    const resolve = state => resolveFlow(state, buildArchitectureGraph(state), 'report');
+    for (const [features, producer] of [[{}, 'api'], [{ jobs: true }, 'workers'], [{ jobs: true, storage: true }, 'objects']]) {
+        const flow = resolve(store.update({ previewFeatures: features }));
+        const { steps } = flow;
+        assert(steps.some(step => step.node === 'postgres'));
+        assert.equal(steps.filter(step => step.socket === 'artifact').length, 1);
+        assert.equal(steps.find(step => step.socket === 'artifact').component.id, producer);
+        assert.equal(steps.at(-1).outcome, 'exportReady');
+        assert.deepEqual([...journeyOutcomes(steps, steps.length - 2)], ['exportCreated']);
+        assert.deepEqual([...journeyOutcomes(steps, steps.length - 1)], ['exportCreated', 'exportReady']);
+        assert(steps.every(step => !step.illustrative));
+    }
+    const state = store.getState();
+    const graph = buildArchitectureGraph(state);
+    const missing = resolveFlow(state, { ...graph, nodes: graph.nodes.filter(node => node.id !== 'objects') }, 'report');
+    assert.equal(missing.steps.find(step => step.socket === 'artifact').node, 'workers');
+    assert(!missing.steps.some(step => step.node === 'objects'));
 });

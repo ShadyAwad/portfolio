@@ -7,7 +7,8 @@ export function resolveFlow(state, graph, selected) {
     const id = Object.hasOwn(options, selected) ? selected : Object.keys(options)[0];
     const scenario = options[id];
     const projectNodes = new Map(graph.nodes.map(node => [node.id, node]));
-    const route = scenario.steps.filter(step => !step.requires || projectNodes.has(step.requires));
+    const route = scenario.steps.filter(step => (!step.requires || projectNodes.has(step.requires)) &&
+        !step.without?.some(node => projectNodes.has(node)));
     const reference = route.some(step => !projectNodes.has(step.node)) ? buildArchitectureGraph({
         ...state, previewFeatures: { ...state.previewFeatures, jobs: Boolean(scenario.queue),
             auth: Boolean(scenario.auth), conversion: id === 'demo' }
@@ -15,7 +16,7 @@ export function resolveFlow(state, graph, selected) {
     const referenceNodes = new Map(reference?.nodes.map(node => [node.id, node]));
     const steps = route.map(step => ({ ...step, component: projectNodes.get(step.node) ?? referenceNodes.get(step.node),
             illustrative: !projectNodes.has(step.node) }));
-    return { id, options, scenario, steps };
+    return { id, options, scenario, steps, queue: scenario.queue && steps.some(step => step.node === 'queue') };
 }
 
 const loads = { normal: 4, elevated: 6, saturated: 8, overloaded: 10 };

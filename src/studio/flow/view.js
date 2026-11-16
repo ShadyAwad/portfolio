@@ -89,7 +89,7 @@ export function mountFlow(canvas) {
 
     function renderLoad() {
         const card = q('.flow-load');
-        card.hidden = !journey.scenario.queue;
+        card.hidden = !journey.queue;
         if (card.hidden) {
             delete panel.dataset.loadStatus;
             return;
@@ -204,7 +204,7 @@ export function mountFlow(canvas) {
             route.replaceChildren(...track.map(button => button.parentElement));
         }
         const workspaceRoot = q('.workspace-interaction');
-        interactive = state.applicationType === 'saas' && next.id === 'workspace';
+        interactive = Boolean(next.scenario.motion);
         workspaceRoot.hidden = !interactive;
         q('.workspace-timeline').hidden = !interactive;
         q('.flow-composition').toggleAttribute('data-workspace', interactive);
@@ -216,7 +216,8 @@ export function mountFlow(canvas) {
                 canLaunch: () => !progress.playing && (progress.index === 0 || progress.index === journey.steps.length - 1),
                 launch: origin => change('play', undefined, origin)
             });
-            workspace.configure(next.steps, label, copy, progress.index, structure + locale + document.documentElement.dir);
+            workspace.configure(next.steps, next.scenario.motion, label, copy, progress.index,
+                structure + locale + document.documentElement.dir);
         }
         q('.flow-reference').hidden = !next.steps.some(step => step.illustrative);
         track.forEach((button, index) => {
