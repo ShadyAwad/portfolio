@@ -6,9 +6,7 @@ import { translations } from '../preview-templates.js';
 import { architectureCopy } from './copy.js';
 import { buildArchitectureGraph, resolveNodeSelection } from './graph.js';
 import { layoutArchitecture } from './layout.js';
-import { mountFlow } from '../flow/view.js';
 import { flowCopy } from '../flow/copy.js';
-import { previewTraceContext, resolvePreviewTrace } from '../preview-trace.js';
 import './explorer.css';
 
 const ns = 'http://www.w3.org/2000/svg';
@@ -18,12 +16,12 @@ function svg(tag, attributes = {}) {
     return element;
 }
 
-export function mountArchitectureExplorer(canvas, preview, store) {
+export function mountArchitectureExplorer(canvas, preview, store, onLeavePreview) {
     const switcher = document.createElement('div');
     switcher.className = 'architecture-switch';
     switcher.setAttribute('role', 'group');
-    switcher.innerHTML = Array.from({ length: 3 }, () => '<button type="button" aria-pressed="false"></button>').join('');
-    const [previewButton, architectureButton, flowButton] = switcher.children;
+    switcher.innerHTML = Array.from({ length: 2 }, () => '<button type="button" aria-pressed="false"></button>').join('');
+    const [previewButton, architectureButton] = switcher.children;
     previewButton.setAttribute('aria-pressed', 'true');
     const explorer = document.createElement('div');
     explorer.id = 'studio-architecture-panel';
@@ -36,18 +34,9 @@ export function mountArchitectureExplorer(canvas, preview, store) {
     canvas.append(explorer);
     const hint = explorer.querySelector('.architecture-hint');
     const inspector = explorer.querySelector('.architecture-inspector');
-    const flow = mountFlow(canvas);
-    const traceBar = document.createElement('div');
-    traceBar.className = 'studio-trace-bar';
-    traceBar.hidden = true;
-    traceBar.innerHTML = '<p></p><button type="button"></button>';
-    flow.panel.prepend(traceBar);
-    const traceNote = traceBar.querySelector('p');
-    const traceReturn = traceBar.querySelector('button');
     preview.id = 'studio-preview-panel';
     previewButton.setAttribute('aria-controls', preview.id);
     architectureButton.setAttribute('aria-controls', explorer.id);
-    flowButton.setAttribute('aria-controls', flow.panel.id);
     const scroll = explorer.querySelector('.architecture-scroll');
     const legend = explorer.querySelector('.architecture-legend');
     const outline = explorer.querySelector('.architecture-outline');
@@ -74,8 +63,6 @@ export function mountArchitectureExplorer(canvas, preview, store) {
     let outlineSignature = '';
     let inspectorSignature = '';
     let activeLayout;
-    let activeTrace;
-    let traceOrigin;
     let pendingGraphRender = false;
 
     const label = key => (flowCopy[key] ?? architectureCopy[key] ?? capacityCopy[key] ?? translations[key])?.[locale === 'ar' ? 1 : 0] ?? key;
@@ -186,12 +173,11 @@ export function mountArchitectureExplorer(canvas, preview, store) {
         if (focus) nodeMap.get(selection)?.element.focus();
     }
 
-    function render(scenario) {
+    function render() {
         if (canvas.closest('[data-studio-host][hidden]')) return;
         locale = document.documentElement.lang.startsWith('ar') ? 'ar' : 'en';
         setText(previewButton, label('preview'));
         setText(architectureButton, label('architecture'));
-        setText(flowButton, label('flow'));
         switcher.setAttribute('aria-label', label('view'));
         if (view === 'preview') return;
 
@@ -205,11 +191,6 @@ export function mountArchitectureExplorer(canvas, preview, store) {
             graphState = state;
         }
         selection = resolveNodeSelection(graph, selection);
-        if (view === 'flow') {
-            flow.render(graph, state, label, locale, scenario);
-            renderTraceBar();
-            return;
-        }
         const focusedNode = document.activeElement?.dataset?.archNode;
         const rtl = locale === 'ar';
         const layout = layoutArchitecture(graph, rtl, compact.matches);
@@ -277,77 +258,25 @@ export function mountArchitectureExplorer(canvas, preview, store) {
         }
     }
 
-    function renderTraceBar() {
-        traceBar.hidden = !traceOrigin;
-        if (!traceOrigin) return;
-        const demo = locale === 'ar' ? 'تتبّع تجريبي' : 'Demo trace';
-        const parts = activeTrace
-            ? [demo, activeTrace.title[locale === 'ar' ? 1 : 0], previewTraceContext(activeTrace.event, locale)]
-            : [demo];
-        setText(traceNote, parts.filter(Boolean).join(' · '));
-        setText(traceReturn, locale === 'ar' ? 'العودة إلى المعاينة' : 'Back to preview');
-    }
-
-    function switchView(next, scenario) {
+    function switchView(next) {
         if (view === next) return;
         if (view === 'architecture') finishRetirements();
-        if (view === 'flow') {
-            flow.hide();
-            flow.detach();
-            activeTrace = undefined;
-            traceOrigin = undefined;
-        }
+        if (view === 'preview') onLeavePreview();
         view = next;
         preview.hidden = next !== 'preview';
         explorer.hidden = next !== 'architecture';
-        flow.panel.hidden = next !== 'flow';
-        for (const [button, name] of [[previewButton, 'preview'], [architectureButton, 'architecture'], [flowButton, 'flow']]) {
-            button.setAttribute('aria-pressed', String(next === name));
-        }
-        render(scenario);
-    }
-
-    function cancelTrace() {
-        if (!activeTrace) return;
-        flow.detach();
-        flow.hide();
-        activeTrace = undefined;
-        renderTraceBar();
-    }
-
-    function openTrace(action, reflect, origin) {
-        if (view !== 'preview' || canvas.closest('[hidden]')) return;
-        const trace = resolvePreviewTrace(action, store.getState());
-        if (!trace) return;
-        traceOrigin = origin;
-        activeTrace = trace;
-        switchView('flow', trace.event.scenario);
-        flow.prepare(outcomes => {
-            reflect(Boolean(outcomes?.has(trace.outcome)));
-            if (!outcomes) {
-                activeTrace = undefined;
-                renderTraceBar();
-            }
-        });
-        flow.focus();
+        previewButton.setAttribute('aria-pressed', String(next === 'preview'));
+        architectureButton.setAttribute('aria-pressed', String(next === 'architecture'));
+        render();
     }
 
     listen(previewButton, 'click', () => switchView('preview'));
-    listen(traceReturn, 'click', () => {
-        const origin = traceOrigin;
-        switchView('preview');
-        const target = origin?.isConnected && !origin.disabled ? origin : previewButton;
-        target.focus({ preventScroll: true });
-        target.scrollIntoView({ block: 'nearest', behavior: 'instant' });
-    });
     listen(canvas.closest('[data-studio-host]'), 'studio-visibility', () => {
         if (canvas.closest('[data-studio-host][hidden]')) {
-            flow.hide();
             finishRetirements();
         } else render();
     });
     listen(architectureButton, 'click', () => switchView('architecture'));
-    listen(flowButton, 'click', () => switchView('flow'));
     listen(compact, 'change', () => { if (view === 'architecture') render(); });
     listen(diagram, 'click', event => {
         const id = event.target.closest('[data-arch-node]')?.dataset.archNode;
@@ -377,9 +306,7 @@ export function mountArchitectureExplorer(canvas, preview, store) {
         if (view === 'preview' || !(next.applicationType !== previous.applicationType ||
             changed('previewFeatures') || changed('engineering') || changed('usage') || changed('capacity') ||
             changed('features', ['ai']))) return;
-        if (view === 'flow') {
-            render();
-        } else if (!pendingGraphRender && !canvas.closest('[data-studio-host][hidden]')) {
+        if (!pendingGraphRender && !canvas.closest('[data-studio-host][hidden]')) {
             pendingGraphRender = true;
             queueMicrotask(() => {
                 pendingGraphRender = false;
@@ -395,9 +322,8 @@ export function mountArchitectureExplorer(canvas, preview, store) {
         observer.disconnect();
         events.abort();
         finishRetirements();
-        flow.destroy();
         switcher.remove();
         explorer.remove();
     }
-    return { openTrace, cancelTrace, destroy };
+    return { destroy };
 }

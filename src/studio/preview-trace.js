@@ -3,6 +3,7 @@ import { scenarios } from './flow/scenarios.js';
 const actions = {
     workspace: { template: 'saas', scenario: 'workspace', outcome: 'workspaceReady' },
     checkout: { template: 'ecommerce', scenario: 'checkout', outcome: 'orderConfirmed' },
+    demo: { template: 'landing', scenario: 'demo', outcome: 'demoReceived' },
     export: { template: 'internal-tool', scenario: 'report', outcome: 'exportReady' }
 };
 const filters = ['all', 'review', 'approved', 'pending'];

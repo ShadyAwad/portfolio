@@ -1,6 +1,6 @@
 import { createPreviewAction } from './preview-trace.js';
 
-export function bindPreviewInteractions(preview, signal, demoConfirmation, { template, offer, clear, trace }) {
+export function bindPreviewInteractions(preview, signal, { template, run, clear }) {
     function updateCart(store, action) {
         const count = store.querySelector('[data-cart-count]');
         const total = store.querySelector('[data-cart-total]');
@@ -23,9 +23,7 @@ export function bindPreviewInteractions(preview, signal, demoConfirmation, { tem
                 count: Number(store.querySelector('[data-cart-count]').textContent),
                 total: Number(store.querySelector('[data-cart-total]').textContent.slice(1))
             } : { filter: preview.querySelector('[data-record-filter]')?.value };
-            offer(createPreviewAction(template(), previewAction, context));
-        } else if (button.hasAttribute('data-preview-trace')) {
-            trace();
+            run(createPreviewAction(template(), previewAction, context), button.parentElement);
         } else if (storeCategory) {
             for (const control of store.querySelectorAll('[data-store-category]')) {
                 control.setAttribute('aria-pressed', String(control === button));
@@ -70,6 +68,6 @@ export function bindPreviewInteractions(preview, signal, demoConfirmation, { tem
     preview.addEventListener('submit', event => {
         if (!event.target.matches('[data-preview-demo]')) return;
         event.preventDefault();
-        event.target.querySelector('[role="status"]').textContent = demoConfirmation();
+        run(createPreviewAction(template(), 'demo'), event.target);
     }, { signal });
 }

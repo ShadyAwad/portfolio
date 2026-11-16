@@ -236,35 +236,6 @@
     font-weight: 650;
 }
 .mock-action:hover { filter: brightness(1.12); }
-.mock-trace { flex: 1 0 100%; min-inline-size: 0; }
-.mock-page-content > .mock-trace { margin-block-end: .85rem; }
-.mock-records > .mock-trace { margin-block-start: .65rem; }
-.mock-trace-controls { display: flex; flex-wrap: wrap; gap: .4rem; }
-.studio-preview .mock-trace-link {
-    min-block-size: 36px;
-    padding: .3rem .65rem;
-    border: 1px solid var(--mock-accent);
-    border-radius: 7px;
-    background: var(--mock-tint);
-    color: var(--mock-accent);
-    font-weight: 650;
-}
-.mock-trace-link:hover { text-decoration: underline; }
-.mock-trace-status { margin-block-start: .35rem; color: var(--mock-muted); font-size: .78rem; }
-.mock-trace-status:empty { margin: 0; }
-.mock-trace[data-trace-ready] .mock-trace-status {
-    padding-inline-start: .6rem;
-    border-inline-start: 2px solid var(--mock-accent);
-}
-.mock-trace [data-preview-action] { scroll-margin-block: 4.5rem 1.25rem; }
-.mock-trace[data-trace-complete] .mock-trace-status { color: var(--mock-ink); font-weight: 650; }
-@media (prefers-reduced-motion: no-preference) {
-    .mock-trace[data-trace-ready] .mock-action { animation: studio-trace-origin 240ms ease-out; }
-    @keyframes studio-trace-origin {
-        from { box-shadow: 0 0 0 3px var(--mock-tint); }
-        to { box-shadow: 0 0 0 0 transparent; }
-    }
-}
 .mock-appbar, .mock-ops-header {
     padding: .65rem var(--mock-spacing);
     border-block-end: 1px solid var(--mock-border);
@@ -516,8 +487,6 @@
 .studio-module progress { inline-size: 100%; accent-color: var(--mock-accent); }
 .mock-demo-form { display: flex; flex-wrap: wrap; align-items: end; gap: .4rem; margin-block-start: .4rem; }
 .mock-demo-form label { display: grid; max-inline-size: 100%; }
-.mock-demo-form [role="status"] { flex-basis: 100%; color: var(--mock-accent); }
-.mock-demo-form [role="status"]:empty { display: none; }
 
 @container application (max-width: 660px) {
     .mock-saas { grid-template-columns: minmax(0, 1fr); }

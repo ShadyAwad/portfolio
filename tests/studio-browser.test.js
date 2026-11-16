@@ -55,11 +55,7 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
             element.dispatchEvent(new Event(type, { bubbles: true }));
         };
         window.template = value => set('.studio-settings select[name=applicationType]', value, 'change');
-        window.scenario = value => set('[data-flow-scenario]', value, 'change');
-        window.traceAction = () => click('[data-preview-action]');
-        window.openTrace = () => click('[data-preview-trace]');
-        window.returnToPreview = () => click('.studio-trace-bar button');
-        window.completeTrace = () => set('#workspace-scrubber',q('#workspace-scrubber').max);
+        window.runAction = () => click('[data-preview-action]');
         window.mediaEnabled = () => click('.studio-settings [name=enabled]');
         window.mediaSlot = () => q('[data-preview-media]');
         window.model = () => mediaSlot().querySelector('model-viewer');
@@ -89,7 +85,7 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await command('Page.addScriptToEvaluateOnNewDocument', { source: helpers });
     await command('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
     await command('Page.navigate', { url });
-    await waitFor("Boolean(q('.flow-toolbar'))");
+    await waitFor("Boolean(q('.architecture-switch'))");
 
     await check("q('[data-studio-host]').hidden && q('.studio-invite').hidden");
     await evaluate("q('footer').scrollIntoView({block:'center',behavior:'instant'})");
@@ -116,39 +112,20 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
         await check("!q('[data-studio-preview-panel]').hidden && q('.studio-template').children.length");
         await evaluate("view(1)");
         await check("!q('.architecture-explorer').hidden");
-        await evaluate("view(2)");
-        await check(`q('[data-flow-scenario]').options.length >= 2 && !q('.flow-panel').hidden && q('.flow-route [aria-current=step]').dataset.flowStep === '0'`);
+        await check("q('.architecture-switch').children.length===2 && !q('.flow-panel, [data-preview-trace]')");
     }
-    await evaluate(`click('.studio-settings [name=jobs]');view(1);
-        q('[data-arch-node=queue]').dispatchEvent(new MouseEvent('click',{bubbles:true}));`);
+    await evaluate("click('.studio-settings [name=jobs]');view(1)");
+    await waitFor("Boolean(q('[data-arch-node=queue]'))");
+    await evaluate("q('[data-arch-node=queue]').dispatchEvent(new MouseEvent('click',{bubbles:true}))");
     await check("q('.architecture-explorer .architecture-inspector h4').textContent === 'Background queue'");
-    await evaluate(`view(2);scenario('report');
-        window.saved = localStorage.getItem('awad-portfolio-studio');
-        window.price = q('#price-display').dataset.price;
-        set('[data-flow-load]','saturated','change');`);
-    await check("q('.flow-panel').dataset.loadStatus === 'saturated'");
-    await evaluate("set('[data-flow-load]','overloaded','change');click('[data-playback=step]')");
-    await check("q('.flow-panel').dataset.loadStatus === 'overloaded' && q('.flow-load dd:last-child') && q('.flow-route [aria-current=step]').dataset.flowStep === '1' && q('.flow-packet').getAnimations().length === 0");
-    await evaluate(`window.routeStart=q('[data-flow-step="0"]');
-        for (let i = 0; i < 16; i++) {view(1);view(2);}
-        click('#configurator-studio > summary');`);
-    await waitFor("q('[data-studio-host]').hidden");
-    await evaluate("click('.configurator-toggle');click('.configurator-toggle');click('#configurator-studio > summary')");
-    await waitFor("!q('[data-studio-host]').hidden");
-    await check("q('.flow-panel').dataset.loadStatus === 'overloaded' && routeStart === q('[data-flow-step=\"0\"]') && q('.flow-route [aria-current=step]').dataset.flowStep === '1'");
-    await evaluate("click('[data-playback=reset]');set('[data-flow-load]','normal','change')");
-    await check("q('.flow-panel').dataset.loadStatus === 'nominal' && q('.flow-route [aria-current=step]').dataset.flowStep === '0'");
-    await check("price === q('#price-display').dataset.price");
-    await check("saved === localStorage.getItem('awad-portfolio-studio')");
-
     await evaluate("click('#theme-toggle');click('#lang-toggle')");
     await waitFor("document.documentElement.dir === 'rtl' && document.documentElement.dataset.theme === 'light'");
-    await waitFor("q('.architecture-switch button:last-child').textContent === 'كيف يعمل'");
+    await waitFor("q('.architecture-switch button:last-child').textContent === 'بنية النظام'");
     await command('Page.reload');
-    await waitFor("Boolean(q('.flow-toolbar'))");
+    await waitFor("Boolean(q('.architecture-switch'))");
     await evaluate("click('.configurator-toggle');click('#configurator-studio > summary')");
     await waitFor("q('.studio-settings select[name=applicationType]')?.value === 'internal-tool'");
-    await check("q('.studio-settings [name=jobs]').checked && q('.flow-panel').hidden");
+    await check("q('.studio-settings [name=jobs]').checked && !q('.flow-panel')");
     await evaluate("click('[data-studio-reset]')");
     await check("q('.studio-settings select[name=applicationType]').value === 'saas' && !q('.studio-settings [name=jobs]').checked && localStorage.getItem('awad-portfolio-studio') === null");
 
@@ -171,217 +148,59 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
     await command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
     await waitFor("!q('#stanza-lightbox').open && document.activeElement===stanzaOrigin");
-    await evaluate("template('saas');view(2);scenario('workspace')");
-    await check("!q('.workspace-interaction').hidden && !q('[data-socket=access]')");
-    await evaluate("click('.studio-settings [name=auth]');click('.studio-settings [name=tenancy]')");
-    await check("!q('[data-socket=access]').hidden && q('.flow-route ol').children.length === 7");
-    await evaluate("q('.workspace-field').scrollIntoView({block:'center',behavior:'instant'})");
-    const centers = await evaluate(`['.workspace-token','[data-socket=api] i'].map(selector => {
-        const rect = q(selector).getBoundingClientRect();
-        return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
-    })`);
-    await command('Input.dispatchMouseEvent', { type: 'mousePressed', button: 'left', clickCount: 1, ...centers[0] });
-    await command('Input.dispatchMouseEvent', { type: 'mouseMoved', button: 'left', buttons: 1, ...centers[1] });
-    await waitFor(`Math.abs(q('.workspace-token').getBoundingClientRect().x + 22 - ${centers[1].x}) < 2`);
-    await command('Input.dispatchMouseEvent', { type: 'mouseReleased', button: 'left', clickCount: 1, ...centers[1] });
-    await waitFor("q('[data-flow-step=\"1\"]').hasAttribute('aria-current')");
-    await evaluate("click('[data-playback=reset]')");
-    await evaluate("q('.flow-toolbar').scrollIntoView();q('.workspace-token').focus()");
+    await evaluate("template('saas');view(0);click('#lang-toggle')");
+    await waitFor("document.documentElement.dir==='ltr'");
+    await evaluate("window.flowSaved=localStorage.getItem('awad-portfolio-studio');window.flowPrice=q('#price-display').dataset.price;window.flowCommercial=q('.commercial-summary').textContent;q('[data-preview-action]').focus()");
     await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, text: '\r' });
     await command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
-    await waitFor("q('[data-playback=play]').getAttribute('aria-pressed') === 'true' && q('[data-flow-step=\"1\"]').hasAttribute('aria-current')");
-    await evaluate("click('[data-playback=play]');click('[data-playback=step]')");
-    await check("q('[data-flow-step=\"2\"]').hasAttribute('aria-current') && !q('.workspace-field').hasAttribute('data-travel')");
-    await evaluate("click('[data-playback=play]');set('#workspace-scrubber','6')");
-    await check("q('#workspace-scrubber').value==='6' && q('.workspace-field').hasAttribute('data-delivered') && q('[data-socket=browser]').hasAttribute('data-active') && q('[data-playback=play]').getAttribute('aria-pressed')==='false'");
-    await evaluate("set('#workspace-scrubber','3')");
-    await check("q('[data-socket=access]').hasAttribute('data-active') && q('[data-socket=api]').hasAttribute('data-complete') && q('.workspace-field').dataset.channel==='request'");
-    await evaluate("click('[data-playback=play]')");
-    await check("q('#workspace-scrubber').value==='4' && q('[data-socket=postgres]').hasAttribute('data-active')");
-    await evaluate("click('[data-playback=reset]')");
-    await check("q('#workspace-scrubber').value==='0' && q('[data-socket=browser]').hasAttribute('data-active') && !q('.workspace-field').hasAttribute('data-delivered')");
-    await evaluate("click('[data-playback=reset]');scenario('report')");
-    await check("q('.workspace-interaction').hidden && !q('.flow-load').hidden && q('[data-flow-step=\"0\"]').hasAttribute('aria-current')");
-    await evaluate("template('ecommerce');scenario('checkout')");
-    await check("q('.workspace-field').dataset.variant==='checkout' && !q('[data-socket=queue]') && q('.flow-load').hidden");
-    await evaluate("click('.studio-settings [name=jobs]')");
-    await check("q('[data-socket=queue]') && !q('.flow-load').hidden");
-    await evaluate("window.checkoutLast=Number(q('#workspace-scrubber').max);set('#workspace-scrubber',String(checkoutLast-2))");
-    await check("q('.workspace-field').hasAttribute('data-confirmed') && q('.workspace-field').dataset.channel==='response' && q('[data-socket=browser]').hasAttribute('data-active')");
-    await evaluate("set('#workspace-scrubber',String(checkoutLast-1))");
-    await check("q('.workspace-field').hasAttribute('data-confirmed') && q('.workspace-field').dataset.channel==='background' && q('[data-socket=queue]').hasAttribute('data-active')");
-    await evaluate("click('[data-playback=play]');click('[data-playback=reset]');template('internal-tool');scenario('report')");
-    await check("q('.workspace-field').dataset.variant==='export' && q('[data-socket=artifact]') && !q('.workspace-field').hasAttribute('data-confirmed')");
-    await evaluate("set('#workspace-scrubber',q('#workspace-scrubber').max)");
-    await check("q('.workspace-field').hasAttribute('data-artifact') && q('.workspace-field').hasAttribute('data-delivered') && q('.workspace-outcome').textContent.includes('records.csv')");
-    await evaluate("for (let i=0;i<8;i++){scenario('filter');scenario('report')}");
-    await check("!q('.workspace-field').hasAttribute('data-artifact') && q('#workspace-scrubber').value==='0' && document.querySelectorAll('.workspace-token').length===1");
+    await check("q('.mock-flow-status').textContent.includes('workspace ready') && q('.mock-flow-steps').hidden && document.activeElement===q('[data-preview-action]')");
+    await check("flowSaved===localStorage.getItem('awad-portfolio-studio') && flowPrice===q('#price-display').dataset.price && flowCommercial===q('.commercial-summary').textContent");
 
-    await evaluate("click('#lang-toggle')");
-    await waitFor("document.documentElement.lang === 'en' && q('.architecture-switch button:last-child').textContent === 'How It Works'");
-    await evaluate(`view(0);template('saas');
-        window.traceSaved = localStorage.getItem('awad-portfolio-studio');
-        window.tracePrice = q('#price-display').dataset.price;
-        window.traceCommercial = q('.commercial-summary').textContent;
-        traceAction();`);
-    await check("q('.flow-panel').hidden && !q('[data-preview-trace]').hidden && !q('.workspace-request-surface').hidden && q('.workspace-preview-motion').getAnimations({subtree:true}).length===0");
-    await evaluate("q('[data-preview-trace]').focus()");
-    await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, text: '\r' });
-    await command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
-    await check("!q('.flow-panel').hidden && q('[data-flow-scenario]').value==='workspace' && document.activeElement===q('[data-flow-scenario]') && q('#workspace-scrubber').value==='0' && q('[data-socket=access]')");
-    await evaluate("click('[data-playback=play]')");
-    await check("q('[data-playback=play]').getAttribute('aria-pressed')==='true' && !q('.mock-trace').hasAttribute('data-trace-complete')");
-    await evaluate("returnToPreview()");
-    await check("q('.flow-panel').hidden && q('[data-playback=play]').getAttribute('aria-pressed')==='false' && document.activeElement===q('[data-preview-action]')");
-    await evaluate("openTrace();completeTrace()");
-    await check("q('.mock-trace').hasAttribute('data-trace-complete')");
-    await evaluate("click('[data-playback=reset]');returnToPreview()");
-    await check("!q('.mock-trace').hasAttribute('data-trace-complete') && !q('[data-preview-trace]').hidden");
-    await evaluate("openTrace();completeTrace();returnToPreview()");
-    await check("q('.mock-trace-status').textContent.includes('workspace ready')");
-    await check("traceSaved===localStorage.getItem('awad-portfolio-studio') && tracePrice===q('#price-display').dataset.price && traceCommercial===q('.commercial-summary').textContent");
-    await evaluate("openTrace();completeTrace()");
-    await check("q('.workspace-outcome').textContent==='Workspace ready'");
-    await evaluate("click('[data-playback=reset]');click('[data-playback=play]');click('.configurator-toggle')");
-    await waitFor("q('[data-studio-host]').hidden && document.activeElement===q('.configurator-toggle')");
-    await check("q('[data-playback=play]').getAttribute('aria-pressed')==='false' && !q('.workspace-field').hasAttribute('data-travel')");
-    await evaluate("click('.configurator-toggle');returnToPreview()");
-
-    await command('Emulation.setDeviceMetricsOverride', { width: 1280, height: 860, deviceScaleFactor: 1, mobile: false });
     await command('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'no-preference' }] });
-    await evaluate("click('[data-preview-viewport=desktop]');window.metricsY=q('.mock-metrics').offsetTop;traceAction();window.oldEntrance=q('.workspace-request-surface').getAnimations();traceAction()");
-    await check("q('.workspace-preview-motion').dataset.pulse==='open' && q('.flow-panel').hidden && oldEntrance.every(effect=>effect.playState==='idle') && q('.mock-metrics').offsetTop===metricsY");
-    await evaluate("click('[data-workspace-close]')");
-    await check("q('.workspace-request-surface').hidden && document.activeElement===q('[data-preview-action]')");
-    await evaluate("traceAction();view(1)");
-    await waitFor("q('.workspace-request-surface').hidden && q('.workspace-preview-motion').getAnimations({subtree:true}).length===0");
-    await evaluate("view(0);traceAction();window.oldPulse=q('.workspace-preview-motion');template('ecommerce');template('landing');template('saas')");
-    await check("!oldPulse.isConnected && oldPulse.getAnimations({subtree:true}).length===0 && q('[data-preview-trace]').hidden");
+    await evaluate("click('.studio-settings [name=auth]');runAction()");
+    await check("q('.mock-flow-feedback').dataset.flowState==='running' && q('.mock-flow-steps [aria-current]').dataset.stage==='api' && q('.mock-flow-steps [data-stage=access]')");
+    await waitFor("q('.mock-flow-steps [aria-current]')?.dataset.stage==='access'");
+    await evaluate("runAction()");
+    await check("q('.mock-flow-steps [aria-current]').dataset.stage==='api'");
+    await evaluate("view(1)");
+    await check("q('.mock-flow-steps').hidden && !q('.mock-flow-status').textContent && !q('.architecture-explorer').hidden");
+    await waitFor("Boolean(q('[data-arch-node=auth]'))");
+    await evaluate("view(0);runAction();template('ecommerce')");
+    await check("!q('.mock-flow-status').textContent && q('[data-preview-action]').disabled");
+    await evaluate("click('[data-cart-add]');runAction()");
+    await waitFor("q('.mock-flow-status').textContent.includes('order confirmed')");
+    await waitFor("q('.mock-flow-steps').hidden");
+    await check("q('[data-cart-count]').textContent==='1' && q('.mock-flow-feedback').getAnimations({subtree:true}).length===0");
+    await evaluate("runAction();click('[data-cart-clear]')");
+    await check("q('.mock-flow-steps').hidden && !q('.mock-flow-status').textContent && q('[data-preview-action]').disabled");
 
-    await evaluate(`for (const key of ['auth','tenancy','jobs']) {
-        const control = q('.studio-settings [name='+key+']');
-        if (control.checked) control.click();
-    }
-    traceAction();q('.workspace-request-surface').scrollIntoView({block:'center',behavior:'instant'});`);
-    await waitFor("q('.workspace-request-surface').getAnimations().length===0");
-    await check("!q('[data-pulse-node=access]') && document.activeElement===q('.workspace-field-token')");
-    const previewCenters = await evaluate(`['.workspace-field-token','[data-next] .workspace-field-socket'].map(selector => {
-        const r = q(selector).getBoundingClientRect();
-        return {x:r.x+r.width/2,y:r.y+r.height/2};
-    })`);
-    await command('Input.dispatchMouseEvent', { type: 'mousePressed', ...previewCenters[0], button: 'left', buttons: 1, clickCount: 1 });
-    for (let i = 1; i <= 6; i++) {
-        await command('Input.dispatchMouseEvent', { type: 'mouseMoved', button: 'left', buttons: 1,
-            x: previewCenters[0].x + (previewCenters[1].x-previewCenters[0].x)*i/6,
-            y: previewCenters[0].y + (previewCenters[1].y-previewCenters[0].y)*i/6 });
-    }
-    await check("q('.workspace-request-board').hasAttribute('data-drag') && Number(q('.workspace-request-board').style.getPropertyValue('--pull'))>.7");
-    await command('Input.dispatchMouseEvent', { type: 'mouseReleased', ...previewCenters[1], button: 'left', buttons: 0, clickCount: 1 });
-    await waitFor("q('.workspace-field-node[data-current]').dataset.pulseNode==='api'");
-    await check("!q('.mock-trace').hasAttribute('data-trace-complete') && !q('.workspace-request-board').hasAttribute('data-drag')");
-    await evaluate("click('.workspace-field-token')");
-    await waitFor("q('.workspace-preview-motion').dataset.pulse==='ready'");
-    await waitFor("q('.workspace-request-surface').hidden && document.activeElement===q('[data-preview-action]')");
-    await check("q('.workspace-preview-motion').getAnimations({subtree:true}).length===0 && q('#price-display').dataset.price===tracePrice");
-
-    await evaluate("click('.studio-preview-theme');click('[data-preview-viewport=tablet]');traceAction();click('[data-workspace-run]');window.oldJourney=q('.workspace-request-surface');click('.studio-settings [name=auth]')");
-    await check("!oldJourney.isConnected && oldJourney.getAnimations({subtree:true}).length===0 && q('.workspace-request-surface').hidden && !q('.mock-trace').hasAttribute('data-trace-complete') && !q('[data-preview-trace]').hidden");
-    await check("q('[data-pulse-node=access]').textContent.includes('Session') && q('#workspace-pulse-route').textContent.includes('API → Session → Database')");
-    await evaluate(`window.secureJourney=q('.workspace-request-surface');
-        click('.studio-settings [name=jobs]');
-        window.secureSaved=localStorage.getItem('awad-portfolio-studio');
-        traceAction();click('[data-workspace-run]');`);
-    await check("secureJourney===q('.workspace-request-surface') && q('.workspace-pulse-lanes').children.length===5");
-    await waitFor("Number(getComputedStyle(q('.workspace-field-verified')).opacity)>.55");
-    await waitFor("q('.workspace-preview-motion').dataset.pulse==='ready'");
-    await check("localStorage.getItem('awad-portfolio-studio')===secureSaved && q('#price-display').dataset.price===tracePrice");
-
-    await command('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
-    await evaluate("click('.studio-settings [name=tenancy]');click('.studio-settings [name=auth]');traceAction()");
-    await check("q('[data-pulse-node=access]').textContent.includes('Scope') && q('.workspace-preview-motion').getAnimations({subtree:true}).length===0");
-    for (let step = 0; step < 3; step++) {
-        await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, text: '\r' });
-        await command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
-    }
-    await check("q('.workspace-preview-motion').dataset.pulse==='ready' && q('.workspace-preview-motion').getAnimations({subtree:true}).length===0");
-    await evaluate("traceAction()");
-    await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
-    await command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
-    await check("q('.workspace-request-surface').hidden && document.activeElement===q('[data-preview-action]')");
-    await evaluate("openTrace()");
-    await check("q('[data-flow-scenario]').value==='workspace' && q('.flow-route [data-component=tenant]') && !q('.flow-route [data-component=auth]')");
-    await evaluate("completeTrace();returnToPreview()");
-    await check("q('.workspace-preview-motion').dataset.pulse==='ready' && document.activeElement===q('[data-preview-action]')");
-
-    await evaluate("template('ecommerce')");
-    await check("q('[data-preview-action]').disabled && q('[data-preview-trace]').hidden");
-    await evaluate("click('[data-cart-add]');traceAction();openTrace()");
-    await check("q('[data-flow-scenario]').value==='checkout' && q('.studio-trace-bar p').textContent.includes('Quantity: 1') && q('[data-socket=queue]')");
-    await evaluate("set('#workspace-scrubber',String(Number(q('#workspace-scrubber').max)-3))");
-    await check("!q('.mock-trace').hasAttribute('data-trace-complete')");
-    await evaluate("set('#workspace-scrubber',String(Number(q('#workspace-scrubber').max)-2));returnToPreview()");
-    await check("q('.mock-trace-status').textContent.includes('order confirmed') && q('[data-cart-count]').textContent==='1'");
-    await evaluate("click('[data-cart-clear]')");
-    await check("q('[data-preview-trace]').hidden && !q('.mock-trace').hasAttribute('data-trace-complete')");
-    await evaluate("click('[data-cart-add]');traceAction();openTrace();click('[data-playback=play]');template('internal-tool');scenario('report');completeTrace();returnToPreview()");
-    await check("q('[data-preview-trace]').hidden && !q('.mock-trace').hasAttribute('data-trace-complete')");
-
-    await evaluate("set('[data-record-filter]','review','change');traceAction();openTrace()");
-    await check("q('[data-flow-scenario]').value==='report' && q('.studio-trace-bar p').textContent.includes('In review')");
-    await evaluate("completeTrace();scenario('filter');scenario('report');completeTrace();returnToPreview()");
-    await check("!q('.mock-trace').hasAttribute('data-trace-complete')");
-    await evaluate("openTrace();completeTrace();returnToPreview()");
-    await check("q('.mock-trace-status').textContent.includes('records.csv ready') && q('[data-record-filter]').value==='review'");
-    await evaluate("click('[data-studio-reset]');template('landing')");
-    await check("!q('[data-preview-action]') && q('.flow-panel').hidden");
+    await evaluate("template('internal-tool');click('.studio-settings [name=jobs]');set('[data-record-filter]','review','change');runAction()");
+    await check("q('.mock-flow-steps [data-stage=queue]')");
+    await waitFor("q('.mock-flow-status').textContent.includes('records.csv ready')");
+    await check("q('[data-record-filter]').value==='review'");
+    await evaluate("runAction();click('#configurator-studio > summary')");
+    await waitFor("q('[data-studio-host]').hidden && q('.mock-flow-steps').hidden && !q('.mock-flow-status').textContent");
+    await evaluate("click('#configurator-studio > summary');template('landing')");
+    await waitFor("!q('[data-studio-host]').hidden");
+    await evaluate("if(!q('.studio-settings [name=conversion]').checked)click('.studio-settings [name=conversion]');click('[data-preview-start]');document.activeElement.value='sample@example.test';q('[data-preview-demo]').requestSubmit()");
+    await waitFor("q('.mock-flow-status').textContent.includes('Demo request received')");
+    await check("document.activeElement.value==='sample@example.test' && !localStorage.getItem('awad-portfolio-studio').includes('sample@example.test')");
 
     await command('Emulation.setDeviceMetricsOverride', { width: 320, height: 760, deviceScaleFactor: 1, mobile: true });
     await command('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
-    await evaluate("click('#lang-toggle');click('#theme-toggle');template('saas')");
-    await waitFor("document.documentElement.dir==='rtl' && q('[data-preview-action]').textContent.includes('تحميل')");
-    for (const selector of ['[data-preview-action]', '[data-preview-trace]']) {
-        const point = await evaluate(`(() => {
-            const button = q('${selector}');
-            button.scrollIntoView({ block: 'center', behavior: 'instant' });
-            const r = button.getBoundingClientRect();
-            return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
-        })()`);
-        await command('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [point] });
-        await command('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-        if (selector === '[data-preview-action]') {
-            await check("!q('.workspace-request-surface').hidden && q('.workspace-request-surface').getBoundingClientRect().width<=innerWidth");
-            const mobileDrag = await evaluate(`(() => {
-                const point = selector => {
-                    const r = q(selector).getBoundingClientRect();
-                    return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
-                };
-                return { start: point('.workspace-field-token'), end: point('[data-next] .workspace-field-socket'), scroll: scrollY };
-            })()`);
-            await command('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [mobileDrag.start] });
-            for (let i = 1; i <= 5; i++) {
-                await command('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{
-                    x: mobileDrag.start.x + (mobileDrag.end.x - mobileDrag.start.x) * i / 5,
-                    y: mobileDrag.start.y + (mobileDrag.end.y - mobileDrag.start.y) * i / 5
-                }] });
-            }
-            await command('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-            await waitFor("q('.workspace-field-node[data-current]').dataset.pulseNode==='api'");
-            await check(`scrollY===${mobileDrag.scroll}`);
-            await command('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [mobileDrag.end] });
-            await command('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-            await check("q('.workspace-preview-motion').dataset.pulse==='ready'");
-        }
-    }
-    await waitFor("!q('.flow-panel').hidden");
-    await check("parseFloat(q('[data-pulse-node=browser]').style.left) > parseFloat(q('[data-pulse-node=api]').style.left)");
-    await check("q('.studio-trace-bar button').textContent.includes('العودة') && q('.flow-panel').scrollWidth <= q('.flow-panel').clientWidth");
-    await evaluate("completeTrace();returnToPreview()");
-    await check("q('.mock-trace-status').textContent.includes('جاهزة') && q('.studio-preview-frame').scrollWidth <= q('.studio-preview-frame').clientWidth");
-    await check("document.documentElement.scrollWidth===document.documentElement.clientWidth");
+    await evaluate("template('saas');click('#lang-toggle');click('[data-preview-viewport=mobile]')");
+    await waitFor("document.documentElement.dir==='rtl'");
+    const buttonPoint = await evaluate("(() => {const button=q('[data-preview-action]');button.scrollIntoView({block:'center',behavior:'instant'});const rect=button.getBoundingClientRect();return {x:rect.x+rect.width/2,y:rect.y+rect.height/2}})()");
+    await command('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [buttonPoint] });
+    await command('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await waitFor("q('.mock-flow-status').textContent.includes('محاكاة')");
+    await check("q('.studio-preview-frame').scrollWidth<=q('.studio-preview-frame').clientWidth && document.documentElement.scrollWidth===document.documentElement.clientWidth");
+    await command('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
+    await waitFor("q('.mock-flow-status').textContent.includes('جاهزة') && q('.mock-flow-steps').hidden");
 
     await evaluate("window.mediaPrice = q('#price-display').dataset.price");
     await check("!mediaSlot().hasAttribute('data-media-enabled') && !model() && modelRequests().length===0");
-    await evaluate("view(2);mediaEnabled()");
+    await evaluate("view(1);mediaEnabled()");
     await check("mediaSlot().dataset.viewer==='idle' && !model() && modelRequests().length===0");
     await evaluate("view(0);showModel()");
     await waitFor("mediaSlot().dataset.viewer==='unavailable'");
@@ -406,7 +225,7 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
         await command('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'no-preference' }] });
         // Chromium may cache the failed module load from the offline check for the document's lifetime.
         await command('Page.reload');
-        await waitFor("Boolean(q('.flow-toolbar'))");
+        await waitFor("Boolean(q('.architecture-switch'))");
         await evaluate("click('.configurator-toggle');click('#configurator-studio > summary');click('#lang-toggle')");
         await waitFor("document.documentElement.dir==='ltr'");
         await check("!q('.studio-settings [name=enabled]').checked && q('.studio-settings [name=mode]').value==='drag'");
@@ -443,7 +262,7 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
         await check("model().hasAttribute('camera-controls') && model().hasAttribute('auto-rotate')");
         await command('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
         await waitFor("!model()?.hasAttribute('auto-rotate') && q('.studio-media-status').textContent.includes('reduced motion')");
-        await evaluate("view(2)");
+        await evaluate("view(1)");
         await waitFor("!model()");
         await check("!mediaInstance.isConnected && !mediaInstance.hasAttribute('auto-rotate')");
         await evaluate("view(0)");
@@ -529,10 +348,12 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
         await check(`q('.studio-preview').dataset.layout==='${alternate}' && layoutRoot===q('.studio-template').firstElementChild &&
             q('.studio-preview').dataset.typography==='technical' && q('.studio-preview').style.getPropertyValue('--appearance-source')==='#d58b16'`);
     }
-    await evaluate("template('saas');chooseLayout('sidebar');traceAction();window.workspaceField=q('.workspace-request-surface');chooseLayout('top')");
-    await check("workspaceField===q('.workspace-request-surface') && workspaceField.hidden && !q('[data-preview-trace]').hidden && getComputedStyle(q('.mock-sidebar')).flexDirection==='row'");
-    await evaluate("traceAction();click('[data-workspace-run]');openTrace();completeTrace();returnToPreview()");
-    await check("q('.studio-preview').dataset.layout==='top' && q('.mock-trace-status').textContent.includes('workspace ready')");
+    await command('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'no-preference' }] });
+    await evaluate("template('saas');chooseLayout('sidebar');runAction();window.inlineSteps=q('.mock-flow-steps');chooseLayout('top')");
+    await check("inlineSteps===q('.mock-flow-steps') && inlineSteps.hidden && !q('.mock-flow-status').textContent && getComputedStyle(q('.mock-sidebar')).flexDirection==='row'");
+    await evaluate("runAction()");
+    await waitFor("q('.studio-preview').dataset.layout==='top' && q('.mock-flow-status').textContent.includes('workspace ready')");
+    await command('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
 
     await evaluate("template('ecommerce');chooseLayout('product');click('[data-cart-add]');click('[data-store-category=lighting]');chooseLayout('catalog');q('.mock-product-details summary').focus()");
     await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, text: '\r' });
@@ -540,8 +361,8 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await check("q('.mock-product-details').open && q('[data-cart-count]').textContent==='1' && q('[data-category=furniture]').hidden && getComputedStyle(q('.mock-store-feature')).display==='none'");
     await evaluate("chooseLayout('product')");
     await check("document.activeElement===q('[data-cart-add]') && getComputedStyle(q('.mock-product-details')).display==='none'");
-    await evaluate("chooseLayout('catalog');traceAction();openTrace();completeTrace();returnToPreview()");
-    await check("q('.mock-product-details').open && q('[data-cart-count]').textContent==='1' && q('.mock-trace-status').textContent.includes('confirmed')");
+    await evaluate("chooseLayout('catalog');runAction()");
+    await check("q('.mock-product-details').open && q('[data-cart-count]').textContent==='1' && q('.mock-flow-status').textContent.includes('confirmed')");
 
     await evaluate(`template('landing');chooseLayout('split');
         if(!q('.studio-settings [name=conversion]').checked)click('.studio-settings [name=conversion]');
@@ -551,8 +372,8 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await evaluate("q('[data-preview-demo]').requestSubmit();chooseLayout('split');chooseLayout('centered')");
     await check("q('[data-preview-demo] [role=status]').textContent.length>0");
 
-    await evaluate("template('internal-tool');chooseLayout('table');set('[data-record-filter]','pending','change');chooseLayout('overview');traceAction();openTrace();completeTrace();returnToPreview()");
-    await check("q('[data-record-filter]').value==='pending' && q('[data-record-status=review]').hidden && q('.mock-trace-status').textContent.includes('ready') && getComputedStyle(q('.mock-workflow')).gridColumnStart==='2'");
+    await evaluate("template('internal-tool');chooseLayout('table');set('[data-record-filter]','pending','change');chooseLayout('overview');runAction()");
+    await check("q('[data-record-filter]').value==='pending' && q('[data-record-status=review]').hidden && q('.mock-flow-status').textContent.includes('ready') && getComputedStyle(q('.mock-workflow')).gridColumnStart==='2'");
     await evaluate("click('[data-appearance-reset]');template('ecommerce')");
     await check("q('.studio-preview').dataset.layout==='catalog'");
     await evaluate("template('internal-tool')");

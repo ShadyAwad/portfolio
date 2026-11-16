@@ -55,7 +55,7 @@ export const scenarios = {
             browser('Validate the form fields and submit the demo request.', 'تحقّق من حقول النموذج وأرسل طلب العرض.'),
             step('api', 'Validate the email and normalize the input on the server.', 'تحقّق من البريد الإلكتروني ونسّق المدخلات على الخادم.'),
             step('postgres', 'Store the demo request for follow-up.', 'احفظ طلب العرض للمتابعة.'),
-            browser('Show a confirmation once the request has been accepted.', 'اعرض تأكيدًا بعد قبول الطلب.')
+            { ...browser('Show a confirmation once the request has been accepted.', 'اعرض تأكيدًا بعد قبول الطلب.'), outcome: 'demoReceived' }
         ] },
         brochure: { title: ['Download brochure', 'تنزيل الكتيّب'], steps: [
             browser('Select the downloadable brochure on the landing page.', 'اختر الكتيّب القابل للتنزيل من صفحة الهبوط.'),

@@ -1,0 +1,54 @@
+.space-atmosphere {
+    --well-core: #02040c72;
+    --well-rim: #879be233;
+    --well-halo: #3b56a627;
+    --comet-ink: #a5cdff;
+    position: fixed;
+    z-index: -1;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    contain: strict;
+}
+[data-theme="light"] .space-atmosphere {
+    --well-core: #b2c1db26;
+    --well-rim: #7e8fa83b;
+    --well-halo: #a8bbd32d;
+    --comet-ink: #536f99;
+}
+.space-well {
+    position: absolute;
+    top: 10%;
+    left: clamp(-15rem, -17vw, -1rem);
+    width: clamp(20rem, 52vw, 45rem);
+    aspect-ratio: 1;
+    background: radial-gradient(ellipse at center,
+        var(--well-core) 0 26%, var(--well-halo) 36%, transparent 64%);
+}
+.space-well::after {
+    content: '';
+    position: absolute;
+    inset: 26% 1%;
+    transform: rotate(-24deg);
+    background: radial-gradient(ellipse at center,
+        transparent 37%, var(--well-rim) 46%, var(--well-halo) 56%, transparent 72%);
+}
+.space-comet {
+    position: absolute;
+    top: 9px;
+    left: 5%;
+    width: clamp(2.5rem, 7vw, 5.5rem);
+    height: 1px;
+    border-radius: 100%;
+    background: linear-gradient(90deg, transparent, var(--comet-ink));
+    opacity: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+    .space-comet.is-flying { animation: space-fly-by 1550ms linear; }
+    @keyframes space-fly-by {
+        0% { transform: translate3d(0, 0, 0) rotate(5deg); opacity: 0; }
+        22% { opacity: .42; }
+        72% { opacity: .29; }
+        100% { transform: translate3d(46vw, min(4vw, 48px), 0) rotate(5deg); opacity: 0; }
+    }
+}

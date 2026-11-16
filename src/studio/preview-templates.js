@@ -2,7 +2,7 @@ import { previewMediaSlot } from './preview-media.js';
 
 export const translations = {
     title: ['Application Design Studio', 'استوديو تصميم التطبيقات'],
-    intro: ['Choose an application and features, preview the interface, then trace what happens behind common actions.', 'اختر تطبيقًا وميزاته، وعاين الواجهة، ثم تتبّع ما يحدث عند تنفيذ الإجراءات الشائعة.'],
+    intro: ['Choose an application and features, then try common actions in the live preview.', 'اختر تطبيقًا وميزاته، ثم جرّب الإجراءات الشائعة في المعاينة المباشرة.'],
     plan: ['Engineering & cost estimates','التقديرات الهندسية والتكلفة'],
     backToStudio: ['Return to Application Design Studio','العودة إلى استوديو تصميم التطبيقات'],
     controls: ['Application settings', 'إعدادات التطبيق'],
@@ -17,7 +17,6 @@ export const translations = {
     viewport: ['Preview viewport', 'حجم نافذة المعاينة'],
     useDark: ['Switch preview to dark mode', 'حوّل المعاينة إلى الوضع الداكن'],
     useLight: ['Switch preview to light mode', 'حوّل المعاينة إلى الوضع الفاتح'],
-    demoSaved: ['Demo request recorded in this preview only.', 'سُجّل الطلب التجريبي في هذه المعاينة فقط.'],
     features: ['Prototype features', 'ميزات النموذج'],
     saas: ['SaaS Dashboard', 'لوحة تحكم SaaS'],
     ecommerce: ['E-commerce', 'متجر إلكتروني'],
@@ -55,13 +54,15 @@ const account = (label, initials, name, subtitle) => `<details class="mock-accou
     <summary><span class="mock-avatar" aria-hidden="true">${initials}</span><span>${name}</span></summary>
     <div><strong>${name}</strong><p>${label(subtitle)}</p></div></details>`;
 
-function traceAction(label, action, title, disabled = false) {
-    return `<div class="mock-trace">
-        <div class="mock-trace-controls"><button class="mock-action" type="button" data-preview-action="${action}"${disabled ? ' disabled' : ''}>${label(title)}</button>
-        <button type="button" class="mock-trace-link" data-preview-trace aria-controls="studio-flow-panel" hidden>${label(['Trace this action','تتبّع هذا الإجراء'])} <span aria-hidden="true">↗</span></button></div>
-        ${action === 'workspace' ? '<div class="workspace-preview-motion"></div>' : ''}
-        <p role="status" class="mock-trace-status"></p>
+function flowAction(label, action, title, disabled = false) {
+    return `<div class="mock-flow">
+        <button class="mock-action" type="button" data-preview-action="${action}"${disabled ? ' disabled' : ''}>${label(title)}</button>
+        ${flowFeedback()}
     </div>`;
+}
+
+function flowFeedback() {
+    return '<div class="mock-flow-feedback"><p role="status" class="mock-flow-status"></p><ol class="mock-flow-steps" hidden></ol></div>';
 }
 
 function saas(label) {
@@ -80,7 +81,7 @@ function saas(label) {
                     <div><h4>${label(['Workspace overview','نظرة عامة على مساحة العمل'])}</h4>
                     <p>${label(['Here’s how your workspace performed this week.','إليك أداء مساحة عملك هذا الأسبوع.'])}</p></div>
                     ${badge(label(['Last 7 days','آخر 7 أيام']))}</header>
-                ${traceAction(label, 'workspace', ['Load workspace','تحميل مساحة العمل'])}
+                ${flowAction(label, 'workspace', ['Load workspace','تحميل مساحة العمل'])}
                 ${metrics([[['Active users','المستخدمون النشطون'],'1,284'],[['New accounts','الحسابات الجديدة'],'208'],[['Retention','الاحتفاظ'],'91%']],label)}
                 ${previewMediaSlot('saas', label)}
                 <section class="mock-card mock-activity" data-preview-section="activity" tabindex="-1">
@@ -151,7 +152,7 @@ function ecommerce(label) {
             <strong>${label(['Your bag','سلتك'])}</strong>
             <span role="status"><b data-cart-total dir="ltr">$0</b></span>
             <button type="button" data-cart-clear disabled>${label(['Empty bag','إفراغ السلة'])}</button>
-            ${traceAction(label, 'checkout', ['Mock checkout','إتمام طلب تجريبي'], true)}
+            ${flowAction(label, 'checkout', ['Mock checkout','إتمام طلب تجريبي'], true)}
         </section>
     </div>`;
 }
@@ -220,7 +221,7 @@ function internalTool(label) {
                     ${records.map(([status,id,title,owner,text]) => `<tr data-record-status="${status}"><td><strong>${label(title)}</strong>
                         <small dir="ltr">${id}</small></td><td>${owner}</td><td>${badge(label(text))}</td></tr>`).join('')}
                 </tbody></table>
-                ${traceAction(label, 'export', ['Prepare export','إعداد التصدير'])}
+                ${flowAction(label, 'export', ['Prepare export','إعداد التصدير'])}
             </section>
             ${previewMediaSlot('internal-tool', label)}
             <section class="mock-workflow" data-preview-section="workflow" tabindex="-1">
@@ -245,7 +246,7 @@ export function featureModules(label) {
                 <label>${label(['Sample email','بريد إلكتروني تجريبي'])}
                     <input type="email" value="maya@example.test" required></label>
                 <button type="submit" class="mock-action">${label(['Request demo','اطلب عرضًا'])}</button>
-                <p role="status"></p>
+                ${flowFeedback()}
             </form>`,
         roles: `<strong>${label(['Roles &amp; permissions','الأدوار والصلاحيات'])}</strong>${table([['Role','الدور'],['Permission','الصلاحية']], [[['Administrator','مسؤول'],['Manage workspace','إدارة مساحة العمل']],[['Viewer','مشاهد'],['Read only','القراءة فقط']]],label)}`
     };
