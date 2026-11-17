@@ -1,5 +1,5 @@
 import './space-atmosphere.css';
-import { mountGravityBackground } from './gravity-background.js';
+import { mountStarfield } from './starfield.js';
 
 const atmosphere = document.querySelector('.space-atmosphere');
 const comet = atmosphere.querySelector('.space-comet');
@@ -9,7 +9,7 @@ const { signal } = events;
 let timer;
 let inPage = true;
 const active = () => inPage && !document.hidden;
-const field = mountGravityBackground(document.getElementById('starfield'), motion, active);
+const starfield = mountStarfield(document.getElementById('starfield'), motion, active);
 
 function stop() {
     clearTimeout(timer);
@@ -36,7 +36,7 @@ function schedule() {
 
 comet.addEventListener('animationend', schedule, { signal });
 function sync() {
-    field.sync();
+    starfield.sync();
     schedule();
 }
 document.addEventListener('visibilitychange', sync, { signal });
@@ -53,6 +53,6 @@ sync();
 
 if (import.meta.hot) import.meta.hot.dispose(() => {
     events.abort();
-    field.destroy();
+    starfield.destroy();
     stop();
 });

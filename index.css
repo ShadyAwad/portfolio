@@ -216,7 +216,7 @@ button:active {
     overflow: hidden;
 }
 
-:root:not([data-gravity-dragging]) .bento-item:hover {
+.bento-item:hover {
     transform: translateY(-4px);
     border-color: var(--accent);
     box-shadow: 0 20px 40px var(--accent-glow);

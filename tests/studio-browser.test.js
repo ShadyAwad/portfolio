@@ -86,17 +86,6 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
             run();
         };
         window.backgroundAnimations = () => q('.space-atmosphere').getAnimations({ subtree:true });
-        const translate = CanvasRenderingContext2D.prototype.translate;
-        CanvasRenderingContext2D.prototype.translate = function (x, y) {
-            if (this.canvas.id === 'starfield') window.wellCentre = { x, y };
-            return translate.call(this, x, y);
-        };
-        const ellipse = CanvasRenderingContext2D.prototype.ellipse;
-        CanvasRenderingContext2D.prototype.ellipse = function (...args) {
-            if (this.canvas.id === 'starfield' && args[5] === 3.39) window.lensRimAlpha = this.globalAlpha;
-            return ellipse.apply(this, args);
-        };
-        window.isBare = ({x,y}) => [document.body, document.documentElement, q('#portfolio-grid')].includes(document.elementFromPoint(x,y));
         window.databaseDraws = 0;
         const clear = CanvasRenderingContext2D.prototype.clearRect;
         CanvasRenderingContext2D.prototype.clearRect = function (...args) {
@@ -440,43 +429,14 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 2, mobile: false });
     await command('Emulation.setTouchEmulationEnabled', { enabled: false });
     await evaluate("scrollTo({top:0,behavior:'instant'})");
-    await waitFor("isBare(wellCentre) && q('#starfield').width===1944");
+    await waitFor("q('#starfield').width===1944");
     await check("q('#starfield').height===1215 && q('#theme-toggle').getBoundingClientRect().width>0");
     await command('Emulation.setEmulatedMedia', { features: [{ name:'prefers-reduced-motion', value:'no-preference' }] });
     await waitFor("cometTimers.size===1");
-    await evaluate("window.stellarBefore=starfieldDraws;window.anchorBefore={...wellCentre}");
-    await waitFor("starfieldDraws>=stellarBefore+4 && Math.hypot(wellCentre.x-anchorBefore.x,wellCentre.y-anchorBefore.y)>1");
-    await new Promise(resolve => setTimeout(resolve, 500));
-    await command('Input.dispatchMouseEvent', { type:'mouseMoved', x:5, y:4 });
-    await waitFor("lensRimAlpha<.301");
-    const nearLens = await evaluate("({x:wellCentre.x+39,y:wellCentre.y})");
-    await command('Input.dispatchMouseEvent', { type:'mouseMoved', ...nearLens });
-    await waitFor("lensRimAlpha>.312");
-    const tap = await evaluate("wellCentre");
-    await command('Input.dispatchMouseEvent', { type:'mouseMoved', ...tap });
-    await waitFor("lensRimAlpha>.334 && lensRimAlpha<.344");
-    await command('Input.dispatchMouseEvent', { type:'mousePressed', ...tap, button:'left', clickCount:1 });
-    await command('Input.dispatchMouseEvent', { type:'mouseReleased', ...tap, button:'left', clickCount:1 });
-    await waitFor("lensRimAlpha>.355");
-    await waitFor("lensRimAlpha<.344 && !document.documentElement.hasAttribute('data-gravity-dragging')");
-    const anchor = await evaluate("wellCentre");
-    await check("isBare(wellCentre)");
-    await evaluate("window.heroBefore=JSON.stringify(q('#profile-card').getBoundingClientRect())");
-    await command('Input.dispatchMouseEvent', { type:'mousePressed', ...anchor, button:'left', clickCount:1 });
-    const target = { x: anchor.x + 72, y: anchor.y + 104 };
-    await command('Input.dispatchMouseEvent', { type:'mouseMoved', ...target, buttons:1 });
-    await waitFor(`wellCentre.x>${anchor.x+55} && wellCentre.y>${anchor.y+90}`);
-    await check("!isBare(wellCentre) && heroBefore===JSON.stringify(q('#profile-card').getBoundingClientRect())");
-    await command('Input.dispatchMouseEvent', { type:'mouseReleased', ...target, button:'left', clickCount:1 });
-    // Press again where the horizon is still behind the hero. Only the foreground may receive this gesture.
-    await command('Input.dispatchMouseEvent', { type:'mousePressed', ...target, button:'left', clickCount:1 });
-    await command('Input.dispatchMouseEvent', { type:'mouseMoved', x:target.x, y:target.y+150, buttons:1 });
-    await new Promise(resolve => setTimeout(resolve, 140));
-    await check(`wellCentre.y<${target.y+65}`);
-    await command('Input.dispatchMouseEvent', { type:'mouseReleased', x:target.x, y:target.y+150, button:'left', clickCount:1 });
-    await command('Input.dispatchMouseEvent', { type:'mouseMoved', ...anchor });
-    await waitFor(`Math.abs(wellCentre.x-${anchor.x})<27 && wellCentre.y<${anchor.y+18}`);
-    await check("heroBefore===JSON.stringify(q('#profile-card').getBoundingClientRect())");
+    await evaluate("window.stellarBefore=starfieldDraws;window.bounds=()=>JSON.stringify(['#profile-card','.studio-heading'].map(s=>q(s).getBoundingClientRect()));window.foregroundBefore=bounds()");
+    await waitFor("starfieldDraws>=stellarBefore+8");
+    await check("foregroundBefore===bounds() && !document.documentElement.hasAttribute('data-gravity-dragging')");
+    await check("(() => {const r=q('#theme-toggle').getBoundingClientRect();return document.elementFromPoint(r.x+r.width/2,r.y+r.height/2).closest('button')===q('#theme-toggle')})()");
     await evaluate("releaseComet()");
     await waitFor("q('.space-comet').getAnimations().length===1");
     const cometStyle = await evaluate("q('.space-comet').getAttribute('style')");
@@ -500,28 +460,18 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     }
     await command('Emulation.setDeviceMetricsOverride', { width: 320, height: 760, deviceScaleFactor: 2, mobile: true });
     await command('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
-    await waitFor("q('#starfield').width===320 && isBare(wellCentre)");
-    const touchOrigin = await evaluate("({x:wellCentre.x,y:wellCentre.y-5})");
-    await evaluate("window.touchHit = '';window.addEventListener('touchstart',event=>touchHit=event.target.outerHTML.slice(0,200),{once:true,capture:true})");
-    await command('Input.dispatchTouchEvent', { type:'touchStart', touchPoints:[touchOrigin] });
-    await waitFor("document.documentElement.hasAttribute('data-gravity-dragging')", 12).catch(async error => {
-        throw new Error("The exposed mobile horizon received " + await evaluate("touchHit"), { cause:error });
-    });
-    for (let step = 1; step <= 4; step++) {
-        await command('Input.dispatchTouchEvent', { type:'touchMove', touchPoints:[{ x:touchOrigin.x-step*9,y:touchOrigin.y+step*14 }] });
-    }
-    await waitFor("wellCentre.y>65");
-    await command('Input.dispatchTouchEvent', { type:'touchEnd', touchPoints:[] });
-    await waitFor("wellCentre.y<40");
+    await waitFor("q('#starfield').width===320 && document.documentElement.scrollWidth===320");
     await command('Emulation.setEmulatedMedia', { features: [{ name:'prefers-reduced-motion', value:'reduce' }] });
     await waitFor("!backgroundAnimations().length && !cometTimers.size");
-    await evaluate("window.staticDraws=starfieldDraws;window.staticWell=JSON.stringify(wellCentre)");
+    await evaluate("window.staticDraws=starfieldDraws");
     await new Promise(resolve => setTimeout(resolve, 180));
-    await check("starfieldDraws===staticDraws && JSON.stringify(wellCentre)===staticWell && document.documentElement.scrollWidth===320");
+    await check("starfieldDraws===staticDraws && document.documentElement.scrollWidth===320");
+    await evaluate("window.previousTheme=document.documentElement.dataset.theme;click('#theme-toggle')");
+    await waitFor("document.documentElement.dataset.theme!==previousTheme && starfieldDraws>staticDraws");
     const production = await (await fetch(url)).text();
     const entry = production.match(/<script type="module"[^>]*src="([^"]+)"/)?.[1];
     assert(entry);
     const bundle = await (await fetch(new URL(entry, url))).text();
-    assert.doesNotMatch(bundle, /studio-flow-panel|studio-trace-bar|Drag the request from Browser|workspace-scrubber|How It Works/);
+    assert.doesNotMatch(bundle, /studio-flow-panel|studio-trace-bar|Drag the request from Browser|workspace-scrubber|How It Works|data-gravity-dragging|Accretion study/);
     assert.deepEqual(runtimeErrors, []);
 });
