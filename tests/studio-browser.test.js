@@ -448,17 +448,17 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await command('Input.dispatchMouseEvent', { type:'mousePressed', ...anchor, button:'left', clickCount:1 });
     const target = { x: anchor.x + 72, y: anchor.y + 104 };
     await command('Input.dispatchMouseEvent', { type:'mouseMoved', ...target, buttons:1 });
-    await waitFor("wellCentre.x>90 && wellCentre.y>300");
+    await waitFor(`wellCentre.x>${anchor.x+55} && wellCentre.y>${anchor.y+90}`);
     await check("!isBare(wellCentre) && heroBefore===JSON.stringify(q('#profile-card').getBoundingClientRect())");
     await command('Input.dispatchMouseEvent', { type:'mouseReleased', ...target, button:'left', clickCount:1 });
     // Press again where the horizon is still behind the hero. Only the foreground may receive this gesture.
     await command('Input.dispatchMouseEvent', { type:'mousePressed', ...target, button:'left', clickCount:1 });
     await command('Input.dispatchMouseEvent', { type:'mouseMoved', x:target.x, y:target.y+150, buttons:1 });
     await new Promise(resolve => setTimeout(resolve, 140));
-    await check("wellCentre.y<415");
+    await check(`wellCentre.y<${target.y+65}`);
     await command('Input.dispatchMouseEvent', { type:'mouseReleased', x:target.x, y:target.y+150, button:'left', clickCount:1 });
     await command('Input.dispatchMouseEvent', { type:'mouseMoved', ...anchor });
-    await waitFor("wellCentre.x<60 && wellCentre.y<275");
+    await waitFor(`Math.abs(wellCentre.x-${anchor.x})<27 && wellCentre.y<${anchor.y+18}`);
     await check("heroBefore===JSON.stringify(q('#profile-card').getBoundingClientRect())");
     await evaluate("releaseComet()");
     await waitFor("q('.space-comet').getAnimations().length===1");
@@ -481,7 +481,7 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await command('Emulation.setDeviceMetricsOverride', { width: 320, height: 760, deviceScaleFactor: 2, mobile: true });
     await command('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
     await waitFor("q('#starfield').width===320 && isBare(wellCentre)");
-    const touchOrigin = await evaluate("({x:wellCentre.x,y:wellCentre.y-9})");
+    const touchOrigin = await evaluate("({x:wellCentre.x,y:wellCentre.y-5})");
     await evaluate("window.touchHit = '';window.addEventListener('touchstart',event=>touchHit=event.target.outerHTML.slice(0,200),{once:true,capture:true})");
     await command('Input.dispatchTouchEvent', { type:'touchStart', touchPoints:[touchOrigin] });
     await waitFor("document.documentElement.hasAttribute('data-gravity-dragging')", 12).catch(async error => {

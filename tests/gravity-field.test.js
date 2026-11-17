@@ -14,13 +14,15 @@ test('the field occludes the horizon and fades smoothly to zero within a bounded
 });
 
 test('autonomous lens motion stays in a peripheral region across viewport sizes', () => {
-    for (const width of [320, 900, 1360, 1440, 1920]) {
+    for (const width of [320, 900, 1360, 1440, 1560, 1600, 1920]) {
         const geometry = fieldGeometry(width, 900);
         const first = homePosition(geometry, 0);
         assert.notDeepEqual(first, homePosition(geometry, 5));
         for (let elapsed = 0; elapsed < 60; elapsed++) {
             const { x, y } = homePosition(geometry, elapsed);
-            assert(x > 0 && x < width && Math.min(x, width - x) < 80);
+            assert(x > 0 && x < width);
+            if (geometry.topGutter) assert(y < 38 && x > geometry.radius * 3 && x < width - geometry.radius * 3);
+            else assert(x < 100 && x > geometry.radius * 2.9);
             assert(Math.abs(y - first.y) <= 17);
         }
     }

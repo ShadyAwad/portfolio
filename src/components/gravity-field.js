@@ -2,18 +2,21 @@ export const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
 export function fieldGeometry(width, height) {
     const compact = width < 600;
-    const radius = compact ? 13 : 18;
-    const topGutter = width < 1340;
-    const home = topGutter ? { x: width - (compact ? 48 : 64), y: compact ? 24 : 28 }
-        : { x: clamp((width - 1320) / 2 + 2, 18, 39), y: height * .27 };
-    return { width, height, compact, topGutter, radius, influence: compact ? 78 : 112, home };
+    // The portfolio grid is capped at 1320px. Use the top gutter until the side can fit the disk.
+    const sideRoom = (width - 1320) / 2 + 14;
+    const topGutter = sideRoom < 150;
+    const radius = compact ? 8.5 : topGutter ? 18 : 21;
+    const home = topGutter
+        ? { x: compact ? width - 63 : clamp(width * .24, 125, 345), y: compact ? 14 : width <= 1030 ? 19 : 33 }
+        : { x: Math.min(85, sideRoom * .52), y: Math.max(61, height * .29) };
+    return { width, height, compact, topGutter, radius, influence: compact ? 67 : 117, home };
 }
 
 export function homePosition(geometry, seconds) {
-    const { home, topGutter } = geometry;
+    const { home, topGutter, compact } = geometry;
     return {
-        x: home.x + Math.sin(seconds * .31) * (topGutter ? 13 : 9),
-        y: home.y + Math.sin(seconds * .24) * (topGutter ? 4 : 17)
+        x: home.x + Math.sin(seconds * .29) * (compact ? 8 : topGutter ? 17 : 9),
+        y: home.y + Math.sin(seconds * .23) * (compact ? 2 : topGutter ? 3 : 17)
     };
 }
 

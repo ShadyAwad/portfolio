@@ -1,8 +1,8 @@
 import { clamp, fieldGeometry, homePosition, projectStar, settledOffset } from './gravity-field.js';
 
 const palette = {
-    dark: { star: '#bedaff', warm: '#f3c197', cool: '#adc9f2', core: '#02030a', rim: '#b6a386' },
-    light: { star: '#587199', warm: '#966343', cool: '#4d719f', core: '#43516a', rim: '#71829d' }
+    dark: { stars: ['#8099c6', '#b3d1f8', '#eee4db'], warm: '#f3c69d', cool: '#9bbcef', core: '#010208', rim: '#cbab91' },
+    light: { stars: ['#8798b3', '#58739b', '#626481'], warm: '#a26942', cool: '#4c6e9b', core: '#283249', rim: '#86738b' }
 };
 const wrap = (value, length) => ((value % length) + length) % length;
 
@@ -13,12 +13,20 @@ export function mountGravityBackground(canvas, motion, active) {
     const { signal } = events;
     const root = document.documentElement;
     const grid = document.getElementById('portfolio-grid');
-    const stars = Array.from({ length: 160 }, () => ({
-        x: Math.random(), y: Math.random(), depth: Math.random(),
-        size: .45 + Math.random() ** 2 * 1.18, phase: Math.random() * Math.PI * 2
-    }));
-    // A sparse group of fixed stars near the initial lens emphasizes its motion even in a narrow gutter.
-    const neighbours = [[-27,-63],[13,-44],[-15,-29],[40,-28],[-33,-12],[24,-9],[-26,18],[48,24],[-9,34],[17,52],[-35,65]];
+    const layers = [[], [], []];
+    for (let i = 0; i < 200; i++) {
+        const x = Math.random(), y = Math.random(), depth = Math.random();
+        // A bounded radial drift recalls perspective travel, with smaller, slower distant stars.
+        const travel = .7 + 5.8 * depth ** 2;
+        layers[depth > .88 ? 2 : depth > .45 ? 1 : 0].push({
+            x, y, vx: .38 + (x - .5) * travel, vy: .18 + (y - .5) * travel * .62,
+            size: .63 + depth ** 2.3 * 1.9, phase: Math.random() * Math.PI * 2,
+            brightness: .15 + depth ** 1.8 * .59, parallax: .16 + depth ** 2 * .84,
+            twinkle: .025 + depth * .03, frequency: .57 + depth * .34
+        });
+    }
+    // Stars near the home position drift independently of the moving lens.
+    const neighbours = [[-49,-14],[-33,8],[-28,-26],[-16,21],[-5,-25],[12,-29],[21,12],[33,-9],[37,24],[59,-14],[64,18]];
     let geometry, pixelRatio, timer, lastTick, seconds = 0;
     let centre, drag, release, pointer, parallaxX = 0, parallaxY = 0, glow = 0;
     let colors = palette.dark;
@@ -27,8 +35,9 @@ export function mountGravityBackground(canvas, motion, active) {
     const interval = () => geometry.compact ? 1000 / 15 : 50;
     const bare = target => target === document.body || target === root || target === grid;
     const inWell = (x, y) => centre && Math.hypot(x - centre.x, y - centre.y) < geometry.radius + 9;
-    const limitX = value => geometry.topGutter ? clamp(value, geometry.width - 126, geometry.width - 18) : clamp(value, 18, 125);
-    const limitY = value => clamp(value, 18, Math.max(18, geometry.height - 18));
+    const limitX = value => clamp(value, Math.max(10, geometry.home.x - 110),
+        Math.min(geometry.width - 10, geometry.home.x + 115));
+    const limitY = value => clamp(value, geometry.radius, Math.max(geometry.radius, geometry.height - geometry.radius));
 
     function renderStar(x, y, size, brightness, strength) {
         const dx = x - centre.x, dy = y - centre.y;
@@ -44,7 +53,7 @@ export function mountGravityBackground(canvas, motion, active) {
         if (star.stretch < .12) context.fillRect(star.x, star.y, size, size);
         else {
             context.beginPath();
-            context.ellipse(star.x, star.y, size * (.55 + star.stretch), size * .52,
+            context.ellipse(star.x, star.y, size * (.57 + star.stretch * strength), size * .48,
                 Math.atan2(dy, dx) + Math.PI / 2, 0, Math.PI * 2);
             context.fill();
         }
@@ -59,27 +68,40 @@ export function mountGravityBackground(canvas, motion, active) {
         context.stroke();
     }
 
-    function drawWell(strength) {
+    function drawWell(highlight) {
         const r = geometry.radius;
         context.save();
         context.translate(centre.x, centre.y);
-        context.rotate(-.32);
-        const shimmer = Math.sin(seconds * .72);
-        arc(r * 1.22, r * 1.29, Math.PI * 1.04, Math.PI * 1.96, colors.cool, .24 * strength);
-        arc(r * 1.19, r * 1.16, .18, Math.PI * .94, colors.cool, .14);
-        arc(r * 2.72, r * .45, Math.PI, Math.PI * 2, colors.cool, .22);
+        context.rotate(-.19);
+        const phase = seconds * .88;
+        const breathing = Math.sin(seconds * .61);
+        const rim = 1 + highlight * .15;
+
+        // The far side bends up behind the silhouette. The bright side is shorter and offset.
+        arc(r * 1.21, r * (1.34 + breathing * .035), 3.39, 6.08, colors.cool, .29 * rim, .72);
+        arc(r * 1.15, r * 1.29, 3.94, 5.19, colors.cool, .49 * rim, .85);
+        arc(r * 2.7, r * .42, Math.PI, Math.PI * 2, colors.cool, .25, .65);
+
         context.globalAlpha = 1;
         context.fillStyle = colors.core;
         context.beginPath();
         context.arc(0, 0, r, 0, Math.PI * 2);
         context.fill();
-        arc(r, r, 3.3, 5.9, colors.rim, .42, .8);
-        for (let band = 0; band < 3; band++) {
-            arc(r * (2.18 + band * .31), r * (.28 + band * .1), 0, Math.PI,
-                band === 2 ? colors.cool : colors.warm, (.28 - band * .064) * strength, .7);
+        arc(r, r, 3.44, 5.47, colors.rim, .35, .7);
+        arc(r * 1.16, r * 1.14, .34, 1.94, colors.cool, .20, .7);
+
+        // Thin foreground strands with a broad, faint edge. The bright filaments travel along them.
+        arc(r * 2.67, r * .38, .13, 3.04, colors.warm, .11 * rim, 2.7);
+        arc(r * 2.65, r * .35, .1, 3.05, colors.warm, .6 * rim, .86);
+        arc(r * 2.28, r * .25, .2, 2.98, colors.warm, .34 * rim, .68);
+        arc(r * 2.92, r * .50, .25, 2.70, colors.cool, .21 * rim, .62);
+        for (let filament = 0; filament < 2; filament++) {
+            const progress = (phase / Math.PI + filament * .57) % 1;
+            const start = .18 + progress * 2.53;
+            const intensity = Math.sin(Math.PI * progress);
+            arc(r * (2.63 - filament * .36), r * (.35 - filament * .09), start, start + .25,
+                filament ? colors.cool : colors.warm, .68 * intensity * rim, 1.05);
         }
-        arc(r * 2.28, r * .31, .48 + shimmer * .24, 1.74 + shimmer * .25, colors.warm, .62 * strength, 1.15);
-        arc(r * 1.26, r * 1.3, 4.05 + shimmer * .22, 4.6 + shimmer * .22, colors.cool, .46 * strength, .75);
         context.restore();
     }
 
@@ -96,25 +118,32 @@ export function mountGravityBackground(canvas, motion, active) {
             release = undefined;
             centre = resting;
         }
-        parallaxX += ((pointer ? (pointer.x / width - .5) * 16 : 0) - parallaxX) * .16;
-        parallaxY += ((pointer ? (pointer.y / height - .5) * 12 : 0) - parallaxY) * .16;
-        glow += ((drag || (pointer?.bare && inWell(pointer.x, pointer.y)) ? 1 : 0) - glow) * .26;
+        parallaxX += ((pointer ? (pointer.x / width - .5) * 25 : 0) - parallaxX) * .16;
+        parallaxY += ((pointer ? (pointer.y / height - .5) * 18 : 0) - parallaxY) * .16;
+        const emphasis = drag ? 1.75 : pointer?.bare && inWell(pointer.x, pointer.y) ? .8 : 0;
+        glow += (emphasis - glow) * .26;
         const strength = 1 + glow * .25;
         context.clearRect(0, 0, width, height);
-        context.fillStyle = colors.star;
-        const count = compact ? 76 : stars.length;
-        for (let i = 0; i < count; i++) {
-            const star = stars[i];
-            const x = wrap(star.x * width + seconds * (.76 + star.depth * 1.28) - parallaxX * star.depth, width);
-            const y = wrap(star.y * height + seconds * (.25 + star.depth * .55) - parallaxY * star.depth, height);
-            const brightness = .16 + star.depth * .39 + Math.sin(star.phase + seconds * (.7 + star.depth * .32)) * .055;
-            renderStar(x, y, star.size, brightness, strength);
+        for (let layer = 0; layer < layers.length; layer++) {
+            context.fillStyle = colors.stars[layer];
+            const stars = layers[layer];
+            const count = compact ? Math.round(stars.length * .45) : stars.length;
+            for (let i = 0; i < count; i++) {
+                const star = stars[i];
+                const x = wrap(star.x * width + seconds * star.vx - parallaxX * star.parallax, width);
+                const y = wrap(star.y * height + seconds * star.vy - parallaxY * star.parallax, height);
+                const brightness = star.brightness + Math.sin(star.phase + seconds * star.frequency) * star.twinkle;
+                renderStar(x, y, star.size, brightness, strength);
+            }
         }
+        const localScale = compact ? .68 : 1;
+        context.fillStyle = colors.stars[1];
         neighbours.forEach(([x, y], index) => {
-            renderStar(home.x + x + Math.sin(seconds * .35 + index) * 3,
-                home.y + y + Math.sin(seconds * .19 + index) * 4, .95 + index % 3 * .28, .37 + index % 3 * .05, strength);
+            renderStar(home.x + x * localScale + Math.sin(seconds * .32 + index) * 3,
+                home.y + y * localScale + Math.sin(seconds * .17 + index) * 3,
+                (1 + index % 3 * .35) * localScale, .42 + index % 3 * .06, strength);
         });
-        drawWell(strength);
+        drawWell(glow);
         context.globalAlpha = 1;
     }
 
