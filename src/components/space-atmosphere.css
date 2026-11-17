@@ -12,7 +12,7 @@
 }
 .space-comet {
     position: absolute;
-    top: 9px;
+    top: var(--comet-top, 9px);
     left: 5%;
     width: clamp(2.5rem, 7vw, 5.5rem);
     height: 1px;
@@ -32,11 +32,12 @@
     box-shadow: 0 0 4px var(--comet-ink);
 }
 @media (prefers-reduced-motion: no-preference) {
-    .space-comet.is-flying { animation: space-fly-by 1550ms linear; }
+    .space-comet.is-flying { animation: space-fly-by var(--comet-duration, 1400ms) linear; }
     @keyframes space-fly-by {
-        0% { transform: translate3d(0, 0, 0) rotate(5deg); opacity: 0; }
-        22% { opacity: .42; }
-        72% { opacity: .29; }
-        100% { transform: translate3d(46vw, min(4vw, 48px), 0) rotate(5deg); opacity: 0; }
+        0% { transform: translate3d(0, 0, 0) rotate(var(--comet-angle, 5deg)); opacity: 0; }
+        20% { opacity: var(--comet-peak, .42); }
+        64% { opacity: calc(var(--comet-peak, .42) * .68); }
+        86% { opacity: calc(var(--comet-peak, .42) * .25); }
+        100% { transform: translate3d(var(--comet-distance, 46vw), var(--comet-drop, 25px), 0) rotate(var(--comet-angle, 5deg)); opacity: 0; }
     }
 }

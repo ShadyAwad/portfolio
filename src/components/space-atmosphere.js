@@ -20,7 +20,17 @@ function schedule() {
     stop();
     if (!active() || motion.matches) return;
     timer = setTimeout(() => {
-        if (active() && !motion.matches) comet.classList.add('is-flying');
+        if (!active() || motion.matches) return;
+        const distance = 38 + Math.random() * 19;
+        const drop = 12 + Math.random() * 26;
+        const pathX = innerWidth * distance / 100;
+        comet.style.setProperty('--comet-top', (6 + Math.random() * 10) + 'px');
+        comet.style.setProperty('--comet-distance', distance + 'vw');
+        comet.style.setProperty('--comet-drop', drop + 'px');
+        comet.style.setProperty('--comet-angle', Math.atan2(drop, pathX) + 'rad');
+        comet.style.setProperty('--comet-peak', (.32 + Math.random() * .2).toFixed(2));
+        comet.style.setProperty('--comet-duration', (1150 + Math.round(Math.random() * 420)) + 'ms');
+        comet.classList.add('is-flying');
     }, 48000 + Math.random() * 26000);
 }
 

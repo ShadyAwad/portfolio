@@ -91,6 +91,11 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
             if (this.canvas.id === 'starfield') window.wellCentre = { x, y };
             return translate.call(this, x, y);
         };
+        const ellipse = CanvasRenderingContext2D.prototype.ellipse;
+        CanvasRenderingContext2D.prototype.ellipse = function (...args) {
+            if (this.canvas.id === 'starfield' && args[5] === 3.39) window.lensRimAlpha = this.globalAlpha;
+            return ellipse.apply(this, args);
+        };
         window.isBare = ({x,y}) => [document.body, document.documentElement, q('#portfolio-grid')].includes(document.elementFromPoint(x,y));
         window.databaseDraws = 0;
         const clear = CanvasRenderingContext2D.prototype.clearRect;
@@ -442,6 +447,18 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await evaluate("window.stellarBefore=starfieldDraws;window.anchorBefore={...wellCentre}");
     await waitFor("starfieldDraws>=stellarBefore+4 && Math.hypot(wellCentre.x-anchorBefore.x,wellCentre.y-anchorBefore.y)>1");
     await new Promise(resolve => setTimeout(resolve, 500));
+    await command('Input.dispatchMouseEvent', { type:'mouseMoved', x:5, y:4 });
+    await waitFor("lensRimAlpha<.301");
+    const nearLens = await evaluate("({x:wellCentre.x+39,y:wellCentre.y})");
+    await command('Input.dispatchMouseEvent', { type:'mouseMoved', ...nearLens });
+    await waitFor("lensRimAlpha>.312");
+    const tap = await evaluate("wellCentre");
+    await command('Input.dispatchMouseEvent', { type:'mouseMoved', ...tap });
+    await waitFor("lensRimAlpha>.334 && lensRimAlpha<.344");
+    await command('Input.dispatchMouseEvent', { type:'mousePressed', ...tap, button:'left', clickCount:1 });
+    await command('Input.dispatchMouseEvent', { type:'mouseReleased', ...tap, button:'left', clickCount:1 });
+    await waitFor("lensRimAlpha>.355");
+    await waitFor("lensRimAlpha<.344 && !document.documentElement.hasAttribute('data-gravity-dragging')");
     const anchor = await evaluate("wellCentre");
     await check("isBare(wellCentre)");
     await evaluate("window.heroBefore=JSON.stringify(q('#profile-card').getBoundingClientRect())");
@@ -462,9 +479,12 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await check("heroBefore===JSON.stringify(q('#profile-card').getBoundingClientRect())");
     await evaluate("releaseComet()");
     await waitFor("q('.space-comet').getAnimations().length===1");
+    const cometStyle = await evaluate("q('.space-comet').getAttribute('style')");
+    await check("Number.parseFloat(q('.space-comet').style.getPropertyValue('--comet-duration'))>=1150 && Number.parseFloat(q('.space-comet').style.getPropertyValue('--comet-peak'))<=.52");
     await check("cometTimers.size===0 && !document.elementFromPoint(15,15)?.closest('.space-atmosphere')");
     await waitFor("q('.space-comet').getAnimations().length===0 && cometTimers.size===1");
     await evaluate("releaseComet()");
+    await check("q('.space-comet').getAttribute('style')!==" + JSON.stringify(cometStyle));
     const backgroundTab = await (await fetch(new URL('/json/new?about:blank', debug), { method: 'PUT' })).json();
     try {
         const activated = await fetch(new URL('/json/activate/' + backgroundTab.id, debug));
