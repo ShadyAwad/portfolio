@@ -7,6 +7,7 @@ export function mountCurrents(canvas, { grid, quality, reset } = {}) {
     const events = new AbortController();
     const options = { signal: events.signal };
     let particles;
+    let light = document.documentElement.dataset.theme === 'light';
     const hand = { x: 0, y: 0, vx: 0, vy: 0, strength: 0, speed: 0, spin: 0 };
     const pulse = { x: 0, y: 0, age: 1 };
     let width, height, scale, radius, cx, cy, bloom;
@@ -50,14 +51,14 @@ export function mountCurrents(canvas, { grid, quality, reset } = {}) {
                 ctx.drawImage(mist, p.screenX - spread / 2, p.screenY - spread / 2, spread, spread);
             }
             ctx.globalAlpha = alpha;
-            ctx.fillStyle = p.color;
+            ctx.fillStyle = light ? p.lightColor : p.color;
             ctx.fillRect(p.screenX, p.screenY, size, size);
             // A fine companion grain resolves substructure without a separate orbit solve.
             ctx.globalAlpha = alpha * .66;
             ctx.fillRect(p.screenX + scale * p.grainX, p.screenY + scale * p.grainY, size * .74, size * .74);
             if (i % 11 === 0 && dt > 0 && prevX && Math.abs(prevX - p.screenX) + Math.abs(prevY - p.screenY) < 12) {
                 ctx.globalAlpha = alpha * .35;
-                ctx.strokeStyle = p.color;
+                ctx.strokeStyle = ctx.fillStyle;
                 ctx.beginPath(); ctx.moveTo(prevX, prevY); ctx.lineTo(p.screenX, p.screenY); ctx.stroke();
             }
         }
@@ -112,12 +113,22 @@ export function mountCurrents(canvas, { grid, quality, reset } = {}) {
         scale = Math.min(width * .56, height * .86);
         if (grid) scale = Math.min(490, Math.max(200, width * 1.7), height * .68);
         radius = Math.max(55, Math.min(138, scale * .29));
-        cx = width * (grid ? .55 : .52); cy = height * (grid ? .39 : .54);
-        bloom = ctx.createRadialGradient(cx, cy, 0, cx, cy, scale * .62);
-        bloom.addColorStop(0, '#65dcea70'); bloom.addColorStop(.055, '#2994be50');
-        bloom.addColorStop(.24, '#153d7630'); bloom.addColorStop(1, '#0b245000');
+        cx = width * (grid ? .46 : .52); cy = height * (grid ? .43 : .54);
+        updateBloom();
         sync();
     }
+    function updateBloom() {
+        bloom = ctx.createRadialGradient(cx, cy, 0, cx, cy, scale * .62);
+        bloom.addColorStop(0, light ? '#17498170' : '#65dcea70'); bloom.addColorStop(.055, light ? '#28558b50' : '#2994be50');
+        bloom.addColorStop(.24, '#153d7630'); bloom.addColorStop(1, '#0b245000');
+    }
+    const theme = new MutationObserver(() => {
+        light = document.documentElement.dataset.theme === 'light';
+        if (canvas.hidden) return;
+        updateBloom();
+        if (motion.matches && !document.hidden) render(0);
+    });
+    theme.observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
     canvas.addEventListener('pointermove', e => {
         if (!e.isPrimary || motion.matches) return;
         const dt = Math.max(12, e.timeStamp - stamp), k = 1 / dt;
@@ -160,5 +171,5 @@ export function mountCurrents(canvas, { grid, quality, reset } = {}) {
     window.addEventListener('pageshow', () => { pageActive = true; sync(); }, options);
     setQuality(low);
     resize();
-    return () => { cancelAnimationFrame(raf); release(); events.abort(); };
+    return () => { cancelAnimationFrame(raf); release(); theme.disconnect(); events.abort(); };
 }

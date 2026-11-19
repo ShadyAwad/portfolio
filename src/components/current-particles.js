@@ -1,5 +1,6 @@
 const TAU = 2 * Math.PI;
 const palette = ['#527bd3', '#668fec', '#429cd4', '#58cddc', '#89e8ee', '#d5faff'];
+const daylight = ['#273e80', '#344c99', '#165b8a', '#116779', '#224984', '#292e68'];
 export const particleCount = 3900;
 export const lowCount = 1500;
 
@@ -13,10 +14,11 @@ export function createField(count = particleCount) {
         const phase = rand() * TAU;
         const arm = (rand() < .5 ? 0 : Math.PI) + (dust ? rand() * TAU : spread() * (.25 + .55 * reach));
         const tint = Math.min(5, Math.max(0, Math.floor((1 - reach) * 5 + rand() * 2 + spread())));
+        const shade = rand() < .04 ? 5 : tint;
         return {
             reach, phase, arm, speed: (.19 + rand() * .065) / (.48 + reach),
             inner: reach * (.035 + rand() ** 2 * .51), height: spread() * (.018 + reach * .045),
-            color: rand() < .04 ? palette[5] : palette[tint], size: .55 + 1.15 * rand() ** 3,
+            color: palette[shade], lightColor: daylight[shade], size: .55 + 1.15 * rand() ** 3,
             opacity: (.36 + rand() * .63) * (dust ? .62 : 1), mist: rand() < .055,
             grainX: spread() * (.006 + reach * .022), grainY: spread() * (.004 + reach * .014),
             dx: 0, dy: 0, x: 0, y: 0, screenX: 0, screenY: 0

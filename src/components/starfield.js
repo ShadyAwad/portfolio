@@ -2,7 +2,7 @@ import { createStellarLayers, projectStellarDepth } from './stellar-perspective.
 
 const colors = {
     dark: ['#879fc8', '#b8d5fa', '#f2e7da'],
-    light: ['#7d8ea9', '#506f9b', '#646782']
+    light: ['#394c74', '#26497b', '#313061']
 };
 
 export function mountStarfield(canvas, motion, active, decoration) {
