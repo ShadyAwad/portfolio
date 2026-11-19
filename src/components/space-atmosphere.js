@@ -1,6 +1,6 @@
 import './space-atmosphere.css';
 import './galaxy.css';
-import { gutterPlacement, mountGalaxy } from './spiral-galaxy.js';
+import { mountCurrents } from './spiral-currents.js';
 import { mountStarfield } from './starfield.js';
 
 const atmosphere = document.querySelector('.space-atmosphere');
@@ -13,9 +13,14 @@ let inPage = true;
 const active = () => inPage && !document.hidden;
 const canvas = document.getElementById('starfield');
 const grid = document.getElementById('portfolio-grid');
-const galaxy = mountGalaxy(canvas, motion, (width, height) =>
-    gutterPlacement(grid.getBoundingClientRect().right, width, height), active);
-const starfield = mountStarfield(canvas, motion, active, galaxy);
+const field = document.createElement('canvas');
+field.className = 'galaxy-orbit';
+field.tabIndex = 0;
+field.setAttribute('role', 'button');
+field.setAttribute('aria-label', 'Pulse spiral currents');
+canvas.after(field);
+const disposeField = mountCurrents(field, { grid });
+const starfield = mountStarfield(canvas, motion, active);
 
 function stop() {
     clearTimeout(timer);
@@ -60,5 +65,7 @@ sync();
 if (import.meta.hot) import.meta.hot.dispose(() => {
     events.abort();
     starfield.destroy();
+    disposeField();
+    field.remove();
     stop();
 });

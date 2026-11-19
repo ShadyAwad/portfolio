@@ -70,6 +70,7 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
         window.modelRequests = () => performance.getEntriesByType('resource').filter(entry => entry.name.endsWith('/Planet.glb'));
         window.viewerRequests = () => performance.getEntriesByType('resource').filter(entry => entry.name.includes('model-viewer.min.js'));
         window.cometTimers = new Map();
+        window.fieldDraws = 0;
         window.starfieldDraws = 0;
         const schedule = window.setTimeout, cancel = window.clearTimeout;
         window.setTimeout = (callback, delay, ...args) => {
@@ -90,6 +91,7 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
         const clear = CanvasRenderingContext2D.prototype.clearRect;
         CanvasRenderingContext2D.prototype.clearRect = function (...args) {
             if (this.canvas.id === 'visualizer-canvas') databaseDraws++;
+            if (this.canvas.className === 'galaxy-orbit') fieldDraws++;
             if (this.canvas.id === 'starfield') starfieldDraws++;
             return clear.apply(this, args);
         };
@@ -435,9 +437,9 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await waitFor("cometTimers.size===1");
     await command('Emulation.setDeviceMetricsOverride', { width: 1920, height: 1000, deviceScaleFactor: 1, mobile: false });
     await waitFor("q('.galaxy-orbit') && !q('.galaxy-orbit').hidden");
-    await check("(() => {const r=q('.galaxy-orbit').getBoundingClientRect();return r.left>q('#portfolio-grid').getBoundingClientRect().right && document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)===q('.galaxy-orbit')})()");
-    await evaluate("window.stellarBefore=starfieldDraws;window.bounds=()=>JSON.stringify(['#profile-card','.studio-heading'].map(s=>q(s).getBoundingClientRect()));window.foregroundBefore=bounds()");
-    await waitFor("starfieldDraws>=stellarBefore+8");
+    await check("(() => {const r=q('.galaxy-orbit').getBoundingClientRect();return r.right<=q('#portfolio-grid').getBoundingClientRect().left && document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)===q('.galaxy-orbit')})()");
+    await evaluate("window.currentsBefore=fieldDraws;window.stellarBefore=starfieldDraws;window.bounds=()=>JSON.stringify(['#profile-card','.studio-heading'].map(s=>q(s).getBoundingClientRect()));window.foregroundBefore=bounds()");
+    await waitFor("starfieldDraws>=stellarBefore+8 && fieldDraws>currentsBefore");
     await check("foregroundBefore===bounds() && !document.documentElement.hasAttribute('data-gravity-dragging')");
     await check("(() => {const r=q('#theme-toggle').getBoundingClientRect();return document.elementFromPoint(r.x+r.width/2,r.y+r.height/2).closest('button')===q('#theme-toggle')})()");
     await evaluate("releaseComet()");
@@ -453,9 +455,9 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
         const activated = await fetch(new URL('/json/activate/' + backgroundTab.id, debug));
         assert(activated.ok);
         await waitFor("document.hidden && !backgroundAnimations().length && !cometTimers.size");
-        await evaluate("window.hiddenDraws=starfieldDraws");
+        await evaluate("window.hiddenField=fieldDraws;window.hiddenDraws=starfieldDraws");
         await new Promise(resolve => setTimeout(resolve, 180));
-        await check("starfieldDraws===hiddenDraws");
+        await check("starfieldDraws===hiddenDraws && fieldDraws===hiddenField");
         await command('Page.bringToFront');
         await waitFor("!document.hidden && starfieldDraws>hiddenDraws && cometTimers.size===1");
     } finally {
