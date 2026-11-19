@@ -1,0 +1,11 @@
+.galaxy-orbit {
+    position: fixed;
+    z-index: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 50%;
+    touch-action: none;
+    cursor: grab;
+}
+.galaxy-orbit:active { cursor: grabbing; transform: none; }
+.galaxy-orbit:focus-visible { outline: 1px dashed #a591cb; outline-offset: 3px; }

@@ -5,9 +5,12 @@ const colors = {
     light: ['#7d8ea9', '#506f9b', '#646782']
 };
 
-export function mountStarfield(canvas, motion, active) {
+export function mountStarfield(canvas, motion, active, decoration) {
     const context = canvas.getContext('2d', { desynchronized: true });
-    if (!context) return { sync() {}, destroy() {} };
+    if (!context) {
+        decoration?.destroy();
+        return { sync() {}, destroy() {} };
+    }
     const events = new AbortController();
     const { signal } = events;
     const root = document.documentElement;
@@ -26,6 +29,7 @@ export function mountStarfield(canvas, motion, active) {
         panX += ((pointer ? (pointer.x / width - .5) * 25 : 0) - panX) * .16;
         panY += ((pointer ? (pointer.y / height - .5) * 18 : 0) - panY) * .16;
         context.clearRect(0, 0, width, height);
+        decoration?.draw(context, seconds, palette === colors.light);
         for (let layer = 0; layer < layers.length; layer++) {
             context.fillStyle = palette[layer];
             context.strokeStyle = palette[layer];
@@ -61,7 +65,7 @@ export function mountStarfield(canvas, motion, active) {
         seconds += Math.min(.12, (now - lastTick) / 1000);
         lastTick = now;
         draw();
-        timer = setTimeout(tick, interval());
+        timer = setTimeout(tick, Math.max(0, interval() - (performance.now() - now)));
     }
 
     function resize() {
@@ -74,6 +78,7 @@ export function mountStarfield(canvas, motion, active) {
         canvas.width = Math.round(width * ratio);
         canvas.height = Math.round(height * ratio);
         context.setTransform(ratio, 0, 0, ratio, 0, 0);
+        decoration?.resize(width, height, ratio);
         if (!canAnimate()) draw();
     }
 
@@ -81,6 +86,7 @@ export function mountStarfield(canvas, motion, active) {
         clearTimeout(timer);
         pointer = undefined;
         panX = panY = 0;
+        decoration?.sync();
         if (!active()) return;
         if (motion.matches) seconds = 0;
         draw();
@@ -103,5 +109,5 @@ export function mountStarfield(canvas, motion, active) {
     theme.observe(root, { attributes: true, attributeFilter: ['data-theme'] });
     resize();
 
-    return { sync, destroy() { clearTimeout(timer); events.abort(); theme.disconnect(); } };
+    return { sync, destroy() { clearTimeout(timer); events.abort(); theme.disconnect(); decoration?.destroy(); } };
 }

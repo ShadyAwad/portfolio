@@ -1,4 +1,6 @@
 import './space-atmosphere.css';
+import './galaxy.css';
+import { gutterPlacement, mountGalaxy } from './spiral-galaxy.js';
 import { mountStarfield } from './starfield.js';
 
 const atmosphere = document.querySelector('.space-atmosphere');
@@ -9,7 +11,11 @@ const { signal } = events;
 let timer;
 let inPage = true;
 const active = () => inPage && !document.hidden;
-const starfield = mountStarfield(document.getElementById('starfield'), motion, active);
+const canvas = document.getElementById('starfield');
+const grid = document.getElementById('portfolio-grid');
+const galaxy = mountGalaxy(canvas, motion, (width, height) =>
+    gutterPlacement(grid.getBoundingClientRect().right, width, height), active);
+const starfield = mountStarfield(canvas, motion, active, galaxy);
 
 function stop() {
     clearTimeout(timer);

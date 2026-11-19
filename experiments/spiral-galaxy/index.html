@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Spiral galaxy study</title>
+    <style>
+        html { background: #040713; color: #e5e9f5; color-scheme: dark; font: 1rem system-ui; }
+        body { margin: 0; isolation: isolate; min-height: 100svh; }
+        canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -2; pointer-events: none; }
+        header { padding: clamp(1rem,4vw,4rem); width: fit-content; pointer-events: none; }
+        h1 { font: normal clamp(2rem,4vw,4rem) Georgia,serif; margin: 0; }
+        p { color: #adb5c9; }
+        #reset { position:fixed; bottom: 5%; right: 4%; border: 1px solid #4a536b; background:#12192c;
+            color:inherit; border-radius: 2rem; padding:.7rem 1rem; cursor:pointer; }
+    </style>
+</head>
+<body>
+    <canvas aria-hidden="true"></canvas>
+    <header><h1>Spiral galaxy</h1><p>Drag to tilt. Tap to illuminate the core.</p></header>
+    <button id="reset" type="button">Reset view</button>
+    <script type="module" src="./study.js"></script>
+</body></html>

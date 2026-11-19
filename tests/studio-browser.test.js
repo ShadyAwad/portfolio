@@ -433,6 +433,9 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await check("q('#starfield').height===1215 && q('#theme-toggle').getBoundingClientRect().width>0");
     await command('Emulation.setEmulatedMedia', { features: [{ name:'prefers-reduced-motion', value:'no-preference' }] });
     await waitFor("cometTimers.size===1");
+    await command('Emulation.setDeviceMetricsOverride', { width: 1920, height: 1000, deviceScaleFactor: 1, mobile: false });
+    await waitFor("q('.galaxy-orbit') && !q('.galaxy-orbit').hidden");
+    await check("(() => {const r=q('.galaxy-orbit').getBoundingClientRect();return r.left>q('#portfolio-grid').getBoundingClientRect().right && document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)===q('.galaxy-orbit')})()");
     await evaluate("window.stellarBefore=starfieldDraws;window.bounds=()=>JSON.stringify(['#profile-card','.studio-heading'].map(s=>q(s).getBoundingClientRect()));window.foregroundBefore=bounds()");
     await waitFor("starfieldDraws>=stellarBefore+8");
     await check("foregroundBefore===bounds() && !document.documentElement.hasAttribute('data-gravity-dragging')");
@@ -461,6 +464,7 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
     await command('Emulation.setDeviceMetricsOverride', { width: 320, height: 760, deviceScaleFactor: 2, mobile: true });
     await command('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
     await waitFor("q('#starfield').width===320 && document.documentElement.scrollWidth===320");
+    await check("q('.galaxy-orbit').hidden");
     await command('Emulation.setEmulatedMedia', { features: [{ name:'prefers-reduced-motion', value:'reduce' }] });
     await waitFor("!backgroundAnimations().length && !cometTimers.size");
     await evaluate("window.staticDraws=starfieldDraws");
