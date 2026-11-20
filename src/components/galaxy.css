@@ -1,0 +1,13 @@
+.galaxy-orbit {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100%;
+    z-index: 0;
+    touch-action: pan-y;
+    mask-image: linear-gradient(to right, black 88%, transparent);
+    opacity: .78;
+    cursor: default;
+}
+[data-theme="light"] .galaxy-orbit { opacity: .95; }
+.galaxy-orbit:focus-visible { outline-offset: -3px; }

@@ -6,299 +6,171 @@
     <title>Shady Awad | Software & Web Developer Portfolio</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg">
     <link rel="stylesheet" href="./index.css">
+    <link rel="preload" as="image" href="/images/stanza/cards/performance.webp" type="image/webp">
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script type="module" src="./script.js"></script>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
 </head>
 <body>
 
-    <canvas id="starfield"></canvas>
+    <canvas id="starfield" aria-hidden="true"></canvas>
+    <div class="space-atmosphere" aria-hidden="true">
+        <div class="space-comet"></div>
+    </div>
 
-<canvas id="cursor-trail-canvas"></canvas>
+<canvas id="cursor-trail-canvas" aria-hidden="true"></canvas>
 
     <main class="bento-container" id="portfolio-grid">
         
-        <div class="bento-item profile" id="profile-card">
-            <div class="profile-actions" role="toolbar" aria-label="Theme and language settings">
-                <button id="theme-toggle" type="button" aria-label="Toggle dark and light mode">
-    <span class="theme-icon theme-icon-sun" aria-hidden="true" title="Switch to light mode">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun">
-            <circle cx="12" cy="12" r="4"/>
-            <path d="M12 2v2"/>
-            <path d="M12 20v2"/>
-            <path d="m4.93 4.93 1.41 1.41"/>
-            <path d="m17.66 17.66 1.41 1.41"/>
-            <path d="M2 12h2"/>
-            <path d="M20 12h2"/>
-            <path d="m6.34 17.66-1.41 1.41"/>
-            <path d="m19.07 4.93-1.41 1.41"/>
-        </svg>
-    </span>
-    <span class="theme-icon theme-icon-moon" aria-hidden="true" title="Switch to dark mode">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon">
-            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
-        </svg>
-    </span>
-</button>
-                <button id="lang-toggle" type="button" aria-label="Toggle between English and Arabic">EN/AR</button>
-            </div>
-            
-            <div class="badge" data-i18n="badgeOnline">SYSTEM ACTIVE</div>
-            <h1 data-i18n="name">Shady Awad</h1>
-            <h3 data-i18n="title" class="subheading">Software & Web Developer</h3>
-            
-            <p data-i18n="description" class="lead-bio">
-                I am a self-taught Software & Web Developer focused on building modern full-stack web applications with JavaScript, Node.js, PostgreSQL, and progressive web technologies. I enjoy working across both frontend and backend systems, with a strong interest in database design, application performance, authentication, authorization, and clean user experiences. Through personal projects, I have gained hands-on experience designing relational schemas, writing raw SQL, building responsive interfaces, and improving real-world project structure. I am continuously expanding my skills through personal projects and hands-on development, with a focus on building reliable, performant, and maintainable software solutions.
-            <div class="demographic-specs">
-                <hr class="separator" />
-                <table class="specs-table">
-                    <thead>
-                        <tr>
-                            <th data-i18n="specHeader">Specification</th>
-                            <th data-i18n="specValueHeader">Value</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong data-i18n="specAge">Age</strong></td>
-                            <td>29</td>
-                        </tr>
-                        <tr>
-                            <td><strong data-i18n="specLocation">Location</strong></td>
-                            <td data-i18n="specLocationValue">Cairo, Egypt</td>
-                        </tr>
-                        <tr>
-                            <td><strong data-i18n="specDatabaseFocus">Database Focus</strong></td>
-                            <td data-i18n="specDatabaseFocusValue">PostgreSQL & Raw SQL</td>
-                        </tr>
-                        <tr>
-                            <td><strong data-i18n="specSecurityInterests">Security Interests</strong></td>
-                            <td data-i18n="specSecurityInterestsValue">Authentication, Authorization & RLS</td>
-                        </tr>
-                        <tr>
-                            <td><strong data-i18n="specPreferredStack">Preferred Stack</strong></td>
-                            <td class="ltr-tech" data-i18n="specPreferredStackValue">Node.js, PostgreSQL, React, Next.js & Vanilla JS</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        <section class="bento-item portfolio-hero" id="profile-card" aria-labelledby="profile-name">
+            <div class="hero-top">
+                <div class="badge" data-i18n="badgeOnline" dir="auto">SYSTEM ACTIVE</div>
+                <div class="profile-actions" role="group" aria-label="Theme and language settings">
+                    <button id="theme-toggle" type="button" aria-label="Toggle dark and light mode">
+        <span class="theme-icon theme-icon-sun" aria-hidden="true" title="Switch to light mode">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun">
+                <circle cx="12" cy="12" r="4"/>
+                <path d="M12 2v2"/>
+                <path d="M12 20v2"/>
+                <path d="m4.93 4.93 1.41 1.41"/>
+                <path d="m17.66 17.66 1.41 1.41"/>
+                <path d="M2 12h2"/>
+                <path d="M20 12h2"/>
+                <path d="m6.34 17.66-1.41 1.41"/>
+                <path d="m19.07 4.93-1.41 1.41"/>
+            </svg>
+        </span>
+        <span class="theme-icon theme-icon-moon" aria-hidden="true" title="Switch to dark mode">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon">
+                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+            </svg>
+        </span>
+    </button>
+                    <button id="lang-toggle" type="button" aria-label="Toggle between English and Arabic">EN/AR</button>
+                </div></div>
+            <div class="profile">
+                <h1 data-i18n="name" id="profile-name">Shady Awad</h1>
+                <h3 data-i18n="title" class="subheading">Software & Web Developer</h3>
 
-        <div class="bento-item calculator" id="estimator-card">
-            <h3 data-i18n="projectEstimator">Project Scope Estimator</h3>
-            <div class="calc-ui">
-                <label id="solutionTierLabel" for="tier" data-i18n="solutionTier">Freelance Service Tier</label>
-                <div class="range-wrapper">
-                    <input type="range" id="tier" min="1" max="5" step="1" value="1" class="slider-control" />
-                    <div class="range-labels">
-                        <span data-i18n="tierRangeStart">Static</span>
-                        <span id="active-tier-val">Tier 1: Static Blueprint</span>
-                        <span data-i18n="tierRangeEnd">Bespoke</span>
+                <div class="intro-copy">
+                    <p data-i18n="intro1">Self-taught full-stack developer specializing in Node.js, Express, PostgreSQL, and performance-focused web applications.</p>
+                    <p data-i18n="intro2">I build secure, scalable systems using raw SQL, multi-tenant architectures, background processing, and modern frontend technologies.</p>
+                    <p data-i18n="intro3">Currently developing Stanza HR, a workforce management platform featuring PostgreSQL Row-Level Security, Redis/BullMQ, geofenced attendance, and semantic intelligence.</p>
+                </div>
+                <nav class="contact-dock" id="contact-dock" aria-label="Contact">
+                    <button type="button" data-contact-open aria-haspopup="dialog" aria-controls="contact-composer"><span class="dock-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h18v14H3zM3 6l9 7 9-7"/></svg></span><span class="dock-label" data-i18n="dockEmail">Email</span></button>
+                    <a href="https://github.com/ShadyAwad" target="_blank" rel="noopener noreferrer"><span class="dock-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 19c-4 1.5-4-2-6-2m12 5v-3.8a3.3 3.3 0 0 0-.9-2.6c3-.3 6-1.5 6-6.6a5.2 5.2 0 0 0-1.4-3.6A4.8 4.8 0 0 0 18.6 2S17.5 1.7 15 3.4a13 13 0 0 0-6 0C6.5 1.7 5.4 2 5.4 2a4.8 4.8 0 0 0-.1 3.4A5.2 5.2 0 0 0 4 9c0 5.1 3 6.3 6 6.6a3.4 3.4 0 0 0-1 2.6V22"/></svg></span><span class="dock-label" data-i18n="dockGitHub">GitHub</span></a>
+                    <a href="https://wa.me/201026976219" target="_blank" rel="noopener noreferrer"><span class="dock-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 18l-1 3 4-1a9 9 0 1 0-3-2zm5-11c-2 0-2 3 1 6s6 3 6 1l-2-1-1 1c-2-1-3-2-4-4l1-1z"/></svg></span><span class="dock-label" data-i18n="dockWhatsApp">WhatsApp</span></a>
+                </nav>
+            </div>
+            <section class="configurator" id="estimator-card" aria-labelledby="configurator-title">
+                <header class="configurator-header">
+                    <span class="configurator-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 2h14v20H5zM8 6h8v3H8zM8 13h1m6 0h1m-8 4h1m6 0h1"/></svg></span>
+                    <div>
+                        <h3 id="configurator-title" data-i18n="projectEstimator">Freelance Project Configurator</h3>
+                        <p data-i18n="configuratorIntro">Compare five project tiers, choose optional features, and see your estimate update.</p>
                     </div>
-                </div>
+                    <button type="button" class="configurator-toggle" aria-controls="configurator-panel" aria-expanded="false">
+                        <span data-i18n="configuratorOpen">Configure a Project</span>
+                        <span data-i18n="configuratorClose" hidden>Collapse configurator</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                </header>
+            </section>
+            <div class="configurator-panel" id="configurator-panel" inert>
+                <div class="configurator-clip">
+                    <div class="calc-ui">
+                        <label id="solutionTierLabel" for="tier" data-i18n="solutionTier">Freelance Service Tier</label>
+                        <div class="range-wrapper">
+                            <input type="range" id="tier" min="1" max="5" step="1" value="1" class="slider-control" />
+                            <div class="range-labels">
+                                <span data-i18n="tierRangeStart">Static</span>
+                                <span id="active-tier-val">Tier 1: Static Blueprint</span>
+                                <span data-i18n="tierRangeEnd">Bespoke</span>
+                            </div>
+                        </div>
 
-                <label id="addonsLabel" style="margin-top: 20px; display: block;" data-i18n="addons">Optional Features</label>
-                <div class="checkbox-group">
-                    <label><input type="checkbox" class="addon" id="opt-pwa" value="75"> <span data-i18n="checkboxPwa">Native Mobile Installation (PWA)</span></label>
-                    <label><input type="checkbox" class="addon" id="opt-l10n" value="50"> <span data-i18n="checkboxL10n">Asynchronous Multi-Language Matrix (l10n)</span></label>
-                    <label><input type="checkbox" class="addon" id="opt-rbac" value="100"> <span data-i18n="checkboxRBAC">Secure RBAC Authentication & Audit Logging</span></label>
-                    <label><input type="checkbox" class="addon" id="opt-ai" value="150"> <span data-i18n="checkboxAI">Smart AI Assistant / Custom LLM Pipelines</span></label>
-                </div>
+                        <label id="addonsLabel" style="margin-top: 20px; display: block;" data-i18n="addons">Optional Features</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" class="addon" id="opt-pwa" value="75"> <span data-i18n="checkboxPwa">Native Mobile Installation (PWA)</span></label>
+                            <label><input type="checkbox" class="addon" id="opt-l10n" value="50"> <span data-i18n="checkboxL10n">Asynchronous Multi-Language Matrix (l10n)</span></label>
+                            <label><input type="checkbox" class="addon" id="opt-rbac" value="100"> <span data-i18n="checkboxRBAC">Secure RBAC Authentication & Audit Logging</span></label>
+                            <label><input type="checkbox" class="addon" id="opt-ai" value="150"> <span data-i18n="checkboxAI">Smart AI Assistant / Custom LLM Pipelines</span></label>
+                        </div>
 
-                <div class="price-box">
-                    <span data-i18n="estInvestment">Estimated Project Price:</span>
-                    <div class="price-row"><small>$</small><strong id="price-display">75</strong> <small>USD</small></div>
-                </div>
+                        <div class="price-box">
+                            <span data-i18n="estInvestment">Estimated Project Price:</span>
+                            <div class="price-row"><small>$</small><strong id="price-display">75</strong> <small>USD</small></div>
+                        </div>
 
-                <div class="tier-links">
-                    <h4 data-i18n="tierEstimates">Active Service Blueprint</h4>
-                    <p id="tier-subtitle">High-performance single-page layout or landing page.</p>
-                    <ul>
-                        <li><a href="#" class="baseline-link" data-tier-index="1" data-i18n="tier1">Tier 1: Static Blueprint</a></li>
-                        <li><a href="#" class="baseline-link" data-tier-index="2" data-i18n="tier2">Tier 2: Dynamic Multi-View</a></li>
-                        <li><a href="#" class="baseline-link" data-tier-index="3" data-i18n="tier3">Tier 3: Full-Stack Core + AI</a></li>
-                        <li><a href="#" class="baseline-link" data-tier-index="4" data-i18n="tier4">Tier 4: Enterprise Secure & Cognitive</a></li>
-                        <li><a href="#" class="baseline-link" data-tier-index="5" data-i18n="tier5">Tier 5: Bespoke Interactive Canvas</a></li>
-                    </ul>
+                        <div class="tier-links">
+                            <h4 data-i18n="tierEstimates">Active Service Blueprint</h4>
+                            <p id="tier-subtitle">High-performance single-page layout or landing page.</p>
+                            <ul>
+                                <li><a href="#" class="baseline-link" data-tier-index="1" data-i18n="tier1">Tier 1: Static Blueprint</a></li>
+                                <li><a href="#" class="baseline-link" data-tier-index="2" data-i18n="tier2">Tier 2: Dynamic Multi-View</a></li>
+                                <li><a href="#" class="baseline-link" data-tier-index="3" data-i18n="tier3">Tier 3: Full-Stack Core + AI</a></li>
+                                <li><a href="#" class="baseline-link" data-tier-index="4" data-i18n="tier4">Tier 4: Enterprise Secure & Cognitive</a></li>
+                                <li><a href="#" class="baseline-link" data-tier-index="5" data-i18n="tier5">Tier 5: Bespoke Interactive Canvas</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <aside class="studio-invite" hidden aria-labelledby="studio-invite-title">
+                        <div><strong id="studio-invite-title" data-i18n="studioInviteTitle">Want to visualize your project?</strong>
+                        <p data-i18n="studioInviteBody">Explore a live application preview, system architecture, and a detailed engineering estimate.</p></div>
+                        <button type="button" data-studio-invite-open data-i18n="studioOpen">Open Design Studio</button>
+                        <button type="button" data-studio-invite-dismiss aria-label="Dismiss Design Studio suggestion"><span aria-hidden="true">×</span></button>
+                    </aside>
+                    <details class="configurator-studio" id="configurator-studio">
+                        <summary data-i18n="studioOpen">Open Design Studio</summary>
+                        <div data-studio-host hidden>
+                            <details class="architecture-planner" id="architecture-planner">
+                                <summary data-plan-label="title">Advanced Architecture Mode</summary>
+                                <p class="planner-intro" data-plan-label="intro">Explore how workload and security choices affect system design. These planning estimates are separate from the project price.</p>
+                                <div class="planner-controls">
+                                    <fieldset>
+                                        <legend data-plan-label="scale">Scale</legend>
+                                        <label><span data-plan-label="tenants">Tenants</span><input name="tenants" type="number" min="0" max="1000000000" step="1" value="5" inputmode="numeric"></label>
+                                        <label><span data-plan-label="users">Active users</span><input name="users" type="number" min="0" max="1000000000" step="1" value="250" inputmode="numeric"></label>
+                                        <label><span data-plan-label="requests">Requests per day</span><input name="requests" type="number" min="0" max="1000000000" step="1" value="" inputmode="numeric" aria-describedby="planner-requests-hint" placeholder="Auto"></label>
+                                        <small id="planner-requests-hint" data-plan-label="requestHint">Leave blank to estimate daily requests from active users and the model assumptions.</small>
+                                    </fieldset>
+                                    <fieldset>
+                                        <legend data-plan-label="data">Data</legend>
+                                        <label><span data-plan-label="records">Records per month</span><input name="records" type="number" min="0" max="1000000000" step="1" value="10000" inputmode="numeric"></label>
+                                        <label><span data-plan-label="uploads">File uploads per month</span><input name="uploads" type="number" min="0" max="1000000000" step="1" value="100" inputmode="numeric"></label>
+                                        <label class="planner-check"><input name="semantic" type="checkbox"><span data-plan-label="semantic">Semantic search</span></label>
+                                    </fieldset>
+                                    <fieldset>
+                                        <legend data-plan-label="automation">Automation</legend>
+                                        <label><span data-plan-label="jobs">Background jobs per day</span><input name="jobs" type="number" min="0" max="1000000000" step="1" value="0" inputmode="numeric"></label>
+                                        <label class="planner-check"><input name="schedules" type="checkbox"><span data-plan-label="schedules">Scheduled workflows</span></label>
+                                        <label><span data-plan-label="notifications">Notifications per day</span><input name="notifications" type="number" min="0" max="1000000000" step="1" value="0" inputmode="numeric"></label>
+                                    </fieldset>
+                                    <fieldset>
+                                        <legend data-plan-label="security">Security</legend>
+                                        <label class="planner-check"><input name="rbac" type="checkbox"><span data-plan-label="rbac">Role-based access (RBAC)</span></label>
+                                        <label class="planner-check"><input name="audit" type="checkbox"><span data-plan-label="audit">Audit logs</span></label>
+                                        <label class="planner-check"><input name="webauthn" type="checkbox"><span data-plan-label="webauthn">WebAuthn</span></label>
+                                        <label class="planner-check"><input name="rls" type="checkbox"><span data-plan-label="rls">Tenant isolation (RLS)</span></label>
+                                    </fieldset>
+                                </div>
+                            </details>
+                        </div>
+                    </details>
                 </div>
             </div>
-        </div>
-
-        <div class="bento-item systems-topology" id="systems-architecture-card">
-            <div class="tech-tag" data-i18n="systemTopology">Systems Architecture & Topology</div>
-            <p class="topology-desc" data-i18n="topologyDesc">Interactive Database Schema & System Topology Map. Toggle between optimized Raw SQL execution paths and database Row-Level Security (RLS) policies. Rendering active query flows at 60 FPS.</p>
-            
-            <div class="topology-dashboard-grid">
-                <div class="topology-map-container" id="svg-container">
-                    <svg id="topology-svg" viewBox="0 0 800 420" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                        <defs>
-                            <pattern id="grid-pattern-svg" width="20" height="20" patternUnits="userSpaceOnUse">
-                                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(125, 187, 255, 0.05)" stroke-width="1"/>
-                            </pattern>
-                            <marker id="arrowhead" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="var(--accent)" opacity="0.85"/>
-                            </marker>
-                            <filter id="glow-effect" x="-20%" y="-20%" width="140%" height="140%">
-                                <feGaussianBlur stdDeviation="3" result="blur" />
-                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                            </filter>
-                        </defs>
-                        
-                        <rect width="100%" height="100%" fill="url(#grid-pattern-svg)" />
-                        
-                        <g id="topology-paths">
-                            <path class="topology-connector" id="link-orgs-tenants" d="M 190,110 L 320,110" stroke="var(--border)" fill="none" marker-end="url(#arrowhead)" />
-                            <path class="topology-connector" id="link-tenants-users" d="M 400,165 C 400,240 230,240 230,285" stroke="var(--border)" fill="none" marker-end="url(#arrowhead)" />
-                            <path class="topology-connector" id="link-tenants-transactions" d="M 480,110 L 610,110" stroke="var(--border)" fill="none" marker-end="url(#arrowhead)" />
-                            <path class="topology-connector" id="link-users-transactions" d="M 280,310 L 610,165" stroke="var(--border)" stroke-dasharray="2,2" fill="none" marker-end="url(#arrowhead)" />
-                        </g>
-                        
-                        <g id="topology-entities">
-                            <g class="topology-node" id="node-orgs-elem" transform="translate(40, 50)" role="button" aria-label="Organizations schema card">
-                                <rect width="150" height="110" rx="12" class="entity-rect" />
-                                <rect width="150" height="30" rx="12" class="entity-header" />
-                                <text x="75" y="20" class="entity-title">tbl_organizations</text>
-                                <text x="15" y="52" class="entity-column PK">🔑 org_uuid : UUID</text>
-                                <text x="15" y="74" class="entity-column">✦ org_name : VARCHAR</text>
-                                <text x="15" y="96" class="entity-column">✦ plan_tier : VARCHAR</text>
-                                <circle cx="150" cy="65" r="4" class="node-bus-port" />
-                            </g>
-                            
-                            <g class="topology-node active" id="node-tenants-elem" transform="translate(320, 50)" role="button" aria-label="Tenant registry schema card">
-                                <rect width="160" height="115" rx="12" class="entity-rect" />
-                                <rect width="160" height="30" rx="12" class="entity-header" />
-                                <text x="80" y="20" class="entity-title">tbl_tenant_registry</text>
-                                <text x="15" y="52" class="entity-column PK">🔑 tenant_uuid : UUID</text>
-                                <text x="15" y="74" class="entity-column FK">🔗 org_uuid : UUID</text>
-                                <text x="15" y="96" class="entity-column">✦ isolation_key : CHAR(64)</text>
-                                <circle cx="0" cy="70" r="4" class="node-bus-port" />
-                                <circle cx="80" cy="115" r="4" class="node-bus-port" />
-                                <circle cx="160" cy="70" r="4" class="node-bus-port" />
-                            </g>
-                            
-                            <g class="topology-node" id="node-users-elem" transform="translate(130, 260)" role="button" aria-label="User credentials schema card">
-                                <rect width="150" height="110" rx="12" class="entity-rect" />
-                                <rect width="150" height="30" rx="12" class="entity-header" />
-                                <text x="75" y="20" class="entity-title">tbl_user_credentials</text>
-                                <text x="15" y="52" class="entity-column PK">🔑 user_uuid : UUID</text>
-                                <text x="15" y="74" class="entity-column FK">🔗 tenant_uuid : UUID</text>
-                                <text x="15" y="96" class="entity-column">✦ password_hash : CHAR(60)</text>
-                                <circle cx="100" cy="0" r="4" class="node-bus-port" />
-                                <circle cx="150" cy="80" r="4" class="node-bus-port" />
-                            </g>
-                            
-                            <g class="topology-node active" id="node-transactions-elem" transform="translate(610, 50)" role="button" aria-label="Client transactions schema card">
-                                <rect width="160" height="120" rx="12" class="entity-rect" />
-                                <rect width="160" height="30" rx="12" class="entity-header transaction-header" />
-                                <text x="80" y="20" class="entity-title">client_transactions</text>
-                                <text x="15" y="52" class="entity-column PK">🔑 transaction_uuid : UUID</text>
-                                <text x="15" y="74" class="entity-column FK">🔗 tenant_uuid : UUID</text>
-                                <text x="15" y="96" class="entity-column">✦ transaction_val : NUMERIC</text>
-                                <text x="15" y="112" class="entity-column rls-indicator">🔒 RLS GUARDIAN ACTIVE</text>
-                                <circle cx="0" cy="65" r="4" class="node-bus-port" />
-                            </g>
-                        </g>
-
-                        <circle id="pulsing-tracer" cx="0" cy="0" r="6" fill="#fb48c4" style="display: none; filter: url(#glow-effect);" />
-                    </svg>
-                    <div class="topology-legend">PostgreSQL Interactive Relational Topology • Click Table Entities to Probe Database Pipeline</div>
-                </div>
-                
-                <div class="topology-code-side" id="code-viewer-panel">
-                    <div class="code-tabs" role="tablist" aria-label="Systems Architecture Configurations">
-                        <button class="code-tab-btn active" id="tab-btn-sql" role="tab" aria-selected="true" data-i18n="viewSqlBtn">View Recursive Query CTE</button>
-                        <button class="code-tab-btn" id="tab-btn-rls" role="tab" aria-selected="false" data-i18n="viewRlsBtn">View RLS Security Rules</button>
-                    </div>
-                    
-                    <div class="code-container">
-                        <pre id="code-block-sql" class="code-block active"><code><span class="sql-comment">-- High-Performance Recursive Common Table Expression (CTE)</span>
-<span class="sql-comment">-- Traverses hierarchy organizational parent-child tenant nodes,</span>
-<span class="sql-comment">-- calculating execution depth, run paths, and active budgets.</span>
-<span class="sql-keyword">WITH RECURSIVE</span> org_hierarchy <span class="sql-keyword">AS</span> (
-    <span class="sql-comment">-- Anchor member</span>
-    <span class="sql-keyword">SELECT</span> 
-        org_id, 
-        parent_org_id, 
-        org_name,
-        1 <span class="sql-keyword">AS</span> depth, 
-        org_name::text <span class="sql-keyword">AS</span> node_path,
-        budget_allocated
-    <span class="sql-keyword">FROM</span> organizations
-    <span class="sql-keyword">WHERE</span> parent_org_id <span class="sql-keyword">IS NULL</span> <span class="sql-keyword">AND</span> is_active = <span class="sql-literal">true</span>
-
-    <span class="sql-keyword">UNION</span> ALL
-
-    <span class="sql-comment">-- Recursive member joins back to anchor</span>
-    <span class="sql-keyword">SELECT</span> 
-        child.org_id, 
-        child.parent_org_id, 
-        child.org_name,
-        parent.depth + 1 <span class="sql-keyword">AS</span> depth,
-        (parent.node_path || <span class="sql-literal">' -> '</span> || child.org_name)::text,
-        child.budget_allocated
-    <span class="sql-keyword">FROM</span> organizations child
-    <span class="sql-keyword">INNER JOIN</span> org_hierarchy parent <span class="sql-keyword">ON</span> child.parent_org_id = parent.org_id
-    <span class="sql-keyword">WHERE</span> child.is_active = <span class="sql-literal">true</span>
-)
-<span class="sql-keyword">SELECT</span> 
-    org_id,
-    parent_org_id,
-    org_name,
-    depth,
-    node_path,
-    budget_allocated,
-    <span class="sql-comment">-- Apply window partition metrics</span>
-    <span class="sql-keyword">SUM</span>(budget_allocated) <span class="sql-keyword">OVER</span> (<span class="sql-keyword">PARTITION BY</span> parent_org_id) <span class="sql-keyword">AS</span> sibling_allocated,
-    <span class="sql-keyword">DENSE_RANK</span>() <span class="sql-keyword">OVER</span> (<span class="sql-keyword">PARTITION BY</span> parent_org_id <span class="sql-keyword">ORDER BY</span> budget_allocated <span class="sql-keyword">DESC</span>) <span class="sql-keyword">AS</span> local_rank
-<span class="sql-keyword">FROM</span> org_hierarchy
-<span class="sql-keyword">ORDER BY</span> node_path;</code></pre>
-                        
-                        <pre id="code-block-rls" class="code-block"><code><span class="sql-comment">-- Rigid Multi-Tenant Row-Level Security (RLS) Policy Configurations</span>
-<span class="sql-comment">-- Enforced directly at the bare PostgreSQL kernel boundary</span>
-<span class="sql-keyword">ALTER TABLE</span> client_transactions <span class="sql-keyword">ENABLE ROW LEVEL SECURITY</span>;
-
-<span class="sql-comment">-- Block cross-tenant access explicitly for authenticated connections</span>
-<span class="sql-keyword">CREATE POLICY</span> tenant_isolation_assertion <span class="sql-keyword">ON</span> client_transactions
-<span class="sql-keyword">AS RESTRICTIVE</span>
-<span class="sql-keyword">TO</span> app_replica_instance, authenticated_role
-<span class="sql-keyword">USING</span> (
-    tenant_uuid = <span class="sql-keyword">current_setting</span>(<span class="sql-literal">'app.current_tenant_id'</span>, <span class="sql-literal">true</span>)
-)
-<span class="sql-keyword">WITH CHECK</span> (
-    tenant_uuid = <span class="sql-keyword">current_setting</span>(<span class="sql-literal">'app.current_tenant_id'</span>, <span class="sql-literal">true</span>)
-);
-
-<span class="sql-comment">-- Compound indexing to accelerate isolated filters under high concurrency</span>
-<span class="sql-keyword">CREATE INDEX CONCURRENTLY IF NOT EXISTS</span> idx_transactions_tenant_composite
-<span class="sql-keyword">ON</span> client_transactions (tenant_uuid, transaction_status, entity_hash_id);
-
-<span class="sql-comment">-- Enforce transaction write safety lock check on isolated clusters</span>
-<span class="sql-keyword">CREATE POLICY</span> tenant_isolation_safe_insert <span class="sql-keyword">ON</span> client_transactions
-<span class="sql-keyword">FOR INSERT</span>
-<span class="sql-keyword">TO</span> app_replica_instance
-<span class="sql-keyword">WITH CHECK</span> (
-    tenant_uuid = <span class="sql-keyword">current_setting</span>(<span class="sql-literal">'app.current_tenant_id'</span>, <span class="sql-literal">true</span>)
-    <span class="sql-keyword">AND EXISTS</span> (
-        <span class="sql-keyword">SELECT 1 FROM </span>tenant_registry
-        <span class="sql-keyword">WHERE </span>tenant_registry.id = tenant_uuid <span class="sql-keyword">AND </span>tenant_registry.is_active = <span class="sql-literal">true</span>
-    )
-);</code></pre>
-                    </div>
-                </div>
-            </div>
-        </div>
+        </section>
 
         <div class="bento-item project-showcase" id="architectural-showcase-card">
             <h3 data-i18n="featuredProjects">Micro-Architectural Showcase (Flagship Systems)</h3>
-            
+
             <div class="flagship-dashboard-layout">
                 <ul class="flagship-project-selectors">
                     <li class="flagship-selector active" data-project="p1" id="project-p1-selector">
                         <div class="selector-number">01</div>
                         <div class="selector-meta">
-                            <h4>Horizon HR Engine</h4>
-                            <span>Enterprise PWA Multi-Tenant Cluster</span>
+                            <h4><span class="stanza-brand">Stanza</span> HR</h4>
+                            <span data-i18n="stanzaSelector">Workforce management PWA</span>
                         </div>
                     </li>
                     <li class="flagship-selector" data-project="p2" id="project-p2-selector">
@@ -312,55 +184,106 @@
 
                 <div class="flagship-documentation-viewport">
                     <div class="flagship-pane active" id="pane-p1">
-                        <div class="pane-header">
-                            <span class="pane-badge">CLUSTER ARCHITECTURE</span>
-                            <h2>Project 01: Horizon HR (Enterprise PWA)</h2>
-                        </div>
-                        <p class="pane-desc">
-                            A highly available multi-tenant business engine integrating a native offline-first sync architecture. Designed with hand-crafted PostgreSQL execution plans that completely bypass slow ORMs. Database isolation is established directly at the backend driver layer utilizing PostgreSQL security kernels.
-                        </p>
-                        
-                        <hr class="pane-divider" />
-                        
-                        <h5 class="pane-subtitle">TECHNICAL STATS & PERFORMANCE MATRIX</h5>
-                        <table class="matrix-table">
-                            <thead>
-                                <tr>
-                                    <th>Vector / Operational Indicator</th>
-                                    <th>Baseline (Heavy ORM Stack)</th>
-                                    <th>Optimization Delta</th>
-                                    <th>Attained Rate</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><strong>Multi-Tenant Isolated Leakage</strong></td>
-                                    <td>Variable Hazard</td>
-                                    <td><strong>Strict Row-Level Policy Enforce</strong></td>
-                                    <td>0.00% Leakage</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Local DB Buffer Sync Overhead</strong></td>
-                                    <td>1,200ms REST Poll</td>
-                                    <td><strong>Diff Write-Ahead Log Traversal</strong></td>
-                                    <td>&lt; 12ms (Native Sync)</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Index Read Concurrency Latency</strong></td>
-                                    <td>450ms (ORM Table Scans)</td>
-                                    <td><strong>Segmented Composite B+ Trees</strong></td>
-                                    <td>1.8ms (Raw Latency)</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <section class="stanza-showcase" data-stanza-showcase aria-labelledby="stanza-title">
+                            <div class="stanza-gallery" tabindex="0" role="region" aria-label="Stanza HR product screenshots">
+                                <div class="stanza-stage" id="stanza-stage">
+                                    <figure class="stanza-card" data-slot="0">
+                                        <figcaption class="stanza-card-label" dir="auto">Performance</figcaption>
+                                        <div class="stanza-media">
+                                            <img src="/images/stanza/cards/performance.webp" width="1120" height="700"
+                                                fetchpriority="high" draggable="false"
+                                                alt="Stanza Performance in dark mode showing the active review cycle and overview metrics">
+                                            <span class="stanza-fallback" hidden></span>
+                                        </div>
+                                    </figure>
+                                </div>
+                                <template data-stanza-card-template>
+                                    <figure class="stanza-card">
+                                        <figcaption class="stanza-card-label" dir="auto"></figcaption>
+                                        <div class="stanza-media">
+                                            <img width="1120" height="700" loading="lazy" decoding="async" draggable="false" alt="">
+                                            <span class="stanza-fallback" hidden></span>
+                                        </div>
+                                    </figure>
+                                </template>
+                                <template data-stanza-zoom-template>
+                                    <button class="stanza-zoom" type="button" data-stanza-open aria-haspopup="dialog" aria-controls="stanza-lightbox" hidden>
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v5m11-5h5v5m0 6v5h-5m-6 0H4v-5"/></svg>
+                                    </button>
+                                </template>
+                                <div class="stanza-controls" hidden>
+                                    <div class="stanza-navigation">
+                                        <button type="button" data-stanza-prev aria-label="Previous screenshot" aria-controls="stanza-stage">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+                                        </button>
+                                        <span class="stanza-counter" data-stanza-counter aria-hidden="true">01 / 06</span>
+                                        <button type="button" data-stanza-next aria-label="Next screenshot" aria-controls="stanza-stage">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+                                        </button>
+                                    </div>
+                                    <button type="button" class="stanza-autoplay" data-stanza-play aria-label="Pause autoplay">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="stanza-pause-icon" d="M9 5v14m6-14v14"/><path class="stanza-play-icon" d="m9 5 10 7-10 7Z"/></svg>
+                                    </button>
+                                </div>
+                                <span class="stanza-sr-only" data-stanza-status role="status"></span>
+                            </div>
 
-                        <blockquote class="pane-blockquote">
-                            <strong>Architectural Core Integration Architecture:</strong> This enterprise PWA cluster utilizes a local indexed DB page cache communicating directly with PostgreSQL schema indexes via an asynchronous Node.js transaction log pipeline, maximizing client rendering efficiency.
-                        </blockquote>
-                        
-                        <div class="pane-meta">
-                            <strong>Core Stack:</strong> PostgreSQL (No-ORM Raw SQL), Node.js (Express Clusters), Vanilla JavaScript, WebSockets.
-                        </div>
+                            <div class="stanza-summary">
+                                <span class="stanza-eyebrow" data-i18n="stanzaEyebrow">Product showcase</span>
+                                <h2 id="stanza-title" data-i18n="stanzaTitle" data-stanza-brand><span class="stanza-brand">Stanza</span> HR</h2>
+                                <p class="pane-desc" data-i18n="stanzaDescription">A multi-tenant HR workspace for geofenced attendance, payroll, performance reviews, and HR workflows, with role-based access and semantic routing.</p>
+                                <div class="stanza-caption">
+                                    <span class="stanza-eyebrow" data-i18n="stanzaCaption">On screen</span>
+                                    <h3 data-stanza-title>Performance</h3>
+                                    <p data-stanza-description>Performance reviews, goals and OKRs, recognition, and review cycles, shown in Stanza’s dark theme.</p>
+                                </div>
+                                </div>
+
+                            <dialog class="stanza-lightbox" id="stanza-lightbox" aria-labelledby="stanza-lightbox-title">
+                                <header class="stanza-lightbox-bar">
+                                    <h3 id="stanza-lightbox-title" aria-live="polite"></h3>
+                                    <button type="button" data-stanza-close aria-label="Close screenshot viewer" autofocus>
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+                                    </button>
+                                </header>
+                                <div class="stanza-lightbox-media">
+                                    <img decoding="async" alt="" hidden>
+                                    <p class="stanza-fallback" role="status" hidden></p>
+                                </div>
+                                <footer class="stanza-lightbox-bar">
+                                    <p class="stanza-lightbox-caption"></p>
+                                    <div class="stanza-navigation">
+                                        <button type="button" data-stanza-lightbox-prev aria-label="Previous screenshot">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+                                        </button>
+                                        <button type="button" data-stanza-lightbox-next aria-label="Next screenshot">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+                                        </button>
+                                    </div>
+                                </footer>
+                            </dialog>
+                        </section>
+
+                        <a class="view-all stanza-repo" data-project-repository href="https://github.com/ShadyAwad/Horizon-HR-v2"
+                            target="_blank" rel="noopener noreferrer" data-i18n="explore">View Project Repository →</a>
+
+                        <details class="stanza-architecture">
+                            <summary data-i18n="stanzaArchitecture">Architecture notes</summary>
+                            <dl>
+                                <div>
+                                    <dt data-i18n="stanzaArchitectureData">API and data</dt>
+                                    <dd data-i18n="stanzaArchitectureDataDetail">Node.js and Express serve the application API. PostgreSQL stores workforce records within tenant boundaries, and role-based access controls which workflows are available to each user.</dd>
+                                </div>
+                                <div>
+                                    <dt data-i18n="stanzaArchitectureApp">Workspace and jobs</dt>
+                                    <dd data-i18n="stanzaArchitectureAppDetail">The React PWA brings attendance, organisation, performance, and payroll into one workspace. Redis and BullMQ support background job processing.</dd>
+                                </div>
+                                <div>
+                                    <dt data-i18n="stanzaArchitectureSemantic">Semantic routing</dt>
+                                    <dd data-i18n="stanzaArchitectureSemanticDetail">The workspace exposes routing analytics, matching results, approved examples, and privacy settings for administrators to review.</dd>
+                                </div>
+                            </dl>
+                        </details>
                     </div>
 
                     <div class="flagship-pane" id="pane-p2">
@@ -371,9 +294,9 @@
                         <p class="pane-desc">
                             A hyper-secure relational matchmaking platform enforcing rigorous sanitization and zero-leakage security constraints. Employs advanced hardware-adjacent cryptographic matching routines calculating correlation indices over authenticated users, with full user metadata anonymization on storage planes.
                         </p>
-                        
+
                         <hr class="pane-divider" />
-                        
+
                         <h5 class="pane-subtitle">SECURITY ATTESTATION MATRIX</h5>
                         <table class="matrix-table">
                             <thead>
@@ -416,11 +339,13 @@
                     </div>
                 </div>
             </div>
-            
+
             <a
     class="view-all"
     id="explore-repositories-trigger"
-    href="https://github.com/ShadyAwad/Horizon-HR-v2"
+    data-project-repository
+    hidden
+    href="https://github.com/ShadyAwad"
     target="_blank"
     rel="noopener noreferrer"
     data-i18n="explore"
@@ -429,9 +354,172 @@
 </a>
         </div>
 
+        <div class="bento-item systems-topology" id="systems-architecture-card">
+            <h3 class="tech-tag" data-i18n="systemTopology">PostgreSQL schema and tenant isolation</h3>
+            <p class="topology-desc" data-i18n="topologyDesc">Select a table to trace its relationships, then compare the SQL query and row-level security policy.</p>
+            
+            <div class="topology-dashboard-grid">
+                <div class="topology-map-container" id="svg-container">
+                    <svg id="topology-svg" viewBox="0 0 800 420" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <pattern id="grid-pattern-svg" width="20" height="20" patternUnits="userSpaceOnUse">
+                                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(125, 187, 255, 0.05)" stroke-width="1"/>
+                            </pattern>
+                            <marker id="arrowhead" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="var(--accent)" opacity="0.85"/>
+                            </marker>
+                            <filter id="glow-effect" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur stdDeviation="3" result="blur" />
+                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                        </defs>
+                        
+                        <rect width="100%" height="100%" fill="url(#grid-pattern-svg)" />
+                        
+                        <g id="topology-paths">
+                            <path class="topology-connector" id="link-orgs-tenants" d="M 190,110 L 320,110" stroke="var(--border)" fill="none" marker-end="url(#arrowhead)" />
+                            <path class="topology-connector" id="link-tenants-users" d="M 400,165 C 400,240 230,240 230,285" stroke="var(--border)" fill="none" marker-end="url(#arrowhead)" />
+                            <path class="topology-connector" id="link-tenants-transactions" d="M 480,110 L 610,110" stroke="var(--border)" fill="none" marker-end="url(#arrowhead)" />
+                            <path class="topology-connector" id="link-users-transactions" d="M 280,310 L 610,165" stroke="var(--border)" stroke-dasharray="2,2" fill="none" marker-end="url(#arrowhead)" />
+                        </g>
+                        
+                        <g id="topology-entities">
+                            <g class="topology-node" id="node-orgs-elem" transform="translate(40, 50)" role="button" tabindex="0" aria-pressed="false" aria-label="Organizations schema card">
+                                <rect width="150" height="110" rx="12" class="entity-rect" />
+                                <rect width="150" height="30" rx="12" class="entity-header" />
+                                <text x="75" y="20" class="entity-title">tbl_organizations</text>
+                                <text x="15" y="52" class="entity-column PK">🔑 org_uuid : UUID</text>
+                                <text x="15" y="74" class="entity-column">✦ org_name : VARCHAR</text>
+                                <text x="15" y="96" class="entity-column">✦ plan_tier : VARCHAR</text>
+                                <circle cx="150" cy="65" r="4" class="node-bus-port" />
+                            </g>
+                            
+                            <g class="topology-node active" id="node-tenants-elem" transform="translate(320, 50)" role="button" tabindex="0" aria-pressed="false" aria-label="Tenant registry schema card">
+                                <rect width="160" height="115" rx="12" class="entity-rect" />
+                                <rect width="160" height="30" rx="12" class="entity-header" />
+                                <text x="80" y="20" class="entity-title">tbl_tenant_registry</text>
+                                <text x="15" y="52" class="entity-column PK">🔑 tenant_uuid : UUID</text>
+                                <text x="15" y="74" class="entity-column FK">🔗 org_uuid : UUID</text>
+                                <text x="15" y="96" class="entity-column">✦ isolation_key : CHAR(64)</text>
+                                <circle cx="0" cy="70" r="4" class="node-bus-port" />
+                                <circle cx="80" cy="115" r="4" class="node-bus-port" />
+                                <circle cx="160" cy="70" r="4" class="node-bus-port" />
+                            </g>
+                            
+                            <g class="topology-node" id="node-users-elem" transform="translate(130, 260)" role="button" tabindex="0" aria-pressed="false" aria-label="User credentials schema card">
+                                <rect width="150" height="110" rx="12" class="entity-rect" />
+                                <rect width="150" height="30" rx="12" class="entity-header" />
+                                <text x="75" y="20" class="entity-title">tbl_user_credentials</text>
+                                <text x="15" y="52" class="entity-column PK">🔑 user_uuid : UUID</text>
+                                <text x="15" y="74" class="entity-column FK">🔗 tenant_uuid : UUID</text>
+                                <text x="15" y="96" class="entity-column">✦ password_hash : CHAR(60)</text>
+                                <circle cx="100" cy="0" r="4" class="node-bus-port" />
+                                <circle cx="150" cy="80" r="4" class="node-bus-port" />
+                            </g>
+                            
+                            <g class="topology-node active" id="node-transactions-elem" transform="translate(610, 50)" role="button" tabindex="0" aria-pressed="false" aria-label="Client transactions schema card">
+                                <rect width="160" height="120" rx="12" class="entity-rect" />
+                                <rect width="160" height="30" rx="12" class="entity-header transaction-header" />
+                                <text x="80" y="20" class="entity-title">client_transactions</text>
+                                <text x="15" y="52" class="entity-column PK">🔑 transaction_uuid : UUID</text>
+                                <text x="15" y="74" class="entity-column FK">🔗 tenant_uuid : UUID</text>
+                                <text x="15" y="96" class="entity-column">✦ transaction_val : NUMERIC</text>
+                                <text x="15" y="112" class="entity-column rls-indicator">🔒 RLS GUARDIAN ACTIVE</text>
+                                <circle cx="0" cy="65" r="4" class="node-bus-port" />
+                            </g>
+                        </g>
+
+                        <circle id="pulsing-tracer" cx="0" cy="0" r="6" fill="#fb48c4" style="display: none; filter: url(#glow-effect);" />
+                    </svg>
+                </div>
+                
+                <div class="topology-code-side" id="code-viewer-panel">
+                    <div class="code-tabs" role="tablist" aria-label="PostgreSQL examples">
+                        <button class="code-tab-btn active" id="tab-btn-sql" type="button" role="tab" aria-controls="code-block-sql" aria-selected="true" data-i18n="viewSqlBtn">View Recursive Query CTE</button>
+                        <button class="code-tab-btn" id="tab-btn-rls" type="button" role="tab" aria-controls="code-block-rls" tabindex="-1" aria-selected="false" data-i18n="viewRlsBtn">View RLS Security Rules</button>
+                    </div>
+                    
+                    <div class="code-container">
+                        <pre id="code-block-sql" role="tabpanel" aria-labelledby="tab-btn-sql" tabindex="0" class="code-block active"><code><span class="sql-comment">-- High-Performance Recursive Common Table Expression (CTE)</span>
+<span class="sql-comment">-- Traverses hierarchy organizational parent-child tenant nodes,</span>
+<span class="sql-comment">-- calculating execution depth, run paths, and active budgets.</span>
+<span class="sql-keyword">WITH RECURSIVE</span> org_hierarchy <span class="sql-keyword">AS</span> (
+    <span class="sql-comment">-- Anchor member</span>
+    <span class="sql-keyword">SELECT</span> 
+        org_id, 
+        parent_org_id, 
+        org_name,
+        1 <span class="sql-keyword">AS</span> depth, 
+        org_name::text <span class="sql-keyword">AS</span> node_path,
+        budget_allocated
+    <span class="sql-keyword">FROM</span> organizations
+    <span class="sql-keyword">WHERE</span> parent_org_id <span class="sql-keyword">IS NULL</span> <span class="sql-keyword">AND</span> is_active = <span class="sql-literal">true</span>
+
+    <span class="sql-keyword">UNION</span> ALL
+
+    <span class="sql-comment">-- Recursive member joins back to anchor</span>
+    <span class="sql-keyword">SELECT</span> 
+        child.org_id, 
+        child.parent_org_id, 
+        child.org_name,
+        parent.depth + 1 <span class="sql-keyword">AS</span> depth,
+        (parent.node_path || <span class="sql-literal">' -> '</span> || child.org_name)::text,
+        child.budget_allocated
+    <span class="sql-keyword">FROM</span> organizations child
+    <span class="sql-keyword">INNER JOIN</span> org_hierarchy parent <span class="sql-keyword">ON</span> child.parent_org_id = parent.org_id
+    <span class="sql-keyword">WHERE</span> child.is_active = <span class="sql-literal">true</span>
+)
+<span class="sql-keyword">SELECT</span> 
+    org_id,
+    parent_org_id,
+    org_name,
+    depth,
+    node_path,
+    budget_allocated,
+    <span class="sql-comment">-- Apply window partition metrics</span>
+    <span class="sql-keyword">SUM</span>(budget_allocated) <span class="sql-keyword">OVER</span> (<span class="sql-keyword">PARTITION BY</span> parent_org_id) <span class="sql-keyword">AS</span> sibling_allocated,
+    <span class="sql-keyword">DENSE_RANK</span>() <span class="sql-keyword">OVER</span> (<span class="sql-keyword">PARTITION BY</span> parent_org_id <span class="sql-keyword">ORDER BY</span> budget_allocated <span class="sql-keyword">DESC</span>) <span class="sql-keyword">AS</span> local_rank
+<span class="sql-keyword">FROM</span> org_hierarchy
+<span class="sql-keyword">ORDER BY</span> node_path;</code></pre>
+                        
+                        <pre id="code-block-rls" role="tabpanel" aria-labelledby="tab-btn-rls" tabindex="0" hidden class="code-block"><code><span class="sql-comment">-- Rigid Multi-Tenant Row-Level Security (RLS) Policy Configurations</span>
+<span class="sql-comment">-- Enforced directly at the bare PostgreSQL kernel boundary</span>
+<span class="sql-keyword">ALTER TABLE</span> client_transactions <span class="sql-keyword">ENABLE ROW LEVEL SECURITY</span>;
+
+<span class="sql-comment">-- Block cross-tenant access explicitly for authenticated connections</span>
+<span class="sql-keyword">CREATE POLICY</span> tenant_isolation_assertion <span class="sql-keyword">ON</span> client_transactions
+<span class="sql-keyword">AS RESTRICTIVE</span>
+<span class="sql-keyword">TO</span> app_replica_instance, authenticated_role
+<span class="sql-keyword">USING</span> (
+    tenant_uuid = <span class="sql-keyword">current_setting</span>(<span class="sql-literal">'app.current_tenant_id'</span>, <span class="sql-literal">true</span>)
+)
+<span class="sql-keyword">WITH CHECK</span> (
+    tenant_uuid = <span class="sql-keyword">current_setting</span>(<span class="sql-literal">'app.current_tenant_id'</span>, <span class="sql-literal">true</span>)
+);
+
+<span class="sql-comment">-- Compound indexing to accelerate isolated filters under high concurrency</span>
+<span class="sql-keyword">CREATE INDEX CONCURRENTLY IF NOT EXISTS</span> idx_transactions_tenant_composite
+<span class="sql-keyword">ON</span> client_transactions (tenant_uuid, transaction_status, entity_hash_id);
+
+<span class="sql-comment">-- Enforce transaction write safety lock check on isolated clusters</span>
+<span class="sql-keyword">CREATE POLICY</span> tenant_isolation_safe_insert <span class="sql-keyword">ON</span> client_transactions
+<span class="sql-keyword">FOR INSERT</span>
+<span class="sql-keyword">TO</span> app_replica_instance
+<span class="sql-keyword">WITH CHECK</span> (
+    tenant_uuid = <span class="sql-keyword">current_setting</span>(<span class="sql-literal">'app.current_tenant_id'</span>, <span class="sql-literal">true</span>)
+    <span class="sql-keyword">AND EXISTS</span> (
+        <span class="sql-keyword">SELECT 1 FROM </span>tenant_registry
+        <span class="sql-keyword">WHERE </span>tenant_registry.id = tenant_uuid <span class="sql-keyword">AND </span>tenant_registry.is_active = <span class="sql-literal">true</span>
+    )
+);</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="bento-item db-visualizer" id="traversal-visualizer-card">
             <h3 data-i18n="dbVisualizer">Active Index Traversal & Memory Allocator</h3>
-            <p class="visualizer-desc" data-i18n="visualizerDesc">Traverse a B+ Tree indexing pathway or compact memory block fragments. Watch low-abstraction systems logic execute at 60fps.</p>
+            <p class="visualizer-desc" data-i18n="visualizerDesc">Follow a key through a B+ tree or see how compaction reclaims fragmented memory.</p>
             <div class="visualizer-dashboard-grid">
                 <div class="visualizer-viewport">
                     <canvas id="visualizer-canvas"></canvas>
@@ -456,24 +544,6 @@
             </div>
         </div>
 
-<div class="bento-item ship-box" id="interstellar-asset-card">
-    <div class="tech-tag" data-i18n="interstellar">Interstellar Interface</div>
-    <div class="canvas-wrapper">
-        <model-viewer
-            id="ship-viewer"
-            src="./assets/Planet.glb" 
-            alt="3D planet"
-            auto-rotate
-            rotation-per-sec="15deg"
-            camera-controls
-            touch-action="pan-y"
-            ar
-            exposure="1.2"
-            style="width: 100%; height: 100%;">
-        </model-viewer>
-    </div>
-    <p class="ship-hint" data-i18n="shipHint">Interact directly with the local 3D rendering cache using swipe/pinch gestures.</p>
-</div>
     </main>
 
     <footer class="page-footer" id="portfolio-footer">
@@ -484,12 +554,31 @@
             </div>
             <div class="footer-links">
                 <a href="#profile-card" data-i18n="about">About</a>
-                <a href="#systems-architecture-card" data-i18n="projects">Projects</a>
-                <a href="#estimator-card" data-i18n="contact">Contact</a>
+                <a href="#architectural-showcase-card" data-i18n="projects">Projects</a>
+                <a href="#contact-dock" data-i18n="contact">Contact</a>
             </div>
-            <small data-i18n="copyright">© 2026 Shady Awad. Handcrafted in pure Vanilla JavaScript & CSS. No bloat, no overhead.</small>
+            <small data-i18n="copyright">© 2026 Shady Awad.</small>
         </div>
     </footer>
 
+    <dialog class="contact-composer" id="contact-composer" aria-labelledby="contact-title" aria-describedby="contact-hint">
+        <div class="contact-content">
+            <header><h2 id="contact-title" data-i18n="contactTitle">Write to Shady</h2>
+            <button type="button" class="contact-close" data-contact-close aria-label="Close contact composer"><span aria-hidden="true">×</span></button></header>
+            <p><span data-i18n="contactTo">To</span> <bdi>shadyawad225@gmail.com</bdi></p>
+            <p id="contact-hint" data-i18n="contactHint">Choose an email app below to review and send your draft.</p>
+            <form autocomplete="off">
+                <label><span data-i18n="contactIdentity">Your name or email (optional)</span><input name="identity" dir="auto" maxlength="160"></label>
+                <label><span data-i18n="contactSubject">Subject</span><input name="subject" dir="auto" required maxlength="180" autofocus></label>
+                <label><span data-i18n="contactMessage">Message</span><textarea name="message" dir="auto" required rows="6"></textarea></label>
+                <div class="contact-actions">
+                    <button type="submit" value="mailto" data-i18n="contactApp">Email app</button>
+                    <button type="submit" value="gmail">Gmail ↗</button>
+                    <button type="submit" value="outlook">Outlook ↗</button>
+                </div>
+                <p class="contact-status" role="status" aria-atomic="true"></p>
+            </form>
+        </div>
+    </dialog>
 </body>
 </html>

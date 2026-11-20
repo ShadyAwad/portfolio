@@ -1,0 +1,17 @@
+.stellar-lifecycle {
+    position: fixed;
+    pointer-events: none;
+    z-index: 0;
+}
+.stellar-activation {
+    position: fixed;
+    z-index: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+.stellar-activation:focus-visible { outline: 1px solid #688bae; outline-offset: 3px; }
+.stellar-activation:active { transform: none; }

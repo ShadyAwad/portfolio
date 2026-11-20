@@ -1,13 +1,15 @@
+import './src/components/space-atmosphere.js';
+import './src/studio/preview-entry.js';
+import { configuration } from './src/studio/configuration.js';
+import { priceProject } from './src/studio/pricing.js';
+import { bindArchitectureInputs, unbindArchitectureInputs } from './src/studio/architecture-inputs.js';
+
+import { mountStanzaCardSwap } from './src/components/stanza-card-swap.js';
+import { localizePortfolioControls, offerDesignStudio } from './src/components/portfolio-controls.js';
+import { localizeArchitecturePlanner } from './src/components/architecture-planner.js';
 
 // Global Parallax Starfield State
-const bgCanvas = document.getElementById('starfield');
-const bgCtx = bgCanvas ? bgCanvas.getContext('2d') : null;
-let starfieldArray = [];
-const STAR_COUNT = 240;
-let lastFrameTime = performance.now();
-let mouseX = window.innerWidth / 2;
-let mouseY = window.innerHeight / 2;
-const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const starfieldMotion = matchMedia('(prefers-reduced-motion: reduce)');
 
 // Dynamic L10n & Theme States
 const i18nElements = document.querySelectorAll('[data-i18n]');
@@ -50,7 +52,6 @@ let querySearching = false;
 let tracePathNodes = [];
 let activeSearchIndex = 0;
 let progressDelta = 0;
-let tracerPulse = 0;
 let targetQueryKey = null;
 
 // Memory Compaction States
@@ -63,84 +64,9 @@ const TOTAL_RAM_BLOCKS = RAM_GRID_COLS * RAM_GRID_ROWS;
 // Flagship Project Showcase Toggles
 const projectSelectors = document.querySelectorAll('.flagship-selector');
 const documentationPanes = document.querySelectorAll('.flagship-pane');
-
-// ==========================================================================
-// 1. DYNAMIC SYSTEM PARALLAX STARFIELD
-// ==========================================================================
-window.addEventListener('mousemove', (e) => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-});
-
-window.addEventListener('touchmove', (e) => {
-    if (e.touches && e.touches[0]) {
-        mouseX = e.touches[0].clientX;
-        mouseY = e.touches[0].clientY;
-    }
-}, { passive: true });
-
-function resizeStarfield() {
-    if (!bgCanvas || !bgCtx) return;
-    const dpr = Math.max(1, window.devicePixelRatio || 1);
-    bgCanvas.width = Math.floor(window.innerWidth * dpr);
-    bgCanvas.height = Math.floor(window.innerHeight * dpr);
-    bgCanvas.style.width = `${window.innerWidth}px`;
-    bgCanvas.style.height = `${window.innerHeight}px`;
-    bgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-}
-
-function initStarfield() {
-    starfieldArray = [];
-    for (let i = 0; i < STAR_COUNT; i++) {
-        starfieldArray.push({
-            x: Math.random() * window.innerWidth * 2 - window.innerWidth,
-            y: Math.random() * window.innerHeight * 2 - window.innerHeight,
-            z: Math.random() * window.innerWidth + 0.001,
-            baseDim: Math.random() * 1.5 + 0.4
-        });
-    }
-}
-
-function animateStarfield(currentTime = performance.now()) {
-    if (!bgCanvas || !bgCtx) return;
-    const delta = Math.min(1.5, (currentTime - lastFrameTime) / 16.6);
-    lastFrameTime = currentTime;
-
-    const driftCoef = prefersReducedMotion ? 0.3 : 0.85;
-    const scrollStep = driftCoef * delta;
-    
-    const displayWidth = bgCanvas.clientWidth;
-    const displayHeight = bgCanvas.clientHeight;
-    
-    bgCtx.clearRect(0, 0, displayWidth, displayHeight);
-    const cx = displayWidth / 2;
-    const cy = displayHeight / 2;
-    
-    const scaleX = (mouseX - cx) * 0.015;
-    const scaleY = (mouseY - cy) * 0.015;
-
-    starfieldArray.forEach(star => {
-        star.z -= scrollStep;
-        if (star.z <= 2) {
-            star.z = window.innerWidth;
-            star.x = Math.random() * window.innerWidth * 2 - window.innerWidth;
-            star.y = Math.random() * window.innerHeight * 2 - window.innerHeight;
-        }
-
-        const projectScale = Math.max(0.001, window.innerWidth / star.z);
-        const px = (star.x - scaleX * (1 + star.z / window.innerWidth * 0.25)) * projectScale + cx;
-        const py = (star.y - scaleY * (1 + star.z / window.innerWidth * 0.25)) * projectScale + cy;
-
-        const opacity = Math.max(0.1, Math.min(0.9, 1 - star.z / window.innerWidth));
-        // Draw starry points
-        bgCtx.fillStyle = `rgba(180, 215, 255, ${opacity})`;
-        bgCtx.beginPath();
-        bgCtx.arc(px, py, Math.max(0.4, star.baseDim * projectScale), 0, Math.PI * 2);
-        bgCtx.fill();
-    });
-
-    requestAnimationFrame(animateStarfield);
-}
+const stanzaShowcaseRoot = document.querySelector('[data-stanza-showcase]');
+let stanzaShowcase;
+if (import.meta.hot) import.meta.hot.dispose(() => stanzaShowcase?.destroy());
 
 // =========================================================================
 // 2. BIDIRECTIONAL SCHEMA L10N & CRYSTAL THEMING
@@ -180,11 +106,29 @@ function renderLanguage(lang) {
 
     i18nElements.forEach(elem => {
         const key = elem.dataset.i18n;
-        if (dict[key]) elem.textContent = dict[key];
+        if (!dict[key]) return;
+        const value = dict[key];
+        if (elem.hasAttribute('data-stanza-brand') && value.includes('Stanza')) {
+            const index = value.indexOf('Stanza');
+            const brand = document.createElement('span');
+            brand.className = 'stanza-brand';
+            brand.textContent = 'Stanza';
+            elem.replaceChildren(value.slice(0, index), brand, value.slice(index + 6));
+        } else {
+            elem.textContent = value;
+        }
     });
 
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    localizePortfolioControls(dict);
+    localizeArchitecturePlanner(lang);
+    if (tierSelect) renderTierCopy(getActiveServiceTier());
+
+    if (stanzaShowcaseRoot && dict.stanzaGallery) {
+        if (stanzaShowcase) stanzaShowcase.localize(dict.stanzaGallery, lang);
+        else stanzaShowcase = mountStanzaCardSwap(stanzaShowcaseRoot, dict.stanzaGallery, lang);
+    }
 
     if (langToggle) {
         langToggle.textContent = lang === 'en' ? 'AR' : 'EN';
@@ -234,7 +178,6 @@ const serviceTiers = [
     {
         id: 1,
         name: "Tier 1: Static Blueprint",
-        price: 75,
         subtitle: "High-performance single-page layout or landing page.",
         color: "#38d5ff",
         glow: "0 0 14px rgba(56, 213, 255, 0.28)"
@@ -242,7 +185,6 @@ const serviceTiers = [
     {
         id: 2,
         name: "Tier 2: Dynamic Multi-View",
-        price: 200,
         subtitle: "Multi-page architecture with localized routing and client-side global state.",
         color: "#2dd4bf",
         glow: "0 0 14px rgba(45, 212, 191, 0.28)"
@@ -250,7 +192,6 @@ const serviceTiers = [
     {
         id: 3,
         name: "Tier 3: Full-Stack Core + AI",
-        price: 450,
         subtitle: "Database integrated MVP, user dashboards, and basic AI API integration (automated text/summarization).",
         color: "#39ff88",
         glow: "0 0 18px rgba(57, 255, 136, 0.38)"
@@ -258,7 +199,6 @@ const serviceTiers = [
     {
         id: 4,
         name: "Tier 4: Enterprise Secure & Cognitive",
-        price: 850,
         subtitle: "Scale-ready app featuring multi-tenant isolation, advanced PostgreSQL RLS, and custom AI vector search/embeddings.",
         color: "#9dff6a",
         glow: "0 0 20px rgba(157, 255, 106, 0.36)"
@@ -266,7 +206,6 @@ const serviceTiers = [
     {
         id: 5,
         name: "Tier 5: Bespoke Interactive Canvas",
-        price: 1400,
         subtitle: "Premium mathematically reactive 3D rendering, custom Blender assets, and real-time data streaming.",
         color: "#d6a93a",
         glow: "0 0 24px rgba(214, 169, 58, 0.52)"
@@ -279,9 +218,8 @@ function formatUSD(val) {
     return val.toLocaleString('en-US');
 }
 
-function getActiveServiceTier() {
-    const tierIndex = Math.min(Math.max(Number(tierSelect ? tierSelect.value : 1), 1), serviceTiers.length);
-    return serviceTiers[tierIndex - 1];
+function getActiveServiceTier(state = configuration.getState()) {
+    return serviceTiers[state.pricingTier - 1];
 }
 
 function applyPriceMetricStyle(tier) {
@@ -312,22 +250,29 @@ function injectEstimatorLogs(tier, hasAIAddon) {
     }
 }
 
-function calculatePrice() {
-    if (!tierSelect || !priceDisplay) return;
-    const tier = getActiveServiceTier();
-    const addonCost = Array.from(addons).reduce((sum, box) => sum + (box.checked ? Number(box.value) : 0), 0);
-    const targetPrice = tier.price + addonCost;
-    const oldPrice = Number(priceDisplay.dataset.price || tier.price);
-    const hasAIAddon = Boolean(document.getElementById('opt-ai')?.checked);
-
+function renderTierCopy(tier) {
     if (activeTierVal) {
-        activeTierVal.textContent = tier.name;
+        activeTierVal.textContent = activeTranslations[`tier${tier.id}`] ?? tier.name;
         activeTierVal.style.color = tier.color;
     }
-
     if (tierSubtitle) {
-        tierSubtitle.textContent = tier.subtitle;
+        tierSubtitle.textContent = activeTranslations.tierDetails?.[tier.id - 1] ?? tier.subtitle;
     }
+}
+
+let priceTween;
+
+function renderPricing(state) {
+    if (!tierSelect || !priceDisplay) return;
+    const tier = getActiveServiceTier(state);
+    const { base, total: targetPrice } = priceProject(state);
+    const oldPrice = Number(priceDisplay.textContent.replaceAll(',', '')) || base;
+    const hasAIAddon = state.features.ai;
+
+    tierSelect.value = String(state.pricingTier);
+    for (const box of addons) box.checked = state.features[box.id.slice(4)];
+
+    renderTierCopy(tier);
 
     baselineLinks.forEach(link => {
         link.classList.toggle('active', Number(link.dataset.tierIndex) === tier.id);
@@ -336,51 +281,77 @@ function calculatePrice() {
     applyPriceMetricStyle(tier);
     injectEstimatorLogs(tier, hasAIAddon);
 
-    if (window.gsap) {
-        gsap.to({ val: oldPrice }, {
+    priceTween?.kill();
+    priceDisplay.dataset.price = targetPrice;
+    if (window.gsap && !starfieldMotion.matches && oldPrice !== targetPrice) {
+        priceTween = gsap.to({ val: oldPrice }, {
             val: targetPrice,
             duration: 0.16, // Ultra fast ticks
             ease: 'none',
             onUpdate() {
                  const currentTickVal = Math.round(this.targets()[0].val);
-                 priceDisplay.innerText = formatUSD(currentTickVal);
+                 const price = formatUSD(currentTickVal);
+                 if (priceDisplay.textContent !== price) priceDisplay.textContent = price;
             },
             onComplete() {
-                 priceDisplay.dataset.price = targetPrice;
-                 priceDisplay.innerText = formatUSD(targetPrice);
+                 priceDisplay.textContent = formatUSD(targetPrice);
             }
         });
     } else {
-        priceDisplay.innerText = formatUSD(targetPrice);
-        priceDisplay.dataset.price = targetPrice;
+        priceDisplay.textContent = formatUSD(targetPrice);
     }
 }
 
-// Baseline service tier presets triggers
+const pricingEvents = new AbortController();
+const pricingOptions = { signal: pricingEvents.signal };
+starfieldMotion.addEventListener('change', () => {
+    if (!starfieldMotion.matches || !priceDisplay?.dataset.price) return;
+    priceTween?.kill();
+    priceDisplay.textContent = formatUSD(Number(priceDisplay.dataset.price));
+}, pricingOptions);
+
 baselineLinks.forEach(link => {
-    link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const tierIndex = link.dataset.tierIndex;
-        if (tierSelect && tierIndex) {
-            tierSelect.value = tierIndex;
-            calculatePrice();
-        }
-    });
+    link.addEventListener('click', event => {
+        event.preventDefault();
+        if (configuration.getState().pricingTier !== Number(link.dataset.tierIndex)) offerDesignStudio(event);
+        configuration.update({ pricingTier: Number(link.dataset.tierIndex) });
+    }, pricingOptions);
 });
 
-if (tierSelect) {
-    tierSelect.addEventListener('input', calculatePrice);
-    tierSelect.addEventListener('change', calculatePrice);
-}
-
+tierSelect?.addEventListener('input', event => {
+    if (configuration.getState().pricingTier !== Number(tierSelect.value)) offerDesignStudio(event);
+    configuration.update({ pricingTier: Number(tierSelect.value) });
+}, pricingOptions);
 addons.forEach(box => {
-    box.addEventListener('change', calculatePrice);
+    box.addEventListener('change', event => {
+        if (configuration.getState().features[box.id.slice(4)] !== box.checked) offerDesignStudio(event);
+        configuration.update({ features: { [box.id.slice(4)]: box.checked } });
+    }, pricingOptions);
 });
+
+const unsubscribePricing = configuration.subscribe((state, previous) => {
+    if (state.pricingTier !== previous.pricingTier ||
+        Object.keys(state.features).some(key => state.features[key] !== previous.features[key])) {
+        renderPricing(state);
+    }
+});
+const architectureInputs = document.getElementById('architecture-planner');
+bindArchitectureInputs(architectureInputs);
+
+if (import.meta.hot) {
+    import.meta.hot.dispose(() => {
+        pricingEvents.abort();
+        unsubscribePricing();
+        unbindArchitectureInputs(architectureInputs);
+        priceTween?.kill();
+    });
+}
 
 // ==========================================================================
 // 4. SYSTEMS TOPOLOGY SVG INTERACTIVE FLOW ENGINE
 // ==========================================================================
 function triggerSvgTracerPulse(startSelector, endSelector) {
+    if (starfieldMotion.matches) return;
     const startNode = document.querySelector(startSelector);
     const endNode = document.querySelector(endSelector);
     if (!startNode || !endNode || !pulsingTracer || !svgElement) return;
@@ -441,9 +412,16 @@ function triggerSvgTracerPulse(startSelector, endSelector) {
 
 // Mouse click probes triggers log messages inside the console stream
 topologyNodeElements.forEach(node => {
+    node.addEventListener('keydown', event => {
+        if (!['Enter', ' '].includes(event.key) || event.repeat) return;
+        event.preventDefault();
+        node.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
     node.addEventListener('click', () => {
-        topologyNodeElements.forEach(n => n.classList.remove('active-node'));
-        node.classList.add('active-node');
+        topologyNodeElements.forEach(n => {
+            n.classList.toggle('active-node', n === node);
+            n.setAttribute('aria-pressed', String(n === node));
+        });
         
         const nodeId = node.id;
         if (nodeId === 'node-orgs-elem') {
@@ -462,22 +440,30 @@ topologyNodeElements.forEach(node => {
     });
 });
 
-// Systems architecture layout code togglers
-if (tabBtnSql && tabBtnRls) {
-    tabBtnSql.addEventListener('click', () => {
-        tabBtnSql.classList.add('active');
-        tabBtnRls.classList.remove('active');
-        codeBlockSql.classList.add('active');
-        codeBlockRls.classList.remove('active');
-        appendLog(`CODE DISPATCHER: SQL query buffer mapping view refreshed.`, "system-line");
+// PostgreSQL examples
+const examples = [[tabBtnSql, codeBlockSql], [tabBtnRls, codeBlockRls]];
+for (const [tab] of examples) {
+    tab.addEventListener('click', () => {
+        for (const [control, content] of examples) {
+            const selected = control === tab;
+            control.setAttribute('aria-selected', String(selected));
+            control.tabIndex = selected ? 0 : -1;
+            control.classList.toggle('active', selected);
+            content.hidden = !selected;
+            content.classList.toggle('active', selected);
+        }
     });
-    
-    tabBtnRls.addEventListener('click', () => {
-        tabBtnRls.classList.add('active');
-        tabBtnSql.classList.remove('active');
-        codeBlockRls.classList.add('active');
-        codeBlockSql.classList.remove('active');
-        appendLog(`CODE DISPATCHER: PostgreSQL engine active RLS rule parameters loaded.`, "system-line");
+    tab.addEventListener('keydown', event => {
+        const target = {
+            ArrowLeft: tab === tabBtnSql ? tabBtnRls : tabBtnSql,
+            ArrowRight: tab === tabBtnSql ? tabBtnRls : tabBtnSql,
+            Home: tabBtnSql,
+            End: tabBtnRls
+        }[event.key];
+        if (!target) return;
+        event.preventDefault();
+        target.focus();
+        target.click();
     });
 }
 
@@ -537,11 +523,15 @@ function resizeVisCanvas() {
     visWidth = p.clientWidth;
     visHeight = p.clientHeight || 350;
     
-    visCanvas.width = Math.floor(visWidth * dpr);
-    visCanvas.height = Math.floor(visHeight * dpr);
+    const width = Math.floor(visWidth * dpr);
+    const height = Math.floor(visHeight * dpr);
+    if (visCanvas.width === width && visCanvas.height === height && visCanvas.style.width === `${visWidth}px`) return;
+    visCanvas.width = width;
+    visCanvas.height = height;
     visCanvas.style.width = `${visWidth}px`;
     visCanvas.style.height = `${visHeight}px`;
     visCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (visualizerInView) scheduleVisualizer();
 }
 
 function resolveCoords(nodeId) {
@@ -610,7 +600,6 @@ function drawSchemaNode(node, highlight) {
 
 function drawTreeSimulation() {
     visCtx.clearRect(0, 0, visWidth, visHeight);
-    tracerPulse += 0.1;
 
     // Connect node lines
     visCtx.lineWidth = 1;
@@ -654,7 +643,7 @@ function drawTreeSimulation() {
 
     // Tracer simulation ticks pulse
     if (querySearching && tracePathNodes.length > 0) {
-        progressDelta += 0.05;
+        progressDelta += starfieldMotion.matches ? 1 : 0.05;
         if (progressDelta >= 1) {
             progressDelta = 0;
             activeSearchIndex++;
@@ -750,8 +739,8 @@ function drawHeapGrid() {
         const deltaY = targetYCoord - b.y;
 
         if (Math.abs(deltaX) > 0.1 || Math.abs(deltaY) > 0.1) {
-            b.x += deltaX * 0.14; // Acceleration slide factors
-            b.y += deltaY * 0.14;
+            b.x += deltaX * (starfieldMotion.matches ? 1 : 0.14);
+            b.y += deltaY * (starfieldMotion.matches ? 1 : 0.14);
             defragmentationComplete = false;
         } else {
             b.x = targetXCoord;
@@ -801,14 +790,50 @@ function triggerMemoryCompaction() {
     freeGroup.forEach(b => { b.curr = counter++; });
 }
 
-function systemVisualizerTickLoop() {
-    if (!visCtx || !visCanvas) return;
-    if (visualizerLoopMode === "tree") {
-        drawTreeSimulation();
-    } else {
-        drawHeapGrid();
+let visualizerInView = false;
+let visualizerFrame = 0;
+
+function scheduleVisualizer() {
+    if (!visualizerFrame && visualizerInView && !document.hidden) {
+        visualizerFrame = requestAnimationFrame(systemVisualizerTickLoop);
     }
-    requestAnimationFrame(systemVisualizerTickLoop);
+}
+
+function systemVisualizerTickLoop() {
+    visualizerFrame = 0;
+    if (!visualizerInView || document.hidden || !visCtx) return;
+    if (visualizerLoopMode === "tree") drawTreeSimulation();
+    else drawHeapGrid();
+    if (querySearching || garbageCollecting) scheduleVisualizer();
+}
+
+function observeVisualizer() {
+    if (!visCanvas) return;
+    const events = new AbortController();
+    const size = new ResizeObserver(resizeVisCanvas);
+    size.observe(visCanvas.parentElement);
+    const observer = new IntersectionObserver(([entry]) => {
+        visualizerInView = entry.isIntersecting;
+        if (visualizerInView) scheduleVisualizer();
+        else {
+            cancelAnimationFrame(visualizerFrame);
+            visualizerFrame = 0;
+        }
+    });
+    observer.observe(visCanvas);
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            cancelAnimationFrame(visualizerFrame);
+            visualizerFrame = 0;
+        } else scheduleVisualizer();
+    }, { signal: events.signal });
+    return () => {
+        events.abort();
+        size.disconnect();
+        observer.disconnect();
+        cancelAnimationFrame(visualizerFrame);
+        visualizerFrame = 0;
+    };
 }
 
 // Setup canvas metrics click listeners triggers
@@ -820,6 +845,7 @@ searchKeyBtns.forEach(btn => {
         
         const coreKey = parseInt(btn.dataset.key);
         executeTreeSearch(coreKey);
+        scheduleVisualizer();
     });
 });
 
@@ -827,6 +853,7 @@ if (garbageCollectBtn) {
     garbageCollectBtn.addEventListener('click', () => {
         if (querySearching || garbageCollecting) return;
         triggerMemoryCompaction();
+        scheduleVisualizer();
     });
 }
 
@@ -835,20 +862,14 @@ if (garbageCollectBtn) {
 // ==========================================================================
 const repoLink = document.getElementById('explore-repositories-trigger');
 
-const projectRepositories = {
-    p1: "https://github.com/ShadyAwad/Horizon-HR-v2",
-    p2: "https://github.com/ShadyAwad"
-};
-
-// Add the click listener ONCE
-if (repoLink) {
-    repoLink.addEventListener('click', () => {
+document.querySelectorAll('[data-project-repository]').forEach(link => {
+    link.addEventListener('click', () => {
         appendLog(
             `SYSTEM REDIRECT: Resolving remote secure VCS repository link.`,
             "system-line"
         );
     });
-}
+});
 
 projectSelectors.forEach(selector => {
     selector.addEventListener('click', () => {
@@ -861,11 +882,11 @@ projectSelectors.forEach(selector => {
             if (pane.id === `pane-${targetProj}`) {
                 pane.classList.add('active');
 
-                if (window.gsap) {
+                if (window.gsap && !starfieldMotion.matches) {
                     gsap.fromTo(
                         pane,
                         { opacity: 0, y: 15 },
-                        { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }
+                        { opacity: 1, y: 0, duration: 0.24, ease: "power2.out", clearProps: 'transform,opacity', overwrite: true }
                     );
                 }
             } else {
@@ -874,7 +895,7 @@ projectSelectors.forEach(selector => {
         });
 
         if (repoLink) {
-            repoLink.href = projectRepositories[targetProj];
+            repoLink.hidden = targetProj !== 'p2';
         }
 
         appendLog(
@@ -894,44 +915,30 @@ if (exploreTrigger) {
 // ==========================================================================
 // 7. HARMONIOUS FRAME SYSTEM INITIALIZER
 // ==========================================================================
-const systemResizeObserver = new ResizeObserver(() => {
-    resizeStarfield();
-    resizeVisCanvas();
-});
-systemResizeObserver.observe(document.body);
-
 function initializeCoreArchitecture() {
-    // Pricing configurations initial triggers
-    if (tierSelect) {
-        tierSelect.value = "1";
-    }
-    if (typeof calculatePrice === 'function') {
-        calculatePrice();
-    }
-
-    // Spawn backdrop stars drift loop
-    initStarfield();
-    resizeStarfield();
-    requestAnimationFrame(animateStarfield);
+    renderPricing(configuration.getState());
 
     // 🚀 ADDED: KICKSTART CELESTIAL PATH-SCROLL TRAILER
-    initConstellationScrollPathing();
+    const stopTrail = initConstellationScrollPathing();
+    if (import.meta.hot) import.meta.hot.dispose(() => stopTrail?.());
 
     // Spawn schematic JVM traversal states
     initMemoryGrid();
     resizeVisCanvas();
-    requestAnimationFrame(systemVisualizerTickLoop);
+    const stopVisualizer = observeVisualizer();
+    if (import.meta.hot) import.meta.hot.dispose(() => stopVisualizer?.());
 
     // Initial load translations, lang mappings and themes settings
     startL10nTheme();
 
-    if (window.gsap) {
-        // High quality snap staggered entry timelines
-        gsap.from('.bento-item', {
+    if (window.gsap && !starfieldMotion.matches) {
+        // Start the shared top row together and restore the stylesheet after the entrance.
+        gsap.fromTo('.bento-item', { y: 30, opacity: 0 }, {
             duration: 0.6,
-            y: 30,
-            opacity: 0,
-            stagger: 0.08,
+            y: 0,
+            opacity: 1,
+            stagger: index => Math.max(0, index - 1) * 0.08,
+            clearProps: 'transform,opacity',
             ease: 'power3.out'
         });
     }
@@ -957,15 +964,13 @@ function initConstellationScrollPathing() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // 3. Gracefully step out if the client OS layer enforces accessibility limits
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        canvas.style.display = 'none';
-        return;
-    }
-    
+    const events = new AbortController();
     // 4. Setup a FIFO history collection array to track prior coordinate positions
     const pathHistoryPoints = [];
-    const TRAIL_LENGTH_LIMIT = 24; // Limits tracking length frame calculations
+    const TRAIL_LENGTH_LIMIT = 16;
+    let trailFrame = 0;
+    let lastMove = -Infinity;
+    let nextPoint;
 
     // 5. Scale buffer coordinate grids based on monitor hardware display pixel densities
     function resizeTrailCanvas() {
@@ -976,15 +981,22 @@ function initConstellationScrollPathing() {
     }
     
     resizeTrailCanvas();
-    window.addEventListener('resize', resizeTrailCanvas, { passive: true });
+    window.addEventListener('resize', resizeTrailCanvas, { passive: true, signal: events.signal });
 
     // 6. High frequency animation frame sequencing tick engine
-    function renderTrailFrameSequence() {
+    function renderTrailFrameSequence(now) {
+        trailFrame = 0;
         // 7. Clear the graphics buffer window right before calculating next steps
         ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
         // 8. Capture and append pre-existing global mouse metrics into local tracking cache
-        pathHistoryPoints.push({ x: mouseX, y: mouseY });
+        if (nextPoint) {
+            pathHistoryPoints.push(nextPoint);
+            nextPoint = undefined;
+        } else if (now - lastMove > 45) {
+            pathHistoryPoints.shift();
+        }
+        if (!pathHistoryPoints.length) return;
         
         // 9. Trim excess records to preserve strict memory footprint allocation scales
         if (pathHistoryPoints.length > TRAIL_LENGTH_LIMIT) {
@@ -996,7 +1008,7 @@ function initConstellationScrollPathing() {
         // 10. Only compute interpolation physics if we have valid movement tracking chains
         if (activePointsCount > 1) {
             // 11. Activate premium visual blur drop-shadows matching your brand accents
-            ctx.shadowBlur = 12;
+            ctx.shadowBlur = 7;
             ctx.shadowColor = '#4863fb'; // Magenta vector glow trail
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
@@ -1016,7 +1028,7 @@ function initConstellationScrollPathing() {
                 const g = Math.round(72 + (130 - 72) * lifetimeRatio);
                 const b = Math.round(196 + (246 - 196) * lifetimeRatio);
 
-                ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${0.75 * lifetimeRatio})`;
+                ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${0.56 * lifetimeRatio})`;
 
                 // 15. Apply native hardware quadratic curves through coordinate intersections
                 ctx.beginPath();
@@ -1039,12 +1051,35 @@ function initConstellationScrollPathing() {
         }
 
         // 18. Queue up calculations cleanly for the next hardware display cycle sweep
-        requestAnimationFrame(renderTrailFrameSequence);
+        trailFrame = requestAnimationFrame(renderTrailFrameSequence);
     }
 
     if (typeof appendLog === 'function') {
         appendLog(`ORBITAL MONITOR: Kinetic ribbon trail engine successfully bound to active rendering canvas viewport.`, "system-line");
     }
 
-    requestAnimationFrame(renderTrailFrameSequence);
+    function resetTrail() {
+        if (!trailFrame && !nextPoint && pathHistoryPoints.length === 0) return;
+        cancelAnimationFrame(trailFrame);
+        trailFrame = 0;
+        nextPoint = undefined;
+        pathHistoryPoints.length = 0;
+        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    }
+
+    window.addEventListener('pointermove', event => {
+        if (event.defaultPrevented || event.pointerType !== 'mouse' || starfieldMotion.matches || document.hidden ||
+            event.target.closest?.('.design-studio, .stanza-showcase, .contact-composer, #contact-dock')) {
+            resetTrail();
+            return;
+        }
+        nextPoint = { x: event.clientX, y: event.clientY };
+        lastMove = performance.now();
+        if (!trailFrame) trailFrame = requestAnimationFrame(renderTrailFrameSequence);
+    }, { passive: true, signal: events.signal });
+    starfieldMotion.addEventListener('change', resetTrail, { signal: events.signal });
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) resetTrail();
+    }, { signal: events.signal });
+    return () => { resetTrail(); events.abort(); };
 }

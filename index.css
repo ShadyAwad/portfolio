@@ -226,11 +226,12 @@ button:active {
 /* Logical Grid Placements (Totaling 12 scale parameters) */
 .profile {
     grid-column: span 7;
+    align-self: start;
 }
 
 .calculator {
     grid-column: span 5;
-    padding-top: calc(42px * var(--space-scale));
+    align-self: start;
 }
 
 .systems-topology {
@@ -243,11 +244,6 @@ button:active {
 
 .db-visualizer {
     grid-column: span 12;
-}
-
-.ship-box {
-    grid-column: span 12;
-    min-height: 480px;
 }
 
 /* ==========================================================================
@@ -327,13 +323,9 @@ html[dir="rtl"] blockquote {
 
 /* Logical profile alignment toggles */
 .profile-actions {
-    position: absolute;
-    top: 14px;
-    inset-inline-end: 20px;
     display: flex;
     gap: 10px;
     align-items: center;
-    z-index: 10;
 }
 
 .profile-actions button {
@@ -659,13 +651,7 @@ html[dir="rtl"] .checkbox-group label {
     display: block;
 }
 
-.topology-legend {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: calc(0.68rem * var(--font-scale));
-    color: var(--muted);
-    text-align: center;
-    margin-top: 10px;
-}
+
 
 /* SVG Node and connectors stylings */
 .topology-connector {
@@ -736,12 +722,12 @@ html[dir="rtl"] .checkbox-group label {
 }
 
 /* Hover behaviors for diagram tables */
-.topology-node:hover .entity-rect {
+.topology-node:is(:hover, :focus-visible) .entity-rect {
     stroke: var(--accent);
     stroke-width: 1.5;
     fill: #141c3e;
 }
-.topology-node:hover .entity-header {
+.topology-node:is(:hover, :focus-visible) .entity-header {
     stroke: var(--accent);
     fill: #1c2756;
 }
@@ -840,20 +826,20 @@ html[dir="rtl"] .checkbox-group label {
    ========================================================================== */
 .flagship-dashboard-layout {
     display: grid;
-    grid-template-columns: repeat(12, 1fr);
+    grid-template-columns: minmax(0, 1fr);
     gap: calc(20px * var(--space-scale));
     margin-top: calc(14px * var(--space-scale));
 }
 
 .flagship-project-selectors {
-    grid-column: span 4;
     list-style: none;
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     gap: 12px;
 }
 
 .flagship-selector {
+    flex: 1 1 15rem;
     cursor: pointer;
     border: 1px solid var(--border);
     border-radius: 18px;
@@ -896,7 +882,6 @@ html[dir="rtl"] .checkbox-group label {
 
 /* Documentation sheets viewports */
 .flagship-documentation-viewport {
-    grid-column: span 8;
     background: rgba(0, 0, 0, 0.2);
     border: 1px solid var(--border);
     border-radius: 24px;
@@ -1181,34 +1166,6 @@ html[dir="rtl"] .pane-blockquote {
 }
 
 /* ==========================================================================
-   MODEL VIEWER CONTAINER
-   ========================================================================== */
-.canvas-wrapper {
-    flex-grow: 1;
-    width: 100%;
-    position: relative;
-    border-radius: 20px;
-    overflow: hidden;
-    margin-top: 10px;
-    border: 1px solid var(--border);
-    height: 350px;
-    background: #03040b;
-}
-
-#ship-viewer {
-    width: 100%;
-    height: 100%;
-    display: block;
-}
-
-.ship-hint {
-    font-size: calc(0.76rem * var(--font-scale));
-    color: var(--muted);
-    text-align: center;
-    margin-top: 10px;
-}
-
-/* ==========================================================================
    PAGE FOOTER
    ========================================================================== */
 .page-footer {
@@ -1287,17 +1244,6 @@ html[dir="rtl"] .pane-blockquote {
     .topology-code-side {
         grid-column: span 12;
     }
-    .flagship-project-selectors {
-        grid-column: span 12;
-        flex-direction: row;
-        flex-wrap: wrap;
-    }
-    .flagship-project-selectors li {
-        flex-grow: 1;
-    }
-    .flagship-documentation-viewport {
-        grid-column: span 12;
-    }
     .visualizer-viewport {
         grid-column: span 12;
     }
@@ -1319,15 +1265,11 @@ html[dir="rtl"] .pane-blockquote {
     .flagship-project-selectors {
         flex-direction: column;
     }
+    .flagship-selector {
+        flex-basis: auto;
+    }
     .flagship-documentation-viewport {
         padding: 16px;
-    }
-    .profile-actions {
-        position: relative;
-        top: 0;
-        inset-inline-end: 0;
-        justify-content: flex-start;
-        margin-bottom: 15px;
     }
 }
 

@@ -1,0 +1,124 @@
+.studio-appearance {
+    margin: 0 .7rem .55rem;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--input-bg);
+    color: var(--text);
+    font-size: .82rem;
+}
+.studio-appearance summary { padding: .62rem .75rem; cursor: pointer; font-weight: 650; }
+.studio-appearance summary::marker { color: var(--accent); }
+.studio-appearance summary i:not([hidden]) {
+    display: inline-block;
+    inline-size: .72rem;
+    block-size: .72rem;
+    margin-inline-start: .4rem;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+}
+.studio-appearance-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(8.5rem, 100%), 1fr));
+    align-items: start;
+    gap: .65rem;
+    padding: .65rem .75rem .75rem;
+    border-block-start: 1px solid var(--border);
+}
+.studio-appearance-controls label { display: grid; gap: .25rem; min-inline-size: 0; }
+.studio-appearance-controls :is(input, select, button) {
+    inline-size: 100%;
+    min-block-size: 42px;
+    min-inline-size: 0;
+    padding: .4rem .45rem;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--input-bg);
+    color: var(--text);
+    font: inherit;
+}
+.studio-appearance-controls input[type="color"] {
+    inline-size: 44px;
+    block-size: 42px;
+    padding: .25rem;
+    cursor: pointer;
+}
+.studio-appearance-controls input[aria-invalid="true"] { border-color: #d97070; }
+.studio-appearance-custom {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr);
+    align-items: end;
+    gap: .25rem .4rem;
+}
+.studio-appearance-custom small { grid-column: 1 / -1; color: var(--text); }
+.studio-appearance-custom small:empty { display: none; }
+.studio-appearance [data-appearance-reset] { align-self: end; inline-size: fit-content; cursor: pointer; }
+.studio-appearance :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.studio-preview[data-style="soft"] {
+    --mock-corner: 17px;
+    --mock-control-corner: 13px;
+    --mock-card-fill: color-mix(in srgb, var(--mock-surface) 94%, var(--mock-tint));
+    --mock-elevation: 0 4px 12px #10253d16;
+}
+.studio-preview[data-style="soft"][data-preview-theme="dark"] { --mock-elevation: 0 4px 12px #080f2366; }
+.studio-preview[data-style="bold"] {
+    --mock-corner: 6px;
+    --mock-control-corner: 4px;
+    --mock-stroke: 2px;
+    --mock-head-weight: 800;
+    --mock-border: color-mix(in srgb, var(--mock-base-border), var(--mock-muted) 42%);
+    --mock-elevation: 2px 2px 0 color-mix(in srgb, var(--mock-accent) 27%, transparent);
+}
+.studio-preview[data-typography="editorial"] { --mock-font: Georgia, 'Times New Roman', serif; }
+.studio-preview[data-typography="technical"] { --mock-font: 'Cascadia Mono', Consolas, 'Liberation Mono', 'Segoe UI', Tahoma, monospace; }
+.studio-preview:lang(ar) h4 { letter-spacing: normal; }
+.studio-preview a { color: var(--mock-accent); text-underline-offset: .18em; }
+.studio-preview .mock-action:hover { filter: none; box-shadow: 0 0 0 2px color-mix(in srgb, var(--mock-accent) 42%, transparent); }
+.studio-preview :is(.mock-nav button[aria-current], .mock-filters button[aria-pressed="true"]) {
+    color: var(--mock-accent);
+    background: var(--mock-tint);
+    font-weight: 700;
+}
+.studio-preview .mock-sidebar .mock-nav button[aria-current] {
+    color: var(--appearance-onHero, #fff);
+    background: var(--appearance-heroFill, #ffffff1d);
+}
+.studio-preview .mock-sidebar :focus-visible,
+.studio-preview .mock-landing-hero :focus-visible { outline-color: var(--appearance-heroFill, #f5edff); }
+.studio-preview[data-style="bold"] .mock-action {
+    border: 2px solid currentColor;
+    box-shadow: inset 0 0 0 1px currentColor;
+    font-weight: 800;
+}
+.studio-preview[data-style="bold"] .mock-nav button[aria-current] { box-shadow: inset 0 0 0 2px currentColor; }
+
+@media (any-pointer: coarse) {
+    .studio-appearance-controls :is(input, select, button), .studio-preview .mock-action { min-block-size: 44px; }
+}
+
+.studio-accent-swatches {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(7.3rem, 100%), 1fr));
+    gap: .45rem;
+}
+.studio-accent-swatches button {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    text-align: start;
+    cursor: pointer;
+}
+.studio-accent-swatches i {
+    flex: 0 0 1.1rem;
+    block-size: 1.1rem;
+    border-radius: 50%;
+    background: var(--swatch);
+    box-shadow: inset 0 0 0 1px #ffffff30;
+}
+.studio-accent-swatches button[aria-pressed="true"] {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 9%, var(--input-bg));
+    box-shadow: inset 0 0 0 1px var(--accent);
+}
+.studio-accent-swatches button:hover { border-color: var(--accent); }

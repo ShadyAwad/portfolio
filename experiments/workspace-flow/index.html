@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Load Workspace · Request Flow</title>
+</head>
+<body>
+<main>
+    <header class="masthead">
+        <div><p class="eyebrow">SaaS dashboard / request flow</p><h1>Load workspace<span>.</span></h1>
+        <p class="intro">Drag the request into the API to see how a private dashboard loads.</p></div>
+        <div class="actions"><button id="reset" type="button" disabled>Reset</button>
+        <button id="launch" type="button">Launch request <span aria-hidden="true">↗</span></button></div>
+    </header>
+    <section id="field" aria-label="Workspace request route" data-phase="ready">
+        <canvas aria-hidden="true"></canvas>
+        <div class="station browser" data-station="browser"><div class="socket"><i aria-hidden="true">▱</i></div><p>Browser</p></div>
+        <div class="station api" data-station="api"><div class="socket"><i aria-hidden="true">⌁</i></div><p>API</p></div>
+        <div class="station auth" data-station="auth"><div class="socket"><i aria-hidden="true">◇</i></div><p>Authorization</p></div>
+        <div class="station postgres" data-station="postgres"><div class="socket"><i aria-hidden="true">≋</i></div><p>PostgreSQL</p></div>
+        <button id="packet" type="button" aria-label="Launch workspace request"><span aria-hidden="true"></span></button>
+        <p class="return-key"><span aria-hidden="true"></span> Response path</p>
+    </section>
+    <section class="readout" role="status" aria-atomic="true">
+        <div class="readout-progress"><span id="progress">Ready</span><div class="ticks" aria-hidden="true"></div></div>
+        <div><h2 id="stage">Request ready</h2><p id="explanation">Your browser has the workspace address. Send the request to start the journey.</p></div>
+    </section>
+</main>
+<script type="module" src="./main.js"></script>
+</body>
+</html>

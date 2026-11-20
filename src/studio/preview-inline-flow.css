@@ -1,0 +1,61 @@
+.mock-flow { flex: 1 0 100%; min-inline-size: 0; }
+.mock-page-content > .mock-flow { margin-block-end: .85rem; }
+.mock-records > .mock-flow { margin-block-start: .65rem; }
+.mock-demo-form .mock-flow-feedback { flex: 1 0 100%; }
+.mock-flow-feedback { min-inline-size: 0; }
+.mock-flow-feedback[data-flow-state] {
+    display: grid;
+    gap: calc(var(--mock-gap) * .6);
+    margin-block-start: .45rem;
+    padding: calc(var(--mock-spacing) * .52) calc(var(--mock-spacing) * .68);
+    border: var(--mock-stroke) solid var(--mock-border);
+    border-inline-start: 2px solid var(--mock-accent);
+    border-radius: var(--mock-control-corner);
+    background: var(--mock-tint);
+}
+.mock-flow-feedback[data-flow-state="complete"] .mock-flow-status {
+    display: flex;
+    align-items: baseline;
+    gap: .5em;
+}
+.mock-flow-feedback[data-flow-state="complete"] .mock-flow-status::before {
+    content: '';
+    flex: 0 0 .45em;
+    block-size: .7em;
+    border: solid var(--mock-accent);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+.mock-flow-status {
+    color: var(--mock-ink);
+    font-size: .78rem;
+    font-weight: 650;
+    overflow-wrap: anywhere;
+}
+.mock-flow-steps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .3rem;
+    list-style: none;
+}
+.mock-flow-steps[hidden] { display: none; }
+.mock-flow-steps > li {
+    display: inline-flex;
+    align-items: baseline;
+    gap: .38em;
+    min-inline-size: 0;
+    padding: .16rem .4rem;
+    border: 1px solid var(--mock-border);
+    border-radius: var(--mock-control-corner);
+    background: var(--mock-surface);
+    color: var(--mock-muted);
+    font-size: .72rem;
+    overflow-wrap: anywhere;
+}
+.mock-flow-steps > li::before { content: ''; flex: 0 0 .4em; block-size: .4em; border: 1px solid currentColor; border-radius: 50%; }
+.mock-flow-steps > [aria-current] { border-color: var(--mock-accent); color: var(--mock-ink); }
+.mock-flow-steps > [aria-current]::before, .mock-flow-steps > [data-done]::before { background: var(--mock-accent); border-color: var(--mock-accent); }
+@media (prefers-reduced-motion: no-preference) {
+    .mock-flow-steps > [aria-current]::before { animation: preview-request-step 360ms ease-out; }
+    @keyframes preview-request-step { from { transform: scale(.7); opacity: .5; } 55% { transform: scale(1.35); } }
+}

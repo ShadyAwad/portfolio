@@ -1,0 +1,43 @@
+.space-atmosphere {
+    --comet-ink: #a5cdff;
+    position: fixed;
+    z-index: -1;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    contain: strict;
+}
+[data-theme="light"] .space-atmosphere {
+    --comet-ink: #536f99;
+}
+.space-comet {
+    position: absolute;
+    top: var(--comet-top, 9px);
+    left: 5%;
+    width: clamp(2.5rem, 7vw, 5.5rem);
+    height: 1px;
+    border-radius: 100%;
+    background: linear-gradient(90deg, transparent, var(--comet-ink));
+    opacity: 0;
+}
+.space-comet::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: -1px;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--comet-ink);
+    box-shadow: 0 0 4px var(--comet-ink);
+}
+@media (prefers-reduced-motion: no-preference) {
+    .space-comet.is-flying { animation: space-fly-by var(--comet-duration, 1400ms) linear; }
+    @keyframes space-fly-by {
+        0% { transform: translate3d(0, 0, 0) rotate(var(--comet-angle, 5deg)); opacity: 0; }
+        20% { opacity: var(--comet-peak, .42); }
+        64% { opacity: calc(var(--comet-peak, .42) * .68); }
+        86% { opacity: calc(var(--comet-peak, .42) * .25); }
+        100% { transform: translate3d(var(--comet-distance, 46vw), var(--comet-drop, 25px), 0) rotate(var(--comet-angle, 5deg)); opacity: 0; }
+    }
+}
