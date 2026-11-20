@@ -20,14 +20,15 @@ export function mountStarfield(canvas, motion, active, decoration) {
     let palette = colors[root.dataset.theme] ?? colors.dark;
 
     const canAnimate = () => active() && !motion.matches;
-    const interval = () => geometry.compact ? 1000 / 15 : 50;
+    const interval = () => geometry.compact ? 1000 / 24 : 1000 / 40;
 
-    function draw() {
+    function draw(dt = 1 / 40) {
         if (!geometry || !active()) return;
         const { width, height, compact } = geometry;
         const trails = !compact && !motion.matches;
-        panX += ((pointer ? (pointer.x / width - .5) * 25 : 0) - panX) * .16;
-        panY += ((pointer ? (pointer.y / height - .5) * 18 : 0) - panY) * .16;
+        const ease = -Math.expm1(-5 * dt);
+        panX += ((pointer ? (pointer.x / width - .5) * 25 : 0) - panX) * ease;
+        panY += ((pointer ? (pointer.y / height - .5) * 18 : 0) - panY) * ease;
         context.clearRect(0, 0, width, height);
         decoration?.draw(context, seconds, palette === colors.light);
         for (let layer = 0; layer < layers.length; layer++) {
@@ -63,8 +64,9 @@ export function mountStarfield(canvas, motion, active, decoration) {
         if (!canAnimate()) return;
         const now = performance.now();
         seconds += Math.min(.12, (now - lastTick) / 1000);
+        const previousTick = lastTick;
         lastTick = now;
-        draw();
+        draw(Math.min(.12, (now - previousTick) / 1000));
         timer = setTimeout(tick, Math.max(0, interval() - (performance.now() - now)));
     }
 

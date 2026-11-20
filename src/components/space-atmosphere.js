@@ -1,8 +1,10 @@
+import { mountStellarLifecycle } from './stellar-lifecycle.js';
 import './space-atmosphere.css';
 import './galaxy.css';
 import { mountCurrents } from './spiral-currents.js';
 import { mountStarfield } from './starfield.js';
 
+const disposeStar = mountStellarLifecycle();
 const atmosphere = document.querySelector('.space-atmosphere');
 const comet = atmosphere.querySelector('.space-comet');
 const motion = matchMedia('(prefers-reduced-motion: reduce)');
@@ -63,6 +65,7 @@ window.addEventListener('pageshow', () => {
 sync();
 
 if (import.meta.hot) import.meta.hot.dispose(() => {
+    disposeStar();
     events.abort();
     starfield.destroy();
     disposeField();

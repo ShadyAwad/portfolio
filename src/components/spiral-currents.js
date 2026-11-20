@@ -1,5 +1,8 @@
 import { createField, displace, lowCount, particleCount, project } from './current-particles.js';
 
+// 1.0 preserves the original orbit rate. 0.7 runs autonomous paths at 70%.
+export const GALAXY_ORBIT_SPEED_MULTIPLIER = .7;
+
 export function mountCurrents(canvas, { grid, quality, reset } = {}) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return () => {};
@@ -40,7 +43,7 @@ export function mountCurrents(canvas, { grid, quality, reset } = {}) {
         const count = detail < .002 ? lowCount : particleCount;
         for (let i = 0; i < count; i++) {
             const p = particles[i], prevX = p.screenX, prevY = p.screenY;
-            project(p, time, scale, cx, cy);
+            project(p, time * GALAXY_ORBIT_SPEED_MULTIPLIER, scale, cx, cy);
             if (grid && (p.x < -radius || p.x > width + radius)) continue;
             const glow = displace(p, hand, pulse, radius, dt);
             const alpha = Math.min(1, p.opacity + glow) * (i < lowCount ? 1 : detail);
