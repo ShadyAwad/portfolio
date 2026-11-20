@@ -351,6 +351,13 @@ test('Creation Engine production workflow and persistence in Chromium', { skip: 
             q('.studio-preview').dataset.style==='${style}' && q('.studio-preview').dataset.typography==='${typography}' &&
             q('.studio-preview').dataset.density==='${density}' && q('#price-display').dataset.price===appearancePrice`);
     }
+    for (const [accent, hex] of Object.entries({cobalt:'#4266df', fuchsia:'#bc438d', steel:'#687f95', arctic:'#79b8d4', gold:'#b59a58'})) {
+        await evaluate(`click('[data-accent-preset="${accent}"]')`);
+        await check(`q('.studio-preview').style.getPropertyValue('--appearance-source')==='${hex}' &&
+            q('[data-accent-preset="${accent}"]').getAttribute('aria-pressed')==='true' &&
+            mockRoot===q('.studio-template').firstElementChild && q('#price-display').dataset.price===appearancePrice`);
+    }
+    await evaluate("look('accent','cyan')");
     await evaluate("q('.studio-appearance summary').focus()");
     for (const open of [false, true]) {
         await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, text: '\r' });

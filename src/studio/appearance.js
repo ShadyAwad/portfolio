@@ -1,5 +1,6 @@
 export const accentPresets = Object.freeze({
-    cyan: '#0899bd', violet: '#8055dc', emerald: '#17a472', coral: '#e3665a', amber: '#d58b16'
+    cyan: '#0899bd', violet: '#8055dc', emerald: '#17a472', coral: '#e3665a', amber: '#d58b16',
+    cobalt: '#4266df', fuchsia: '#bc438d', steel: '#687f95', arctic: '#79b8d4', gold: '#b59a58'
 });
 export const appearanceOptions = Object.freeze({
     accent: Object.freeze(['template', ...Object.keys(accentPresets), 'custom']),

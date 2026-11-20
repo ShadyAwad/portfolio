@@ -1,4 +1,4 @@
-import { appearanceDefaults, appearanceOptions, appearancePalette, normalizeAccent } from './appearance.js';
+import { accentPresets, appearanceDefaults, appearanceOptions, appearancePalette, normalizeAccent } from './appearance.js';
 import { layoutDefaults, previewLayouts } from './preview-layouts.js';
 import './preview-appearance.css';
 import './preview-layouts.css';
@@ -7,6 +7,8 @@ const copy = {
     title: ['Appearance', 'المظهر'], accent: ['Accent', 'لون التمييز'],
     template: ['Template default', 'لون القالب'], cyan: ['Cyan', 'سماوي'], violet: ['Violet', 'بنفسجي'],
     emerald: ['Emerald', 'زمردي'], coral: ['Coral', 'مرجاني'], amber: ['Amber', 'كهرماني'],
+    cobalt: ['Cobalt', 'كوبالت'], fuchsia: ['Fuchsia', 'فوشي'], steel: ['Steel', 'فولاذي'],
+    arctic: ['Arctic blue', 'أزرق جليدي'], gold: ['Soft gold', 'ذهبي هادئ'],
     custom: ['Custom', 'مخصص'], picker: ['Pick a custom accent', 'اختر لون تمييز مخصصًا'],
     hex: ['Custom HEX', 'رمز اللون المخصص'], invalid: ['Enter a color like #0899BD.', 'أدخل رمز لون مثل #0899BD.'],
     style: ['Style', 'النمط'], minimal: ['Minimal', 'بسيط'], soft: ['Soft', 'ناعم'], bold: ['Bold', 'جريء'],
@@ -25,12 +27,22 @@ export function mountPreviewAppearance(toolbar, preview, store, signal) {
             `<option value="${choice}" data-appearance-copy="${choice}"></option>`).join('')}</select></label>`).join('');
     details.innerHTML = '<summary><span data-appearance-copy="title"></span><i aria-hidden="true"></i></summary>' +
         '<div class="studio-appearance-controls"><fieldset class="studio-layout-picker"><legend data-appearance-copy="layout"></legend><div></div></fieldset>' + selects +
+        '<div class="studio-accent-swatches" role="group"></div>' +
         '<div class="studio-appearance-custom"><input type="color" data-appearance-picker>' +
         '<label><span data-appearance-copy="hex"></span><input type="text" data-appearance-hex autocapitalize="off"' +
         ' spellcheck="false" placeholder="#RRGGBB" aria-describedby="studio-appearance-error" dir="ltr"></label>' +
         '<small id="studio-appearance-error" role="status"></small></div>' +
         '<button type="button" data-appearance-reset data-appearance-copy="reset"></button></div>';
     toolbar.after(details);
+    const swatches = details.querySelector('.studio-accent-swatches');
+    swatches.innerHTML = Object.entries(accentPresets).map(([name, color]) =>
+        `<button type="button" data-accent-preset="${name}" style="--swatch:${color}" aria-pressed="false"><i aria-hidden="true"></i><span></span></button>`).join('');
+    swatches.addEventListener('click', event => {
+        const button = event.target.closest('[data-accent-preset]');
+        if (!button) return;
+        setError(false);
+        store.update({ visual: { accent: button.dataset.accentPreset } });
+    }, { signal });
     const fields = [...details.querySelectorAll('select')];
     const layoutChoices = details.querySelector('.studio-layout-picker div');
     const picker = details.querySelector('[data-appearance-picker]');
@@ -82,6 +94,10 @@ export function mountPreviewAppearance(toolbar, preview, store, signal) {
             translate = label;
             layoutTemplate = undefined;
             details.querySelectorAll('[data-appearance-copy]').forEach(node => { node.textContent = label(copy[node.dataset.appearanceCopy]); });
+            swatches.setAttribute('aria-label', label(copy.accent));
+            swatches.querySelectorAll('button').forEach(button => {
+                button.querySelector('span').textContent = label(copy[button.dataset.accentPreset]);
+            });
             picker.setAttribute('aria-label', label(copy.picker));
             invalidMessage = label(copy.invalid);
             if (input.hasAttribute('aria-invalid')) setError(true);
@@ -97,6 +113,10 @@ export function mountPreviewAppearance(toolbar, preview, store, signal) {
             for (const control of layoutChoices.querySelectorAll('input')) {
                 const checked = control.value === layouts[applicationType];
                 if (control.checked !== checked) control.checked = checked;
+            }
+            for (const button of swatches.querySelectorAll('button')) {
+                const pressed = String(button.dataset.accentPreset === visual.accent);
+                if (button.getAttribute('aria-pressed') !== pressed) button.setAttribute('aria-pressed', pressed);
             }
             for (const field of fields) {
                 if (field.value !== visual[field.name]) field.value = visual[field.name];

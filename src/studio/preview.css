@@ -540,3 +540,42 @@
 @media (prefers-reduced-motion: reduce) {
     .studio-template > div, .architecture-explorer:not([hidden]) { animation: none; }
 }
+
+/* Quiet surface hierarchy keeps the preview as the focal point. */
+.studio-heading { padding-block-end: .9rem; border-block-end: 1px solid var(--border); }
+.studio-heading h3 { letter-spacing: -.025em; line-height: 1.25; }
+.studio-settings {
+    padding: 1rem;
+    background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 3%, var(--input-bg)), var(--input-bg) 70%);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 4%, transparent);
+}
+.studio-settings > label { gap: .45rem; margin-block-end: 1rem; }
+.studio-canvas { box-shadow: 0 12px 32px #00000012; }
+.studio-canvas-bar { padding: .85rem 1rem; letter-spacing: .015em; }
+.studio-settings :is(select, button), .studio-appearance-controls :is(input, select) { border-radius: 9px; }
+.studio-settings :is(select, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.architecture-switch {
+    gap: .45rem;
+    padding: .65rem .8rem;
+    background: color-mix(in srgb, var(--input-bg) 85%, transparent);
+}
+.architecture-switch button { border-radius: 9px; padding: .45rem .8rem; }
+.architecture-switch button[aria-pressed="true"] {
+    background: color-mix(in srgb, var(--accent) 10%, var(--input-bg));
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--accent) 16%, transparent);
+}
+@supports (interpolate-size: allow-keywords) {
+    @media (prefers-reduced-motion: no-preference) {
+        :is(.configurator-studio, .studio-feature-settings, .studio-appearance, #architecture-planner)::details-content {
+            interpolate-size: allow-keywords;
+            block-size: 0;
+            opacity: 0;
+            overflow: clip;
+            transition: block-size 240ms cubic-bezier(.22,.75,.25,1), opacity 180ms ease, content-visibility 240ms allow-discrete;
+        }
+        :is(.configurator-studio, .studio-feature-settings, .studio-appearance, #architecture-planner)[open]::details-content {
+            block-size: auto;
+            opacity: 1;
+        }
+    }
+}
